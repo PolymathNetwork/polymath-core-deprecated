@@ -2,7 +2,7 @@
 
 The smart contracts for Security Token Creation [Polymath][polymath].
 
-![Polymath](bull.svg)
+![Polymath](polymath.png)
 
 Security Tokens are cryptocurrencies built on top of the [Ethereum][ethereum] blockchain.
 They are used to issue securities on the blockchain that are legally compliant with relevant regulatory bodies, depending on where the issuing company is based.
