@@ -25,6 +25,18 @@ $ npm install -g truffle ethereumjs-testrpc
 $ npm install
 ```
 
+The current source code is running on the beta and latest version of Truffle which is Beta 4.0.0.
+
+In order to install it:
+
+```bash
+# Install Truffle globally:
+$ npm install -g truffle@beta
+
+```
+
+The new version of Truffle doesn't require testrpc.
+
 ### Test
 $ truffle test
 
