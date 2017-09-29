@@ -145,4 +145,78 @@ contract('SecurityToken', (accounts) => {
             assert.equal(result.logs.length, 0);
         });
     });
+
+
+    describe('tokenAllocation', async () => {
+        //It should create a security token and allocate the total supply to the owner
+        it('should create a new security token and it assigns the total supply to the owner', async () => {
+
+        });
+
+    });
+
+    describe('tokenTransfer', async () => {
+        //It should restrict transfer of the security token to any address (test a few addresses) unless approved
+        it('should not transfer security token to non-whitelisted accounts', async () => {
+
+        });
+
+        it('should transfer security token to only whitelisted accounts', async () => {
+
+        });
+
+        it('should transfer security token to only whitelisted accounts using transferFrom function', async () => {
+
+        });
+
+        it('should not transfer security token to non-whitelisted accounts using transferFrom function', async () => {
+
+        });
+
+        it('should transfer back or revert the amount of security token to the previous address', async () => {
+
+        });
+
+        it('should not transfer the amount of security token to any other address other than previous address', async () => {
+
+        });
+
+        //It should restrict approve or transferFrom of the security token to any address unless approved
+        //When a token is transferred to the contract address by accident it can be transferred to to the owners address
+        //When a token is transferred to the contract address by accident it can not be transferred to to the any other address
+    });
+
+    describe('ownershipTransfer', async () => {
+        //It should allow transferring ownership to a new address
+        it('should transfer ownership of tokens to a new approved address', async () => {
+
+        });
+
+        it('should not transfer ownership of tokens to a non-approved address', async () => {
+
+        });
+
+        it('should not allow onwership transfer from any other than owner or address owner', async () => {
+
+        });
+
+        it('should  allow onwership transfer from contract owner or address owner', async () => {
+
+        });
+
+    });
+
+    describe('regulators', async () => {
+        //Only the owner of the contract should be able to add a new regulator
+        it('should only allow the contract owner to add new regulators', async () => {
+
+        });
+
+        it('should not allow anyone but owner to add new regulators', async () => {
+
+        });
+
+    });
+
+    // End of test
 });
