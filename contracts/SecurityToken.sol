@@ -1,75 +1,72 @@
-/*
-  The Polymath Security Token Standard
-.*/
-
 pragma solidity ^0.4.15;
 
-import './ERC20.sol';
 import './Ownable.sol';
+import './ERC20.sol';
 
-contract SecurityToken is ERC20, Ownable {
+contract SecurityToken is Ownable, ERC20 {
 
     string public version = '0.1';
     string public name;
     string public symbol;
     uint8 public decimals;
-    uint256 public totalSupply;
 
-    mapping (address => uint256) public balances;
-    mapping (address => mapping (address => uint256)) public allowed;
-    mapping(address => bool) public whitelisted;
-    mapping(address => bool) public partners;
+    mapping(address => bool) public investors;
+    mapping(address => bool) public regulators;
 
-    modifier onlyPartners() {
-      require(partners[msg.sender]);
-      _;
-    }
+    event LogNewInvestor(address indexed investor, address indexed by);
+    event LogNewRegulator(address indexed regulator, string desc);
 
-    /** Constructor **/
     function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply) {
-      require(bytes(_name).length > 0 && bytes(_ticker).length > 0); // Validate input
       name = _name;
       symbol = _ticker;
       decimals = _decimals;
       totalSupply = _totalSupply;
       balances[msg.sender] = _totalSupply;
-      partners[msg.sender] = true;
+      regulators[msg.sender] = true;
     }
 
-    // Allow transfer of Security Tokens to other whitelisted accounts
+    modifier onlyRegulators() {
+      require(!regulators[msg.sender]);
+      _;
+    }
+
     function transfer(address _to, uint256 _value) returns (bool success) {
-      if (whitelisted[_to] && balances[msg.sender] >= _value && _value > 0) {
+      if (investors[_to] && balances[msg.sender] >= _value && _value > 0) {
         return super.transfer(_to, _value);
       } else {
         return false;
       }
     }
 
-    // Allow transfer of Security Tokens from/to other whitelisted accounts
     function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-      if (whitelisted[_to] && whitelisted[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+      if (investors[_to] && investors[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
         return super.transferFrom(_from, _to, _value);
       } else {
         return false;
       }
     }
 
-    // Allow withdrawals of Security Tokens from other whitelisted addresses
     function approve(address _spender, uint256 _value) returns (bool success) {
-      if (whitelisted[_spender]) {
+      if (investors[_spender]) {
         return super.approve(_spender, _value);
       } else {
         return false;
       }
     }
 
-    // Add a Polymath Partner (to add investors to the whitelist)
-    function addPartner(address _address) onlyOwner {
-      partners[_address] = true;
+    function addRegulator(address _address, string _desc) onlyOwner returns (bool success) {
+      regulators[_address] = true;
+      LogNewRegulator(_address, _desc);
+      return true;
     }
 
-    // Add an investor to the whitelist (to allow buy/sell the security)
-    function whitelistInvestor(address _address) onlyPartners {
-      whitelisted[_address] = true;
+    function whitelistInvestor(address _address) onlyRegulators returns (bool success) {
+      investors[_address] = true;
+      LogNewInvestor(_address, msg.sender);
+      return true;
+    }
+
+    function transferAnyERC20Token(address _tokenAddress, uint256 _amount) onlyOwner returns (bool success) {
+      return ERC20(_tokenAddress).transfer(owner, _amount);
     }
 }

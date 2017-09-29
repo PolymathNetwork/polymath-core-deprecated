@@ -24,11 +24,11 @@ contract('SecurityToken', (accounts) => {
         });
 
         it('should return correct name after construction', async () => {
-            assert.equal(await token.name(), 'Kin');
+            assert.equal(await token.name(), '');
         });
 
         it('should return correct symbol after construction', async () => {
-            assert.equal(await token.symbol(), 'KIN');
+            assert.equal(await token.symbol(), '');
         });
 
         it('should return correct decimal points after construction', async () => {

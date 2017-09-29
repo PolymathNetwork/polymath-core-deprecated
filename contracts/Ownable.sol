@@ -25,18 +25,16 @@ contract Ownable {
       _;
     }
 
-    // Proposes to transfer control of the contract to a newOwnerCandidate.
     function requestOwnershipTransfer(address _newOwnerCandidate) external onlyOwner {
       require(_newOwnerCandidate != address(0));
       newOwnerCandidate = _newOwnerCandidate;
       OwnershipRequested(msg.sender, newOwnerCandidate);
     }
 
-    /// Accept ownership transfer. This method needs to be called by the previously proposed owner.
     function acceptOwnership() external onlyOwnerCandidate {
-        address previousOwner = owner;
-        owner = newOwnerCandidate;
-        newOwnerCandidate = address(0);
-        OwnershipTransferred(previousOwner, owner);
+      address previousOwner = owner;
+      owner = newOwnerCandidate;
+      newOwnerCandidate = address(0);
+      OwnershipTransferred(previousOwner, owner);
     }
 }
