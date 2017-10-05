@@ -10,23 +10,27 @@ contract SecurityToken is Ownable, ERC20 {
     string public symbol;
     uint8 public decimals;
 
+    address public delegate;
     mapping(address => bool) public investors;
-    mapping(address => bool) public regulators;
+
+    string public complianceTemplate;
+    mapping(string => bool) public complianceRequirements;
 
     event LogNewInvestor(address indexed investor, address indexed by);
     event LogNewRegulator(address indexed regulator, string desc);
 
-    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply) {
+    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner) {
+      owner = _owner;
       name = _name;
       symbol = _ticker;
       decimals = _decimals;
       totalSupply = _totalSupply;
-      balances[msg.sender] = _totalSupply;
-      regulators[msg.sender] = true;
+      balances[_owner] = _totalSupply;
+      delegate = _owner;
     }
 
-    modifier onlyRegulators() {
-      require(!regulators[msg.sender]);
+    modifier onlyDelegate() {
+      require(delegate == msg.sender);
       _;
     }
 
@@ -54,13 +58,13 @@ contract SecurityToken is Ownable, ERC20 {
       }
     }
 
-    function addRegulator(address _address, string _desc) onlyOwner returns (bool success) {
-      regulators[_address] = true;
-      LogNewRegulator(_address, _desc);
+    function setDelegate(address _address, string _desc) onlyOwner returns (bool success) {
+      delegate = _address;
+      LogNewDelegate(_address, _desc);
       return true;
     }
 
-    function whitelistInvestor(address _address) onlyRegulators returns (bool success) {
+    function whitelistInvestor(address _address) onlyDelegate returns (bool success) {
       investors[_address] = true;
       LogNewInvestor(_address, msg.sender);
       return true;
@@ -68,5 +72,11 @@ contract SecurityToken is Ownable, ERC20 {
 
     function transferAnyERC20Token(address _tokenAddress, uint256 _amount) onlyOwner returns (bool success) {
       return ERC20(_tokenAddress).transfer(owner, _amount);
+    }
+
+    // Set a compliance template
+    function setComplianceTemplate(string _templateId) onlyOwner returns (bool success) {
+      complianceTemplate = _templateId;
+      return true;
     }
 }
