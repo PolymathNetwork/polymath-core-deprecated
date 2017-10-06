@@ -9,7 +9,7 @@ build on top of the Polymath platform and extend it's functionality.
 
 import './Ownable.sol';
 
-contract ComplianceProtocol is Ownable {
+contract IssuanceTemplate is Ownable {
 
   // A legal delegate may be approved for a specified period of time
   struct Delegate {
@@ -19,11 +19,11 @@ contract ComplianceProtocol is Ownable {
   }
 
   struct Template {
-    address creator;
+    address owner;
     uint8 tasks;
     uint8 issuerJurisdiction;
     uint8[] restrictedJurisdictions;
-    string desc;
+    bytes32 securityType;
     uint256 fee;
     uint256 expires;
     bool approved;
@@ -71,7 +71,7 @@ contract ComplianceProtocol is Ownable {
   /// @param _tasks The number of compliance tasks in the template
   /// @param _issuerJurisdiction The jurisdiction id of the issuer
   /// @param _restrictedJurisdictions An array of jurisdictions that are blocked from purchasing the security
-  /// @param _desc A description of the compliance template type
+  /// @param _securityType The type of security being issued
   /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
   /// @param _expires Timestamp of when the template will expire
   function newTemplate(
@@ -79,7 +79,7 @@ contract ComplianceProtocol is Ownable {
     uint8 _tasks,
     uint8 _issuerJurisdiction,
     uint8[] _restrictedJurisdictions,
-    string _desc,
+    bytes32 _securityType,
     uint256 _fee,
     uint256 _expires
   ) {
@@ -87,11 +87,11 @@ contract ComplianceProtocol is Ownable {
     require(delegates[_delegateAddress].expires >= now);
     require(_tasks > 0);
     require(_expires > now);
-    templates[_template].creator = msg.sender;
+    templates[_template].owner = msg.sender;
     templates[_template].tasks = _tasks;
     templates[_template].issuerJurisdiction = _issuerJurisdiction;
     templates[_template].restrictedJurisdictions = _restrictedJurisdictions;
-    templates[_template].desc = _desc;
+    templates[_template].securityType = _securityType;
     templates[_template].fee = _fee;
     templates[_template].expires = 0;
     LogNewTemplate(msg.sender, _template, _desc);
