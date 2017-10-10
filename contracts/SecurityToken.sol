@@ -14,8 +14,8 @@ contract SecurityToken is Ownable, ERC20 {
     // Legal delegate
     address public delegate;
 
-    // Whitelist of investors
-    mapping(address => bool) public investors;
+    // Whitelist of investors / market makers / etc
+    mapping(address => bytes4) public whitelist;
 
     // Issuance template applied
     string public issuanceTemplate;
@@ -29,8 +29,8 @@ contract SecurityToken is Ownable, ERC20 {
     mapping(uint8 => Task) public issuanceProcess;
 
     // Notifications
-    event LogNewInvestor(address indexed investor, address indexed by);
-    event LogNewRegulator(address indexed regulator, string desc);
+    event Whitelist(address indexed whitelisted, address indexed by);
+    event Delegate(address indexed delegate, string desc);
 
     /// Set default security token parameters
     /// @param _name Name of the security token
@@ -97,7 +97,7 @@ contract SecurityToken is Ownable, ERC20 {
     function setDelegate(address _delegate) onlyOwner returns (bool success) {
       require(delegate == 0);
       delegate = _delegate;
-      LogNewRegulator(_delegate);
+      Delegate(_delegate);
       return true;
     }
 
@@ -107,7 +107,7 @@ contract SecurityToken is Ownable, ERC20 {
     /// @returns bool success
     function whitelistInvestor(address _address) onlyDelegate returns (bool success) {
       investors[_address] = true;
-      LogNewInvestor(_address, msg.sender);
+      Investor(_address, msg.sender);
       return true;
     }
 

@@ -36,9 +36,10 @@ contract IssuanceTemplate is Ownable {
   mapping(uint256 => Template) public templates;
 
   // Notifications
-  event LogDelegateApplication(address _delegateAddress, bytes32 _application);
-  event LogDelegateApproved(address indexed _delegateAddress);
-  event LogNewTemplate(address creator, string _template, string desc);
+  event DelegateApplication(address _delegateAddress, bytes32 _application);
+  event DelegateApproved(address indexed _delegateAddress);
+  event TemplateCreated(address creator, string _template, string desc);
+  event TemplateApproved(address creator, string _template);
 
   /// Allow new legal delegate applications
   /// @param _delegateAddress The legal delegate's public key address
@@ -46,7 +47,7 @@ contract IssuanceTemplate is Ownable {
   function newDelegate(address _delegateAddress, bytes32 _application) {
     require(_delegateAddress != address(0));
     delegates[_delegateAddress] = Delegate(_application, now, []);
-    LogDelegateApplication(_delegateAddress, _application);
+    DelegateApplication(_delegateAddress, _application);
   }
 
   /// Approve or reject a new legal delegate application
@@ -74,7 +75,7 @@ contract IssuanceTemplate is Ownable {
   /// @param _securityType The type of security being issued
   /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
   /// @param _expires Timestamp of when the template will expire
-  function newTemplate(
+  function createTemplate(
     string _template,
     uint8 _tasks,
     uint8 _issuerJurisdiction,
@@ -94,7 +95,7 @@ contract IssuanceTemplate is Ownable {
     templates[_template].securityType = _securityType;
     templates[_template].fee = _fee;
     templates[_template].expires = 0;
-    LogNewTemplate(msg.sender, _template, _desc);
+    TemplateCreated(msg.sender, _template, _desc);
   }
 
   /// Approve a new compliance template

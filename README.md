@@ -1,6 +1,6 @@
-# Polymath Security Token Contracts
+# Polymath Smart Contracts
 
-The smart contracts for Security Tokens on the [Polymath Network][polymath].
+The Ethereum smart contracts for the [Polymath Network][polymath].
 
 ![Polymath](Polymath.png)
 

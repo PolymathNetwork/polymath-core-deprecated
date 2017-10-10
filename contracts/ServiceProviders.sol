@@ -1,13 +1,14 @@
 pragma solidity ^0.4.15;
 
+import './Ownable.sol';
+
+
 /*
 Polymath compliance templates protocol is used to ensure regulatory compliance
 in the jurisdictions that security tokens are being offered in. The compliance
 protocol ensures security tokens remain interoperable so that anyone can
 build on top of the Polymath platform and extend it's functionality.
 */
-
-import './Ownable.sol';
 
 contract ServiceProviders is Ownable {
 
@@ -23,7 +24,8 @@ contract ServiceProviders is Ownable {
   mapping(address => Provider) public serviceProviders;
 
   // Notifications
-  event LogNewServiceProvider(_serviceProviderAddress, _application);
+  event ServiceProviderApplication(_serviceProviderAddress, _application);
+  event ServiceProviderApproved(_serviceProviderAddress, _service);
 
   /// Allow new service provider applications
   /// @param _providerAddress The service provider's public key address
@@ -31,7 +33,7 @@ contract ServiceProviders is Ownable {
   function newServiceProvider(address _serviceProviderAddress, bytes32 _application, uint256 fee) {
     require(_serviceProviderAddress != address(0));
     serviceProviders[_serviceProviderAddress] = Provider(_serviceProviderAddress, _application, fee, false);
-    LogNewServiceProvider(_serviceProviderAddress, _application);
+    ServiceProviderApplication(_serviceProviderAddress, _application);
   }
 
   /// Approve or reject a service provider application
@@ -44,6 +46,7 @@ contract ServiceProviders is Ownable {
     if (_approved == true) {
       serviceProviders[_serviceProviderAddress].approved = true;
       serviceProviders[_serviceProviderAddress].service = _service;
+      ServiceProviderApproved(_serviceProviderAddress, _service);
     } else {
       serviceProviders[_serviceProviderAddress] = false;
       serviceProviders[_serviceProviderAddress].service = '0';
