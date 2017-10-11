@@ -11,6 +11,8 @@ import './Ownable.sol';
 
 contract IssuanceTemplate is Ownable {
 
+  uint256 constant public VERSION = 0.1;
+
   // A legal delegate may be approved for a specified period of time
   struct Delegate {
     bytes32 application;
@@ -18,6 +20,7 @@ contract IssuanceTemplate is Ownable {
     uint8[] jurisdictions;
   }
 
+  // An issuance template
   struct Template {
     address owner;
     uint8 tasks;
