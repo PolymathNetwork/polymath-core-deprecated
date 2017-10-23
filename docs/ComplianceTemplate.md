@@ -8,7 +8,7 @@ build on top of the Polymath platform.
 
 ## Becoming a legal delegate
 
-Legal delegates are eligible to creating compliance templates on Polymath, anyone
+Legal delegates are eligible to creater compliance templates on Polymath, anyone
 can apply through the newDelegate function. The legal delegate must upload an application
 with their CV either to Polymath platform or a service provider. The SHA256 hash of
 the document will be linked to the delegate for audit/review purposes.
