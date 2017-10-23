@@ -7,7 +7,7 @@ contract('SecurityToken', (accounts) => {
   let security;
 
   const name = 'Polymath Inc.';
-  const symbol = 'POLY';
+  const ticker = 'POLY';
   const decimals = 1;
   const totalSupply = 1234567890;
 
@@ -21,7 +21,60 @@ contract('SecurityToken', (accounts) => {
   let transferredFunds = 1200;  // Funds to be transferred around in tests
 
   beforeEach(async () => {
-    security = await SecurityToken.new();
+    security = await SecurityToken.new(name, ticker, decimals, totalSupply, owner, { from: owner });
+  });
+
+  describe('creation', async () => {
+    it('should be ownable', async () => {
+      assert.equal(await security.owner(), owner);
+    });
+
+    it('should return correct name after creation', async () => {
+      assert.equal(await security.name(), name);
+    });
+
+    it('should return correct ticker after creation', async () => {
+      assert.equal(await security.ticker(), ticker);
+    });
+
+    it('should return correct decimal points after creation', async () => {
+      assert.equal(await security.decimals(), decimals);
+    });
+
+    it('should return correct total supply after creation', async () => {
+      assert.equal(await security.totalSupply(), totalSupply);
+    });
+
+    it('should allocate the total supply to the owner after creation', async () => {
+      assert.equal((await security.balanceOf(owner)).toNumber(), totalSupply);
+    });
+
+    it('should restrict transfer of the security to any address', async () => {
+      assert.expectRevert(security.transfer(owner, spender));
+      assert.expectRevert(security.transfer(owner, to1));
+    });
+
+    it('should restrict approval for transfer to any address', async () => {
+      assert.expectRevert(security.approve(owner, 1));
+      assert.expectRevert(security.approve(spender, 1));
+      assert.expectRevert(security.approve(to1, 1));
+    });
+
+    it('should restrict transferFrom to any address', async () => {
+      assert.expectRevert(security.approve(owner, spender, 1));
+    });
+
+    it('should restrict transferFrom to any address', async () => {
+      assert.expectRevert(security.approve(owner, spender, 1));
+    });
+
+    it('should allow transferring ownership to another address', async () => {
+      assert.expectRevert(security.approve(owner, spender, 1));
+    });
+
+    it('should allow accidentally sent ERC20 tokens to be transferred out of the contract', async () => {
+
+    });
   });
 
   describe('activation', async () => {
@@ -101,6 +154,32 @@ contract('SecurityToken', (accounts) => {
       await token.endMinting();
       await token.approve(spender, allowedAmount);
       await token.transferFrom(owner, to1, allowedAmount, {from: spender});
+    });
+  });
+
+  describe('approval', async () => {
+    it('should log mint event after minting', async () => {
+      let result = await token.mint(to1, transferredFunds);
+
+      assert.lengthOf(result.logs, 1);
+      let event = result.logs[0];
+      assert.equal(event.event, 'Transfer');
+      assert.equal(event.args.from, 0);
+      assert.equal(event.args.to, to1);
+      assert.equal(Number(event.args.value), transferredFunds);
+    });
+
+    it('should log minting ended event after minting has ended', async () => {
+      let result = await token.endMinting();
+
+      assert.lengthOf(result.logs, 1);
+      assert.equal(result.logs[0].event, 'MintingEnded');
+
+            // Additional calls should not emit events.
+      result = await token.endMinting();
+      assert.equal(result.logs.length, 0);
+      result = await token.endMinting();
+      assert.equal(result.logs.length, 0);
     });
   });
 

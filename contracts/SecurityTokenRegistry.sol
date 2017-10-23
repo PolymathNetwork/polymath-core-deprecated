@@ -3,19 +3,37 @@ pragma solidity ^0.4.15;
 import './Ownable.sol';
 import './ERC20.sol';
 
-contract SecurityToken is Ownable, ERC20 {
+// TODO: Split into security token registry and security token
+
+contract SecurityToken is ERC20 {
 
     // ERC20 Fields
     string public version = '0.1';
     string public name;
     string public symbol;
     uint8 public decimals;
+    address public owner;
+
+    // Accredation
+    struct Accredation {
+      string country; // i.e. CA: 1, US: 2
+      uint8 level; // 1, 2, 3, 4
+    }
+    mapping(address => Accredation) public accredations;
+
+    // Compliance Templates proposed
+    struct Template {
+      address delegate;
+      bytes32 template;
+      uint256 fee;
+    }
+    mapping(address => Template) public templates;
 
     // Legal delegate
     address public delegate;
 
-    // Whitelist of investors / market makers / etc
-    mapping(address => bytes4) public whitelist;
+    // Whitelist of investors
+    mapping(address => bool) public investors;
 
     // Issuance template applied
     string public issuanceTemplate;
@@ -29,8 +47,9 @@ contract SecurityToken is Ownable, ERC20 {
     mapping(uint8 => Task) public issuanceProcess;
 
     // Notifications
-    event Whitelist(address indexed whitelisted, address indexed by);
-    event Delegate(address indexed delegate, string desc);
+    event NewInvestor(address indexed investorAddress, address indexed by);
+    event DelegateSet(address indexed delegateAddress);
+    event TemplateProposal(address delegateAddress, uint256 bid, bytes32 template);
 
     /// Set default security token parameters
     /// @param _name Name of the security token
@@ -48,6 +67,11 @@ contract SecurityToken is Ownable, ERC20 {
       delegate = _owner;
     }
 
+    modifier onlyOwner() {
+      require (msg.sender == owner);
+      _;
+    }
+
     modifier onlyDelegate() {
       require(delegate == msg.sender);
       _;
@@ -56,7 +80,7 @@ contract SecurityToken is Ownable, ERC20 {
     /// Trasfer tokens from one address to another
     /// @param _to Ethereum public address to transfer tokens to
     /// @param _value Amount of tokens to send
-    /// @returns bool success
+    /// @return bool success
     function transfer(address _to, uint256 _value) returns (bool success) {
       if (investors[_to] && balances[msg.sender] >= _value && _value > 0) {
         return super.transfer(_to, _value);
@@ -69,7 +93,8 @@ contract SecurityToken is Ownable, ERC20 {
     /// @param _from Address to transfer tokens from
     /// @param _to Address to send tokens to
     /// @param _value Number of tokens to transfer
-    /// @returns bool success
+    /// @return bool success
+    /// TODO: eliminate msg.sender for 0x
     function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
       if (investors[_to] && investors[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
         return super.transferFrom(_from, _to, _value);
@@ -81,7 +106,7 @@ contract SecurityToken is Ownable, ERC20 {
     /// Approve transfer of tokens manually
     /// @param _spender Address to approve transfer to
     /// @param _value Amount of tokens to approve for transfer
-    /// @returns bool success
+    /// @return bool success
     function approve(address _spender, uint256 _value) returns (bool success) {
       if (investors[_spender]) {
         return super.approve(_spender, _value);
@@ -91,37 +116,41 @@ contract SecurityToken is Ownable, ERC20 {
     }
 
     /// Assign a legal delegate to the security token issuance
-    /// @param _address Address of legal delegate
-    /// @param _value Description
-    /// @returns bool success
+    /// @param _delegate Address of legal delegate
+    /// @return bool success
     function setDelegate(address _delegate) onlyOwner returns (bool success) {
-      require(delegate == 0);
+      require(delegate == 0x0);
       delegate = _delegate;
-      Delegate(_delegate);
+      DelegateSet(_delegate);
       return true;
     }
 
     /// Assign a legal delegate to the security token issuance
     /// @param _address Address of legal delegate
-    /// @param _value Description
-    /// @returns bool success
+    /// @return bool success
     function whitelistInvestor(address _address) onlyDelegate returns (bool success) {
       investors[_address] = true;
-      Investor(_address, msg.sender);
+      NewInvestor(_address, msg.sender);
       return true;
     }
 
     /// Allow transfer of any accidentally sent ERC20 tokens to the contract owner
     /// @param _tokenAddress Address of ERC20 token
     /// @param _amount Amount of tokens to send
-    /// @returns bool success
+    /// @return bool success
     function transferAnyERC20Token(address _tokenAddress, uint256 _amount) onlyOwner returns (bool success) {
       return ERC20(_tokenAddress).transfer(owner, _amount);
     }
 
+    // New compliance template proposal
+    function proposeIssuanceTemplate(address _delegate, bytes32 _templateId, uint256 _bid) {
+      templates[_delegate] = Template(_delegate, _bid, _templateId);
+      TemplateProposal(_delegate, _bid, _templateId);
+    }
+
     /// Apply an approved issuance template to the security token
     /// @param _templateId Issuance template ID
-    /// @returns bool success
+    /// @return bool success
     function setIssuanceTemplate(string _templateId) onlyOwner returns (bool success) {
       issuanceTemplate = _templateId;
       return true;

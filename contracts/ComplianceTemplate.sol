@@ -9,9 +9,9 @@ build on top of the Polymath platform and extend it's functionality.
 
 import './Ownable.sol';
 
-contract IssuanceTemplate is Ownable {
+contract ComplianceTemplate is Ownable {
 
-  uint256 constant public VERSION = 0.1;
+  string public VERSION = '0.1';
 
   // A legal delegate may be approved for a specified period of time
   struct Delegate {
@@ -32,46 +32,50 @@ contract IssuanceTemplate is Ownable {
     bool approved;
   }
 
+  // All applicants are stored in a mapping
+  mapping(address => bytes32) public applications;
+
   // All legal delegates are stored in a mapping
   mapping(address => Delegate) public delegates;
 
   // All compliance templates are stored in a mapping
-  mapping(uint256 => Template) public templates;
+  mapping(bytes32 => Template) public templates;
 
   // Notifications
   event DelegateApplication(address _delegateAddress, bytes32 _application);
   event DelegateApproved(address indexed _delegateAddress);
-  event TemplateCreated(address creator, string _template, string desc);
-  event TemplateApproved(address creator, string _template);
+  event TemplateCreated(address creator, bytes32 _template, bytes32 _securityType);
+  event TemplateApproved(bytes32 _template);
 
   /// Allow new legal delegate applications
   /// @param _delegateAddress The legal delegate's public key address
   /// @param _application A SHA256 hash of the application document
   function newDelegate(address _delegateAddress, bytes32 _application) {
     require(_delegateAddress != address(0));
-    delegates[_delegateAddress] = Delegate(_application, now, []);
+    require(applications[_delegateAddress] == 0x0);
+    applications[_delegateAddress] = _application;
     DelegateApplication(_delegateAddress, _application);
   }
 
   /// Approve or reject a new legal delegate application
   /// @param _delegateAddress The legal delegate's public key address
+  /// @param _approved Is the delegate approved or not
   /// @param _jurisdictions The jurisdictions the delegate is qualified to create templates for
-  function approveDelegate(address _delegateAddress, bool approved, uint8[] _jurisdictions, uint256 _expires) onlyOwner {
-    require(delegates[_delegateAddress].jurisdictions.length == 0);
+  /// @param _expires Timestamp the delegate is valid on Polymath until
+  function approveDelegate(address _delegateAddress, bool _approved, uint8[] _jurisdictions, uint256 _expires) onlyOwner {
     require(_expires >= now);
-    if (approved == true) {
+    if (_approved == true) {
       require(_jurisdictions.length > 0);
-      delegates[_delegateAddress].approved = true;
       delegates[_delegateAddress].expires = _expires;
       delegates[_delegateAddress].jurisdictions = _jurisdictions;
+      DelegateApproved(_delegateAddress);
     } else {
       delete delegates[_delegateAddress];
     }
   }
 
   /// Create a new compliance template
-  /// @param _delegateAddress The public key of the legal delegate who owns the template
-  /// @param _template A SHA256 hash of the document containing full text of the compliance process/requirements
+  /// @param _template A SHA256 hash of the JSON schema containing full compliance process/requirements
   /// @param _tasks The number of compliance tasks in the template
   /// @param _issuerJurisdiction The jurisdiction id of the issuer
   /// @param _restrictedJurisdictions An array of jurisdictions that are blocked from purchasing the security
@@ -79,7 +83,7 @@ contract IssuanceTemplate is Ownable {
   /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
   /// @param _expires Timestamp of when the template will expire
   function createTemplate(
-    string _template,
+    bytes32 _template,
     uint8 _tasks,
     uint8 _issuerJurisdiction,
     uint8[] _restrictedJurisdictions,
@@ -87,8 +91,8 @@ contract IssuanceTemplate is Ownable {
     uint256 _fee,
     uint256 _expires
   ) {
-    require(delegates[_delegateAddress].approved);
-    require(delegates[_delegateAddress].expires >= now);
+    require(templates[_template].owner == 0x0);
+    require(delegates[msg.sender].expires >= now);
     require(_tasks > 0);
     require(_expires > now);
     templates[_template].owner = msg.sender;
@@ -98,17 +102,18 @@ contract IssuanceTemplate is Ownable {
     templates[_template].securityType = _securityType;
     templates[_template].fee = _fee;
     templates[_template].expires = 0;
-    TemplateCreated(msg.sender, _template, _desc);
+    TemplateCreated(msg.sender, _template, _securityType);
   }
 
   /// Approve a new compliance template
   /// @param _template A SHA256 hash of the document containing full text of the compliance process/requirements
   /// @param _approved Whether the template is approved for use or not
   /// @param _expires Timestamp of when the template is valid to be applied to ST's until
-  function approveTemplate(string _template, bool _approved, uint256 _expires) onlyOwner {
-    require(templates[_template]._expires == 0);
-    if (approved == true) {
-      templates[_template]._expires = _expires;
+  function approveTemplate(bytes32 _template, bool _approved, uint256 _expires) onlyOwner {
+    require(templates[_template].expires == 0);
+    if (_approved == true) {
+      templates[_template].expires = _expires;
+      TemplateApproved(_template);
     } else {
       delete templates[_template];
     }
