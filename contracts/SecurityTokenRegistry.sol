@@ -144,7 +144,7 @@ contract SecurityToken is ERC20 {
 
     // New compliance template proposal
     function proposeIssuanceTemplate(address _delegate, bytes32 _templateId, uint256 _bid) {
-      templates[_delegate] = Template(_delegate, _bid, _templateId);
+      templates[_delegate] = Template(_delegate, _templateId, _bid);
       TemplateProposal(_delegate, _bid, _templateId);
     }
 
