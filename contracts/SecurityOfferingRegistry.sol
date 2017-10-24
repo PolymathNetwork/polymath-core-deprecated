@@ -17,6 +17,7 @@ contract SecurityTokenOfferingRegistry is Ownable {
 
   // Service provider details
   struct Contract {
+    address contractAddress;
     uint256 fee;
     bool approved;
   }
@@ -40,17 +41,16 @@ contract SecurityTokenOfferingRegistry is Ownable {
   /// Approve or reject a security token offering contract application
   /// @param _offeringAddress The legal delegate's public key address
   /// @param _approved Whether the security token offering contract was approved or not
-  /// @param _service The service that has been approved for
-  /// @param _expires Timestamp the security token offering contract is valid on Polymath until
+  /// @param _fee the fee to perform the task
   function approveOfferingContract(address _offeringAddress, bool _approved, uint256 _fee) onlyOwner {
     require(_offeringAddress != address(0));
-    require(offeringContracts[_offeringAddress]);
+   // require(offeringContracts[_offeringAddress]); this is not a completed require statement - dk
     if (_approved == true) {
       offeringContracts[_offeringAddress].approved = true;
       offeringContracts[_offeringAddress].fee = _fee;
       STO_Approved(_offeringAddress, _fee);
     } else {
-      offeringContracts[_offeringAddress] = 0x0;
+     // offeringContracts[_offeringAddress] = 0x0; - tuffle compiler error, commented out until working on this contract - dk
     }
   }
 

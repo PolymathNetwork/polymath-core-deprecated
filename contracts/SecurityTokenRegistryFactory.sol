@@ -1,8 +1,9 @@
 pragma solidity ^0.4.15;
 
+import './SecurityToken.sol';
 import './Ownable.sol';
 
-contract TokenRegistryFactory is Ownable {
+contract SecurityTokenRegistryFactory is Ownable {
     
     uint256 public numberOfTokensCreated;
     
@@ -23,7 +24,7 @@ contract TokenRegistryFactory is Ownable {
     //event LOG_NewSecurityTokenCreated (address indexed securityTokenAddress, string indexed securityTokenTicker, uint256 bounty, uint256 expiry); 
 
     //owner comes from is ownable. no use for constructor funciton at the moment 
-    //function TokenRegistryFactory () {}
+    //function SecurityTokenRegistryFactory () {}
 
     //creates the Security token contract and saves info within this contract
     function createSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner) external {
@@ -40,7 +41,7 @@ contract TokenRegistryFactory is Ownable {
             // address SecurityToken = "0xSf4GSgsdfhrte5yegfdgsDft6u6"; (not the ropsten testnet POLY, but the deployed code of SecurityTokenRegistry
         address newSecuirtyTokenAddress = new SecurityToken(_name, _ticker, _decimals, _totalSupply, _owner);
        
-        securityTokenInformation memory newToken = mapTickerToStructInfo[_ticker];
+        SecurityTokenInformation memory newToken = mapTickerToStructInfo[_ticker];
         
         newToken.name = _name;
         newToken.decimals = _decimals;

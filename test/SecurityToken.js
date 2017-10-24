@@ -34,7 +34,7 @@ contract('SecurityToken', (accounts) => {
     });
 
     it('should return correct ticker after creation', async () => {
-      assert.equal(await security.ticker(), ticker);
+      assert.equal(await security.symbol(), ticker);
     });
 
     it('should return correct decimal points after creation', async () => {
