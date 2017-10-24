@@ -47,9 +47,11 @@ contract SecurityToken is ERC20 {
     mapping(uint8 => Task) public issuanceProcess;
 
     // Notifications
-    event NewInvestor(address indexed investorAddress, address indexed by);
-    event DelegateSet(address indexed delegateAddress);
-    event TemplateProposal(address delegateAddress, uint256 bid, bytes32 template);
+    event LOG_NewInvestor(address indexed investorAddress, address indexed by);
+    event LOG_DelegateSet(address indexed delegateAddress);
+    event LOG_TemplateProposal(address delegateAddress, uint256 bid, bytes32 template);
+    event LOG_NewSecurityTokenCreated (address indexed securityTokenAddress, string indexed securityTokenTicker, uint256 bounty, uint256 expiry); 
+
 
     /// Set default security token parameters
     /// @param _name Name of the security token
@@ -121,7 +123,7 @@ contract SecurityToken is ERC20 {
     function setDelegate(address _delegate) onlyOwner returns (bool success) {
       require(delegate == 0x0);
       delegate = _delegate;
-      DelegateSet(_delegate);
+      LOG_DelegateSet(_delegate);
       return true;
     }
 
@@ -130,7 +132,7 @@ contract SecurityToken is ERC20 {
     /// @return bool success
     function whitelistInvestor(address _address) onlyDelegate returns (bool success) {
       investors[_address] = true;
-      NewInvestor(_address, msg.sender);
+      LOG_NewInvestor(_address, msg.sender);
       return true;
     }
 
@@ -145,7 +147,7 @@ contract SecurityToken is ERC20 {
     // New compliance template proposal
     function proposeIssuanceTemplate(address _delegate, bytes32 _templateId, uint256 _bid) {
       templates[_delegate] = Template(_delegate, _templateId, _bid);
-      TemplateProposal(_delegate, _bid, _templateId);
+      LOG_TemplateProposal(_delegate, _bid, _templateId);
     }
 
     /// Apply an approved issuance template to the security token
@@ -154,5 +156,10 @@ contract SecurityToken is ERC20 {
     function setIssuanceTemplate(string _templateId) onlyOwner returns (bool success) {
       issuanceTemplate = _templateId;
       return true;
+
+    //need to add in two function calls, add bounty for developers and add bounty for legal delegate. it transfers POLY tokens, so needs to be linked to ropsten deployed POLY
+    //need to have a propose bid function so devs and legals can propose what they will do it for 
+    //want to only assign delegate once, but build in an expiry so you can reassign 
+
     }
 }
