@@ -14,12 +14,12 @@ contract SecurityToken is ERC20 {
     uint8 public decimals;
     address public owner;
 
-    // Accredation
-    struct Accredation {
+    // Accreditation
+    struct Accreditation {
       string country; // i.e. CA: 1, US: 2
       uint8 level; // 1, 2, 3, 4
     }
-    mapping(address => Accredation) public accredations;
+    mapping(address => Accreditation) public accreditations;
 
     // Compliance Templates proposed
     struct Template {
