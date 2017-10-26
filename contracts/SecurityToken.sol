@@ -1,10 +1,8 @@
 pragma solidity ^0.4.15;
-
+// TODO come up with dispute mechanism
 import './Ownable.sol';
 import './ERC20.sol';
 import './ERC20TokenFaucet.sol';
-
-// TODO: Split into security token registry and security token
 
 contract SecurityToken is ERC20 {
 
@@ -22,21 +20,25 @@ contract SecurityToken is ERC20 {
     }
     mapping(address => Accreditation) public accreditations;
 
-    // Compliance Templates proposed
-    struct Template {
-      address delegate;
+    // Compliance templates proposed
+    struct DelegateProposal {
       bytes32 template;
+      uint256 proposalExpires;
+      uint256 estimatedCompletion;
+      uint256 vestingPeriod;
       uint256 fee;
     }
-    mapping(address => Template) public templates;
+    mapping(address => DelegateProposal) public delgateProposals; // Delegate address => DeveloperProposal
 
-    // Issuance tasks completed
-    struct Task {
-      address assignedTo;
-      uint8 fee;
-      bool completed;
+    // STO contracts proposed
+    struct DeveloperProposal {
+      address developer;
+      uint256 proposalExpires;
+      uint256 estimatedCompletion;
+      uint256 vestingPeriod;
+      uint256 fee;
     }
-    mapping(uint8 => Task) public issuanceProcess;
+    mapping(address => DeveloperProposal) public developerProposals; // STO address => DeveloperProposal
 
     // Legal delegate
     address public delegate;
@@ -47,27 +49,27 @@ contract SecurityToken is ERC20 {
     // Whitelist of investors
     mapping(address => bool) public investors;
 
-    // Issuance template applied
-    string public issuanceTemplate;
+    // Legal delegate chosen
+    DelegateProposal public legalDelegate;
 
     // Bounties and Expiry
     uint256 public developerBounty;
     uint256 public legalDelegateBounty;
     uint256 public expiryToSubmitAndClaimBounty;
 
-    //Ropsten POLY Token Contract address
+    // Ropsten POLY Token Contract address
     address public tokenAddressPOLY =  0x0f54D1617eCb696e267db81a1956c24373254785;
-    //instance of the polyTokenContract
+
+    // instance of the polyTokenContract
     ERC20TokenFaucet polyTokenContractRopsten;
     polyTokenContractRopsten = ERC20TokenFaucet(tokenAddressPOLY);
-
 
     // Notifications
     event LOG_NewInvestor(address indexed investorAddress, address indexed by);
     event LOG_DelegateSet(address indexed delegateAddress);
     event LOG_TemplateProposal(address delegateAddress, uint256 bid, bytes32 template);
     //notifies devs and legal delegates that a new token has been created
-    event LOG_NewSecurityTokenCreatedWithBountySet (address indexed securityTokenAddress, string indexed securityTokenTicker, uint256 developerBounty, uint256 legalDelegateBounty); 
+    event LOG_NewSecurityTokenCreatedWithBountySet (address indexed securityTokenAddress, string indexed securityTokenTicker, uint256 developerBounty, uint256 legalDelegateBounty);
 
 
     /// Set default security token parameters
@@ -83,7 +85,7 @@ contract SecurityToken is ERC20 {
       decimals = _decimals;
       totalSupply = _totalSupply;
       balances[_owner] = _totalSupply;
-      //delegate = _owner; this will be set by another functipn 
+      //delegate = _owner; this will be set by another functipn
     }
 
     //do we want to use is Ownable here?
@@ -183,8 +185,8 @@ contract SecurityToken is ERC20 {
 /*********************************************New code to be Reviewed******************************************************** */
 
     //need to add in two function calls, add bounty for developers and add bounty for legal delegate. it transfers POLY tokens, so needs to be linked to ropsten deployed POLY
-    //need to have a propose bid function so devs and legals can propose what they will do it for 
-    //want to only assign delegate once, but build in an expiry so you can reassign 
+    //need to have a propose bid function so devs and legals can propose what they will do it for
+    //want to only assign delegate once, but build in an expiry so you can reassign
 
     //HOW DO I WORK IN THE EXPIRY ????
 
@@ -207,7 +209,7 @@ contract SecurityToken is ERC20 {
       }
     }
 
-    //can only be called internally, from the setBounties function 
+    //can only be called internally, from the setBounties function
     function setExpiry (uint256 _expiry) internal returns (bool success) {
       expiryToSubmitAndClaimBounty = now + _expiry;
       return true;
@@ -215,14 +217,14 @@ contract SecurityToken is ERC20 {
 
     }
 
-    //the 
+    //the
     function claimDevBounty () onlyDeveloper returns (bool success) {
-      //this seems like a weird way to do this, but i am unsure 
+      //this seems like a weird way to do this, but i am unsure
       if(polyTokenContractRopsten.transfer(developer, developerBounty) == true) {
         developerBounty = 0;
       }
-      
-      
+
+
 
     }
 
@@ -242,20 +244,17 @@ contract SecurityToken is ERC20 {
     setBounties
     setExpiry(_newExpiry);
     LOG_DelegateSet(_delegate);
-    return true 
+    return true
   }
 
-//add in the ability for legal delegates to voluntarily recuse themselves 
+  // add in the ability for legal delegates to voluntarily recuse themselves
 
-
-
-
-    /// Assign a legal delegate to the security token issuance
-    /// @param _delegate Address of legal delegate
-    /// @return bool success
-    function setDelegate(address _delegate) onlyOwner returns (bool success) {
-      require(delegate == 0x0);
-      delegate = _delegate;
-      LOG_DelegateSet(_delegate);
-      return true;
-    }
+  /// Assign a legal delegate to the security token issuance
+  /// @param _delegate Address of legal delegate
+  /// @return bool success
+  function setDelegate(address _delegate) onlyOwner returns (bool success) {
+    require(delegate == 0x0);
+    delegate = _delegate;
+    LOG_DelegateSet(_delegate);
+    return true;
+  }
