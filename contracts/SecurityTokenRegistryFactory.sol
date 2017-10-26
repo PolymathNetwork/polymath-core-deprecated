@@ -58,3 +58,4 @@ contract SecurityTokenRegistryFactory is Ownable {
     function () {} //can't send ether with send unless payable modifier exists
 }
 
+//need to add in params 

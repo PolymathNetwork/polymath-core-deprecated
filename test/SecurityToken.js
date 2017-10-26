@@ -50,26 +50,26 @@ contract('SecurityToken', (accounts) => {
     });
 
     it('should restrict transfer of the security to any address', async () => {
-      assert.expectRevert(security.transfer(owner, spender));
-      assert.expectRevert(security.transfer(owner, to1));
+      expectRevert(security.transfer(owner, spender));
+      expectRevert(security.transfer(owner, to1));
     });
-
+    //Error on testing stops testing here: Uncaught Assertion error: expected throw wasn't received - will look into by oct 26 - dk 
     it('should restrict approval for transfer to any address', async () => {
-      assert.expectRevert(security.approve(owner, 1));
-      assert.expectRevert(security.approve(spender, 1));
-      assert.expectRevert(security.approve(to1, 1));
+      expectRevert(security.approve(owner, 1));
+      expectRevert(security.approve(spender, 1));
+       expectRevert(security.approve(to1, 1));
     });
 
     it('should restrict transferFrom to any address', async () => {
-      assert.expectRevert(security.approve(owner, spender, 1));
+      expectRevert(security.approve(owner, spender, 1));
     });
 
     it('should restrict transferFrom to any address', async () => {
-      assert.expectRevert(security.approve(owner, spender, 1));
+      expectRevert(security.approve(owner, spender, 1));
     });
 
     it('should allow transferring ownership to another address', async () => {
-      assert.expectRevert(security.approve(owner, spender, 1));
+      expectRevert(security.approve(owner, spender, 1));
     });
 
     it('should allow accidentally sent ERC20 tokens to be transferred out of the contract', async () => {
