@@ -67,6 +67,8 @@ contract('SecurityToken', (accounts) => {
     it('should allow accidentally sent ERC20 tokens to be transferred out of the contract', async () => {
 
     });
+
+    it('should allow')
   });
 
   describe('activation', async () => {
@@ -75,8 +77,8 @@ contract('SecurityToken', (accounts) => {
 
       await token.mint(to1, transferredFunds);
 
-            // Checking owner balance stays on 0 since minting happens for
-            // other accounts.
+      // Checking owner balance stays on 0 since minting happens for
+      // other accounts.
       assert.equal((await token.balanceOf(owner)).toNumber(), 0);
       assert.equal((await token.balanceOf(to1)).toNumber(), transferredFunds);
 

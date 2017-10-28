@@ -7,7 +7,10 @@ import './interfaces/IERC20.sol';
 /// Based on OpenZeppelin's StandardToken.
 contract ERC20 is IERC20 {
     using SafeMath for uint256;
-
+    string public name;
+    string public symbol;
+    uint8 public decimals;
+    address public owner;
     uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
     mapping (address => uint256) balances;

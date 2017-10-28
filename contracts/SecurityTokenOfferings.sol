@@ -10,9 +10,6 @@ import './Ownable.sol';
   build on top of the Polymath platform and extend it's functionality.
 */
 
-// TODO: cleanup code, and edge cases
-
-
 contract SecurityTokenOfferingRegistry is Ownable {
 
   // Service provider details

@@ -9,7 +9,7 @@ build on top of the Polymath platform and extend it's functionality.
 
 import './Ownable.sol';
 
-contract ComplianceTemplate is Ownable {
+contract ComplianceTemplates {
 
   string public VERSION = '0.1';
 

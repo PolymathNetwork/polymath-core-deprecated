@@ -1,94 +1,52 @@
 pragma solidity ^0.4.15;
-// TODO come up with dispute mechanism
-import './Ownable.sol';
+
 import './ERC20.sol';
-import './ERC20TokenFaucet.sol';
+import './PolyToken.sol';
+import './Customers.sol';
 
 contract SecurityToken is ERC20 {
 
-    // ERC20 Fields
     string public version = '0.1';
-    string public name;
-    string public symbol;
-    uint8 public decimals;
-    address public owner;
 
-    // Accreditation
-    struct Accreditation {
-      string country; // i.e. CA: 1, US: 2
-      uint8 level; // 1, 2, 3, 4
-    }
-    mapping(address => Accreditation) public accreditations;
-
-    // Compliance templates proposed
-    struct DelegateProposal {
-      bytes32 template;
-      uint256 proposalExpires;
-      uint256 estimatedCompletion;
+    // Compliance Template Proposal
+    struct ComplianceTemplate {
+      address creator;
+      bytes32 securityType;
+      bytes32 complianceProcess;
+      bytes8 issuerJurisdiction;
+      bytes8[] restrictedJurisdictions;
+      uint256 templateValidUntil;
+      uint256 proposalValidUntil;
+      uint256 estimatedTimeToComplete;
       uint256 vestingPeriod;
-      uint256 fee;
+      uint256 delegateFee;
     }
-    mapping(address => DelegateProposal) public delgateProposals; // Delegate address => DeveloperProposal
-
-    // STO contracts proposed
-    struct DeveloperProposal {
-      address developer;
-      uint256 proposalExpires;
-      uint256 estimatedCompletion;
-      uint256 vestingPeriod;
-      uint256 fee;
-    }
-    mapping(address => DeveloperProposal) public developerProposals; // STO address => DeveloperProposal
+    mapping(address => ComplianceTemplate) public complianceTemplateProposals; // maps delegate address => ComplianceTemplate
 
     // Legal delegate
     address public delegate;
 
-    // Developer address - NOTE: added by dave, I think it is necessary to be here but double check with team **********
-    address public developer;
+    // Proof of compliance process (merkle root hash)
+    bytes32 public complianceProof;
 
-    // Whitelist of investors
-    mapping(address => bool) public investors;
+    // STO address
+    address public STO;
 
-    // Legal delegate chosen
-    DelegateProposal public legalDelegate;
+    // Security Token Whitelisted Investors
+    mapping(address => uint256) public whitelist;
 
-    // Bounties and Expiry
-    uint256 public developerBounty;
-    uint256 public legalDelegateBounty;
-    uint256 public expiryToSubmitAndClaimBounty;
+    // Instance of the POLY token contract
+    PolyToken POLY = PolyToken(0x0f54D1617eCb696e267db81a1956c24373254785);
 
-    // Ropsten POLY Token Contract address
-    address public tokenAddressPOLY =  0x0f54D1617eCb696e267db81a1956c24373254785;
-
-    // instance of the polyTokenContract
-    ERC20TokenFaucet polyTokenContractRopsten;
-    polyTokenContractRopsten = ERC20TokenFaucet(tokenAddressPOLY);
+    // Instance of the Polymath customers contract
+    Customers PolymathCustomers = Customers(0x0f54D1617eCb696e267db81a1956c24373254785);
 
     // Notifications
-    event LOG_NewInvestor(address indexed investorAddress, address indexed by);
-    event LOG_DelegateSet(address indexed delegateAddress);
-    event LOG_TemplateProposal(address delegateAddress, uint256 bid, bytes32 template);
-    //notifies devs and legal delegates that a new token has been created
-    event LOG_NewSecurityTokenCreatedWithBountySet (address indexed securityTokenAddress, string indexed securityTokenTicker, uint256 developerBounty, uint256 legalDelegateBounty);
+    event LogDelegateSet(address indexed delegateAddress);
+    event LogComplianceTemplateProposal(address indexed delegateAddress);
+    event LogSecurityTokenOffering(address indexed STOAddress);
+    event LogNewComplianceProof(bytes32 merkleRoot, bytes32 complianceProof);
 
-
-    /// Set default security token parameters
-    /// @param _name Name of the security token
-    /// @param _ticker Ticker name of the security
-    /// @param _decimals Divisibility of the token
-    /// @param _totalSupply Total amount of tokens being created
-    /// @param _owner Ethereum public key address of the security token owner
-    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner) {
-      owner = _owner;
-      name = _name;
-      symbol = _ticker;
-      decimals = _decimals;
-      totalSupply = _totalSupply;
-      balances[_owner] = _totalSupply;
-      //delegate = _owner; this will be set by another functipn
-    }
-
-    //do we want to use is Ownable here?
     modifier onlyOwner() {
       require (msg.sender == owner);
       _;
@@ -99,9 +57,52 @@ contract SecurityToken is ERC20 {
       _;
     }
 
-    modifier onlyDeveloper() {
-      require(developer == msg.sender);
-      _;
+    /// Propose a new compliance template for the Security Token
+    /// @param _delegate Legal Delegate public ethereum address
+    /// @param _complianceTemplate Compliance Template being proposed
+    /// @return bool success
+    function proposeComplianceTemplate(address _delegate, ComplianceTemplate _complianceTemplate) returns (bool success){
+      require(complianceTemplateProposals[_delegate] == 0);
+      complianceTemplateProposals[_delegate] = _complianceTemplate;
+      LogComplianceTemplateProposal(_delegate);
+      return true;
+    }
+
+    /// Accept a Delegate's proposal
+    /// @param _delegate Legal Delegates public ethereum address
+    /// @return bool success
+    function setDelegate(address _delegate) onlyOwner returns (bool success) {
+      require(delegate == address(0));
+      require(complianceTemplateProposals[_delegate].proposalValidUntil > now);
+      require(complianceTemplateProposals[_delegate].templateValidUntil > now);
+      if (POLY.balances[this] < complianceTemplateProposals[_delegate].fee) {
+        revert(); // Add reason when this is implemented https://github.com/ethereum/solidity/issues/1686#issuecomment-328181514
+      }
+      delegate = _delegate;
+      LogDelegateSet(_delegate);
+      return true;
+    }
+
+    /// Update compliance proof
+    /// @param _newMerkleRoot New merkle root hash of the compliance proofs
+    /// @param _complianceProof Compliance proof hash
+    /// @return bool success
+    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) returns (bool success) {
+      require(msg.sender == owner || msg.sender == delegate);
+      complianceProof = _newMerkleRoot;
+      LogNewComplianceProof(_newMerkleRoot, _complianceProof);
+      return true;
+    }
+
+    /// Set the STO contract address
+    /// @param _STOaddress Ethereum address of the STO contract
+    /// @return bool success
+    function setSTOAddress(address _STOAddress) onlyDelegate returns (bool success) {
+      require(complianceProof != 0);
+      require(STO = address(0));
+      STO = _STOAddress;
+      LogSecurityTokenOffering(_STOAddress);
+      return true;
     }
 
     /// Trasfer tokens from one address to another
@@ -142,25 +143,6 @@ contract SecurityToken is ERC20 {
       }
     }
 
-    /// Assign a legal delegate to the security token issuance
-    /// @param _delegate Address of legal delegate
-    /// @return bool success
-    function setDelegate(address _delegate) onlyOwner returns (bool success) {
-      require(delegate == 0x0);
-      delegate = _delegate;
-      LOG_DelegateSet(_delegate);
-      return true;
-    }
-
-    /// Whitelist the chosen investor
-    /// @param _address Address of investor to be whitelistened
-    /// @return bool success
-    function whitelistInvestor(address _address) onlyDelegate returns (bool success) {
-      investors[_address] = true;
-      LOG_NewInvestor(_address, msg.sender);
-      return true;
-    }
-
     /// Allow transfer of any accidentally sent ERC20 tokens to the contract owner
     /// @param _tokenAddress Address of ERC20 token
     /// @param _amount Amount of tokens to send
@@ -168,93 +150,4 @@ contract SecurityToken is ERC20 {
     function transferAnyERC20Token(address _tokenAddress, uint256 _amount) onlyOwner returns (bool success) {
       return ERC20(_tokenAddress).transfer(owner, _amount);
     }
-
-    // New compliance template proposal
-    function proposeIssuanceTemplate(address _delegate, bytes32 _templateId, uint256 _bid) {
-      templates[_delegate] = Template(_delegate, _templateId, _bid);
-      LOG_TemplateProposal(_delegate, _bid, _templateId);
-    }
-
-    /// Apply an approved issuance template to the security token
-    /// @param _templateId Issuance template ID
-    /// @return bool success
-    function setIssuanceTemplate(string _templateId) onlyOwner returns (bool success) {
-      issuanceTemplate = _templateId;
-      return true;
-
-/*********************************************New code to be Reviewed******************************************************** */
-
-    //need to add in two function calls, add bounty for developers and add bounty for legal delegate. it transfers POLY tokens, so needs to be linked to ropsten deployed POLY
-    //need to have a propose bid function so devs and legals can propose what they will do it for
-    //want to only assign delegate once, but build in an expiry so you can reassign
-
-    //HOW DO I WORK IN THE EXPIRY ????
-
-    //Set the bounties in POLY for dev and legal. The owner of the security token must send POLY to the security token address first, otherwise Bounties can't be set
-    function setBounties (uint256 _setBountyDev, uint256 _setBountyLegal, uint256 _setExpiry) onlyOwner returns (bool success) {
-      uint256 polyAvailableInSecurityTokenContract = polyTokenContractRopsten.balances(msg.sender);
-
-      //This is needed because we don't want to allow for the bounty to be changed after a delegate is chosen. Otherwise the Owner could change the values on the delegate, and give them a lesser reward or less time
-      require(delegate == 0x0);
-
-      if (polyAvailableInSecurityTokenContract == (_setBountyDev + setBountyLegal)){
-        developerBounty = _setBountyDev;
-        legalDelegateBounty = _setBountyLegal
-        setExpiry(_setExpiry);
-        LOG_NewSecurityTokenCreatedWithBountySet(this, symbol, developerBounty, legalDelegateBounty)
-        return true;
-
-      } else {
-        revert()
-      }
-    }
-
-    //can only be called internally, from the setBounties function
-    function setExpiry (uint256 _expiry) internal returns (bool success) {
-      expiryToSubmitAndClaimBounty = now + _expiry;
-      return true;
-
-
-    }
-
-    //the
-    function claimDevBounty () onlyDeveloper returns (bool success) {
-      //this seems like a weird way to do this, but i am unsure
-      if(polyTokenContractRopsten.transfer(developer, developerBounty) == true) {
-        developerBounty = 0;
-      }
-
-
-
-    }
-
-    function claimLegalBounty () onlyDelegate returns (bool success) {
-      if(issuanceTemplate != "") { //might need to sha3 this, as string literals dont equal
-        legalDelegatebounty = 0;
-        polyTokenContractRopsten.transfer(delegate, legalDelegateBounty);
-        return true;
-    } else
-      return false;
-
 }
-
-  function setNewDelegateAfterExpiry (address _delegate, uint256 _newExpiry) onlyOwner returns (bool success) {
-    require(now > expiryToSubmitAndClaimBounty);
-    delegate = 0x0;
-    setBounties
-    setExpiry(_newExpiry);
-    LOG_DelegateSet(_delegate);
-    return true
-  }
-
-  // add in the ability for legal delegates to voluntarily recuse themselves
-
-  /// Assign a legal delegate to the security token issuance
-  /// @param _delegate Address of legal delegate
-  /// @return bool success
-  function setDelegate(address _delegate) onlyOwner returns (bool success) {
-    require(delegate == 0x0);
-    delegate = _delegate;
-    LOG_DelegateSet(_delegate);
-    return true;
-  }
