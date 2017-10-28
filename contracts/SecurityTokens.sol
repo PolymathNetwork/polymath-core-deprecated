@@ -3,7 +3,7 @@ pragma solidity ^0.4.15;
 import './SecurityToken.sol';
 import './Ownable.sol';
 
-contract SecurityTokenRegistry is Ownable {
+contract SecurityTokens is Ownable {
 
     uint256 public totalSecurityTokens;
 
@@ -16,9 +16,20 @@ contract SecurityTokenRegistry is Ownable {
       address tokenAddress;
       uint8 securityType;
     }
-    mapping(string => SecurityToken) SecurityTokenRegistry;
+    // Mapping of ticker name to Security Token details
+    mapping(string => SecurityToken) securityTokens;
+
+    // Security Token Offering Contract
+    struct SecurityTokenOfferingContract {
+      address creator;
+      bool approved;
+      uint256 fee;
+    }
+    // Mapping of contract creator address to contract details
+    mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
 
     event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
+    event LogNewSecurityTokenOffering(address contractAddress, bool approved);
 
     // Creates a new Security Token and saves it to the registry
     /// @param _name Name of the security token
@@ -34,18 +45,43 @@ contract SecurityTokenRegistry is Ownable {
       address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _decimals, _totalSupply, _owner);
 
       // Update the registry
-      SecurityTokenInformation memory newToken = SecurityTokenRegistry[_ticker];
+      SecurityTokenInformation memory newToken = securityTokens[_ticker];
       newToken.name = _name;
       newToken.decimals = _decimals;
       newToken.totalSupply = _totalSupply;
       newToken.owner = _owner;
       newToken.securityType = _type;
       newToken.tokenAddress = newSecurityTokenAddress;
-      SecurityTokenRegistry[_ticker] = newToken;
+      securityTokens[_ticker] = newToken;
 
       // Log event and update total Security Token count
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, owner);
       totalSecurityTokens++;
+    }
+
+    /// Allow new security token offering contract
+    /// @param _contractAddress The security token offering contract's public key address
+    /// @param _fee The fee charged for the services provided in POLY
+    function newSecurityTokenOfferingContract(address _contractAddress, uint256 _fee) {
+      require(_contractAddress != address(0));
+      offeringContracts[_contractAddress] = SecurityTokenOfferingContract(_contractAddress, _fee, false);
+      LogNewSecurityTokenOffering(_contractAddress, false);
+    }
+
+    /// Approve or reject a security token offering contract application
+    /// @param _offeringAddress The legal delegate's public key address
+    /// @param _approved Whether the security token offering contract was approved or not
+    /// @param _fee the fee to perform the task
+    function approveSecurityTokenOfferingContract(address _contractAddress, bool _approved, uint256 _fee) onlyOwner {
+      require(_contractAddress != address(0));
+      require(securityTokenOfferingContracts[_offeringAddress] != 0);
+      if (_approved == true) {
+        securityTokenOfferingContracts[_contractAddress].approved = true;
+        securityTokenOfferingContracts[_contractAddress].fee = _fee;
+        LogNewSecurityTokenOffering(_contractAddress, true);
+      } else {
+       securityTokenOfferingContracts[_offeringAddress] = address(0);
+      }
     }
 
 }

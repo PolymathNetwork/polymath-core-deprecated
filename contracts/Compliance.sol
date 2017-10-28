@@ -1,26 +1,19 @@
 pragma solidity ^0.4.15;
 
 /*
-Polymath compliance templates protocol is used to ensure regulatory compliance
-in the jurisdictions that security tokens are being offered in. The compliance
-protocol ensures security tokens remain interoperable so that anyone can
-build on top of the Polymath platform and extend it's functionality.
+  Polymath compliance protocol is used to ensure regulatory compliance
+  in the jurisdictions that security tokens are being offered in. The compliance
+  protocol ensures security tokens remain interoperable so that anyone can
+  build on top of the Polymath platform and extend it's functionality.
 */
 
 import './Ownable.sol';
 
-contract ComplianceTemplates {
+contract Compliance is Ownable {
 
   string public VERSION = '0.1';
 
-  // A legal delegate may be approved for a specified period of time
-  struct Delegate {
-    bytes32 application;
-    uint256 expires;
-    uint8[] jurisdictions;
-  }
-
-  // An issuance template
+  // A compliance template
   struct Template {
     address owner;
     uint8 tasks;
@@ -31,21 +24,26 @@ contract ComplianceTemplates {
     uint256 expires;
     bool approved;
   }
+  // All compliance templates are stored in a mapping
+  mapping(bytes32 => Template) public templates;
 
+  // A compliance delegate
+  struct Delegate {
+    bytes32 application;
+    uint256 expires;
+    uint8[] jurisdictions;
+  }
   // All applicants are stored in a mapping
   mapping(address => bytes32) public applications;
 
   // All legal delegates are stored in a mapping
   mapping(address => Delegate) public delegates;
 
-  // All compliance templates are stored in a mapping
-  mapping(bytes32 => Template) public templates;
-
   // Notifications
-  event DelegateApplication(address _delegateAddress, bytes32 _application);
-  event DelegateApproved(address indexed _delegateAddress);
   event TemplateCreated(address creator, bytes32 _template, bytes32 _securityType);
   event TemplateApproved(bytes32 _template);
+  event DelegateApplication(address _delegateAddress, bytes32 _application);
+  event DelegateApproved(address indexed _delegateAddress);
 
   /// Allow new legal delegate applications
   /// @param _delegateAddress The legal delegate's public key address

@@ -2,7 +2,8 @@ pragma solidity ^0.4.15;
 
 import './ERC20.sol';
 import './PolyToken.sol';
-import './Customers.sol';
+import './Compliance.sol';
+import './SecurityTokens.sol';
 
 contract SecurityToken is ERC20 {
 
@@ -21,7 +22,8 @@ contract SecurityToken is ERC20 {
       uint256 vestingPeriod;
       uint256 delegateFee;
     }
-    mapping(address => ComplianceTemplate) public complianceTemplateProposals; // maps delegate address => ComplianceTemplate
+    // Mapping of Legal Delegate addresses to proposed ComplianceTemplates
+    mapping(address => ComplianceTemplate) public complianceTemplateProposals;
 
     // Legal delegate
     address public delegate;
@@ -32,6 +34,9 @@ contract SecurityToken is ERC20 {
     // STO address
     address public STO;
 
+    // KYC Provider
+    address public KYC;
+
     // Security Token Whitelisted Investors
     mapping(address => uint256) public whitelist;
 
@@ -39,7 +44,7 @@ contract SecurityToken is ERC20 {
     PolyToken POLY = PolyToken(0x0f54D1617eCb696e267db81a1956c24373254785);
 
     // Instance of the Polymath customers contract
-    Customers PolymathCustomers = Customers(0x0f54D1617eCb696e267db81a1956c24373254785);
+    Compliance KYC = Compliance(0x0f54D1617eCb696e267db81a1956c24373254785);
 
     // Notifications
     event LogDelegateSet(address indexed delegateAddress);
@@ -71,7 +76,7 @@ contract SecurityToken is ERC20 {
     /// Accept a Delegate's proposal
     /// @param _delegate Legal Delegates public ethereum address
     /// @return bool success
-    function setDelegate(address _delegate) onlyOwner returns (bool success) {
+    function setDelegate(address _delegate) onlyOwner {
       require(delegate == address(0));
       require(complianceTemplateProposals[_delegate].proposalValidUntil > now);
       require(complianceTemplateProposals[_delegate].templateValidUntil > now);
@@ -97,11 +102,23 @@ contract SecurityToken is ERC20 {
     /// Set the STO contract address
     /// @param _STOaddress Ethereum address of the STO contract
     /// @return bool success
-    function setSTOAddress(address _STOAddress) onlyDelegate returns (bool success) {
+    function setSTO(address _STO) onlyDelegate returns (bool success) {
       require(complianceProof != 0);
-      require(STO = address(0));
-      STO = _STOAddress;
-      LogSecurityTokenOffering(_STOAddress);
+      require(_STO = address(0));
+      STO = _STO;
+      LogSecurityTokenOffering(_STO);
+      return true;
+    }
+
+    /// Set the KYC provider
+    /// @param _KYCProvider Name of the KYC provider
+    /// @return bool success
+    function setKYC(string _KYC) onlyOwner returns (bool success) {
+      require(_KYC)
+      require(complianceProof != 0);
+      require(_KYC.length > 1);
+      KYC = _KYC;
+      LogSetKYC(_KYC);
       return true;
     }
 
