@@ -33,9 +33,7 @@ To test the codebase simply run:
 $ npm run test
 ```
 
-<div style="text-align:center">
-![Polymath](https://i.imgur.com/FwdD8nS.png)
-</div>
+![Polymath](Polymath.png)
 
 [polymath]: https://polymath.network
 [ethereum]: https://www.ethereum.org/
