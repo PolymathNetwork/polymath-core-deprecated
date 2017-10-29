@@ -37,7 +37,7 @@ contract SecurityTokens is Ownable {
     /// @param _decimals Divisibility of the token
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
-    function newSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, uint8 _type) external {
+    function createSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, uint8 _type) external {
       if (SecurityTokenRegistry[_ticker] != 0) {
         revert();
       }
