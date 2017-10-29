@@ -6,9 +6,10 @@ import './Ownable.sol';
 contract SecurityTokens is Ownable {
 
     uint256 public totalSecurityTokens;
+    address public polyTokenAddress;
 
     // Security Token
-    struct SecurityToken {
+    struct SecurityTokenMetadata {
       string name;
       uint8 decimals;
       uint256 totalSupply;
@@ -17,7 +18,7 @@ contract SecurityTokens is Ownable {
       uint8 securityType;
     }
     // Mapping of ticker name to Security Token details
-    mapping(string => SecurityToken) securityTokens;
+    mapping(string => SecurityTokenMetadata) securityTokens;
 
     // Security Token Offering Contract
     struct SecurityTokenOfferingContract {
@@ -31,21 +32,25 @@ contract SecurityTokens is Ownable {
     event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
     event LogNewSecurityTokenOffering(address contractAddress, bool approved);
 
+    // Constructor
+    function SecurityTokens(address _polyTokenAddress) {
+      polyTokenAddress = _polyTokenAddress;
+    }
+
     // Creates a new Security Token and saves it to the registry
     /// @param _name Name of the security token
     /// @param _ticker Ticker name of the security
     /// @param _decimals Divisibility of the token
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
+    /// @param _type Type of security being tokenized
     function createSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, uint8 _type) external {
-      if (SecurityTokenRegistry[_ticker] != 0) {
-        revert();
-      }
+      //TODO require(SecurityTokens[_ticker] != address(0));
       // Create the new Security Token contract
-      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _decimals, _totalSupply, _owner);
+      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _decimals, _totalSupply, _owner, polyTokenAddress);
 
       // Update the registry
-      SecurityTokenInformation memory newToken = securityTokens[_ticker];
+      SecurityTokenMetadata memory newToken = securityTokens[_ticker];
       newToken.name = _name;
       newToken.decimals = _decimals;
       newToken.totalSupply = _totalSupply;
@@ -64,23 +69,24 @@ contract SecurityTokens is Ownable {
     /// @param _fee The fee charged for the services provided in POLY
     function newSecurityTokenOfferingContract(address _contractAddress, uint256 _fee) {
       require(_contractAddress != address(0));
-      offeringContracts[_contractAddress] = SecurityTokenOfferingContract(_contractAddress, _fee, false);
+      SecurityTokenOfferingContract memory newSTO = SecurityTokenOfferingContract({creator: msg.sender, approved: false, fee: _fee});
+      securityTokenOfferingContracts[_contractAddress] = newSTO;
       LogNewSecurityTokenOffering(_contractAddress, false);
     }
 
     /// Approve or reject a security token offering contract application
-    /// @param _offeringAddress The legal delegate's public key address
+    /// @param _contractAddress The legal delegate's public key address
     /// @param _approved Whether the security token offering contract was approved or not
     /// @param _fee the fee to perform the task
     function approveSecurityTokenOfferingContract(address _contractAddress, bool _approved, uint256 _fee) onlyOwner {
       require(_contractAddress != address(0));
-      require(securityTokenOfferingContracts[_offeringAddress] != 0);
+      // require(securityTokenOfferingContracts[_contractAddress] != 0);
       if (_approved == true) {
         securityTokenOfferingContracts[_contractAddress].approved = true;
         securityTokenOfferingContracts[_contractAddress].fee = _fee;
         LogNewSecurityTokenOffering(_contractAddress, true);
       } else {
-       securityTokenOfferingContracts[_offeringAddress] = address(0);
+       delete securityTokenOfferingContracts[_contractAddress];
       }
     }
 

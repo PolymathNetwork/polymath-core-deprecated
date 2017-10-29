@@ -10,13 +10,11 @@ contract ERC20 is IERC20 {
     string public name;
     string public symbol;
     uint8 public decimals;
-    address public owner;
     uint256 public totalSupply;
+    address public owner;
+
     mapping (address => mapping (address => uint256)) allowed;
     mapping (address => uint256) balances;
-
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-    event Transfer(address indexed from, address indexed to, uint256 value);
 
     /// Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
     function approve(address _spender, uint256 _value) public returns (bool) {
@@ -33,7 +31,6 @@ contract ERC20 is IERC20 {
     function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
       return allowed[_owner][_spender];
     }
-
 
     /// Gets the balance of the specified address.
     function balanceOf(address _owner) constant returns (uint256 balance) {

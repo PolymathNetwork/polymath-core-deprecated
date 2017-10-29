@@ -45,12 +45,12 @@ contract Customers is Ownable {
   /// @param _role The type of customer - investor:1 or issuer:2
   /// @param _proof The SHA256 hash of the documentation provided to prove identity
   function newCustomer(bytes8 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) {
-    require(providers[_providers].approved);
-    customers[_customer].provider = _provider;
-    customers[_customer].jurisdiction = _jurisdiction;
-    customers[_customer].role = _role;
-    customers[_customer].proof = _proof;
-    customers[_customer].verified = false;
+    require(providers[_provider].approved);
+    customers[msg.sender].provider = _provider;
+    customers[msg.sender].jurisdiction = _jurisdiction;
+    customers[msg.sender].role = _role;
+    customers[msg.sender].proof = _proof;
+    customers[msg.sender].verified = false;
     NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
   }
 
@@ -69,7 +69,7 @@ contract Customers is Ownable {
     customers[_customer].accredited = _accredited;
     customers[_customer].expires = _expires;
     customers[_customer].verified = true;
-    NewCustomer(_customer, _jurisdiction, _accredited, true);
+    NewCustomer(_customer, msg.sender, _jurisdiction, _role, _proof, true);
   }
 
   /// Allow new provider applications
@@ -78,7 +78,7 @@ contract Customers is Ownable {
   /// @param _application A SHA256 hash of the application document
   function newProvider(address _providerAddress, string _name, bytes32 _application) {
     require(_providerAddress != address(0));
-    require(providers[_providerAddress] == 0);
+    // require(providers[_providerAddress] == 0);
     providers[_providerAddress].name = _name;
     providers[_providerAddress].application = _application;
     providers[_providerAddress].approved = false;
@@ -94,9 +94,9 @@ contract Customers is Ownable {
     if (_approved == true) {
       providers[_providerAddress].expires = _expires;
       providers[_providerAddress].approved = true;
-      NewProvider(_providerAddress, _name, _application, true);
+      NewProvider(_providerAddress, providers[_providerAddress].name, providers[_providerAddress].application, true);
     } else {
-      delete provider[_providerAddress];
+      delete providers[_providerAddress];
     }
   }
 

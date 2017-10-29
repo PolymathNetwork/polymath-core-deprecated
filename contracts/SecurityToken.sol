@@ -2,8 +2,7 @@ pragma solidity ^0.4.15;
 
 import './ERC20.sol';
 import './PolyToken.sol';
-import './Compliance.sol';
-import './SecurityTokens.sol';
+import './Customers.sol';
 
 contract SecurityToken is ERC20 {
 
@@ -38,19 +37,19 @@ contract SecurityToken is ERC20 {
     address public KYC;
 
     // Security Token Whitelisted Investors
-    mapping(address => uint256) public whitelist;
+    mapping(address => bool) public investors;
 
     // Instance of the POLY token contract
-    PolyToken POLY = PolyToken(0x0f54D1617eCb696e267db81a1956c24373254785);
+    PolyToken public POLY;
 
-    // Instance of the Polymath customers contract
-    Compliance KYC = Compliance(0x0f54D1617eCb696e267db81a1956c24373254785);
+    Customers PolyCustomers;
 
     // Notifications
     event LogDelegateSet(address indexed delegateAddress);
-    event LogComplianceTemplateProposal(address indexed delegateAddress);
+    event LogComplianceTemplateProposal(address indexed delegateAddress, bytes32 complianceTemplate);
     event LogSecurityTokenOffering(address indexed STOAddress);
-    event LogNewComplianceProof(bytes32 merkleRoot, bytes32 complianceProof);
+    event LogNewComplianceProof(bytes32 merkleRoot, bytes32 complianceProofHash);
+    event LogSetKYC(address kycProvider);
 
     modifier onlyOwner() {
       require (msg.sender == owner);
@@ -62,27 +61,41 @@ contract SecurityToken is ERC20 {
       _;
     }
 
+    /// Set default security token parameters
+    /// @param _name Name of the security token
+    /// @param _ticker Ticker name of the security
+    /// @param _decimals Divisibility of the token
+    /// @param _totalSupply Total amount of tokens being created
+    /// @param _owner Ethereum public key address of the security token owner
+    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, address _polyTokenAddress) {
+      owner = _owner;
+      name = _name;
+      symbol = _ticker;
+      decimals = _decimals;
+      totalSupply = _totalSupply;
+      balances[_owner] = _totalSupply;
+      POLY = PolyToken(_polyTokenAddress);
+    }
+
     /// Propose a new compliance template for the Security Token
     /// @param _delegate Legal Delegate public ethereum address
     /// @param _complianceTemplate Compliance Template being proposed
     /// @return bool success
-    function proposeComplianceTemplate(address _delegate, ComplianceTemplate _complianceTemplate) returns (bool success){
-      require(complianceTemplateProposals[_delegate] == 0);
-      complianceTemplateProposals[_delegate] = _complianceTemplate;
-      LogComplianceTemplateProposal(_delegate);
+    function proposeComplianceTemplate(address _delegate, bytes32 _complianceTemplate) returns (bool success){
+      //TODO require(complianceTemplateProposals[_delegate] == address(0));
+      // complianceTemplateProposals[_delegate] = _complianceTemplate;
+      LogComplianceTemplateProposal(_delegate, _complianceTemplate);
       return true;
     }
 
     /// Accept a Delegate's proposal
     /// @param _delegate Legal Delegates public ethereum address
     /// @return bool success
-    function setDelegate(address _delegate) onlyOwner {
+    function setDelegate(address _delegate) onlyOwner returns (bool success) {
       require(delegate == address(0));
       require(complianceTemplateProposals[_delegate].proposalValidUntil > now);
       require(complianceTemplateProposals[_delegate].templateValidUntil > now);
-      if (POLY.balances[this] < complianceTemplateProposals[_delegate].fee) {
-        revert(); // Add reason when this is implemented https://github.com/ethereum/solidity/issues/1686#issuecomment-328181514
-      }
+      require(POLY.balanceOf(this) >= complianceTemplateProposals[_delegate].delegateFee);
       delegate = _delegate;
       LogDelegateSet(_delegate);
       return true;
@@ -100,25 +113,24 @@ contract SecurityToken is ERC20 {
     }
 
     /// Set the STO contract address
-    /// @param _STOaddress Ethereum address of the STO contract
+    /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
     /// @return bool success
-    function setSTO(address _STO) onlyDelegate returns (bool success) {
+    function setSTO(address _securityTokenOfferingAddress) onlyDelegate returns (bool success) {
       require(complianceProof != 0);
-      require(_STO = address(0));
-      STO = _STO;
-      LogSecurityTokenOffering(_STO);
+      //TODO require(_securityTokenOfferingAddress = address(0));
+      STO = _securityTokenOfferingAddress;
+      LogSecurityTokenOffering(_securityTokenOfferingAddress);
       return true;
     }
 
     /// Set the KYC provider
-    /// @param _KYCProvider Name of the KYC provider
+    /// @param _kycProvider Address of KYC provider
     /// @return bool success
-    function setKYC(string _KYC) onlyOwner returns (bool success) {
-      require(_KYC)
+    function setKYC(address _kycProvider) onlyOwner returns (bool success) {
+      require(_kycProvider != address(0));
       require(complianceProof != 0);
-      require(_KYC.length > 1);
-      KYC = _KYC;
-      LogSetKYC(_KYC);
+      KYC = _kycProvider;
+      LogSetKYC(_kycProvider);
       return true;
     }
 
