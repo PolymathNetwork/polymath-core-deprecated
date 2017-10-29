@@ -35,6 +35,8 @@ $ npm run test
 
 ![Polymath](Polymath.png)
 
+Copyright © 2017 Polymath Inc.
+
 [polymath]: https://polymath.network
 [ethereum]: https://www.ethereum.org/
 
