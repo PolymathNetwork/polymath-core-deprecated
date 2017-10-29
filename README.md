@@ -1,7 +1,3 @@
-<div style="text-align:center">
-![Polymath](Polymath.png)
-</div>
-
 # Polymath Smart Contracts
 
 The Ethereum smart contracts for [Polymath][polymath], the securities token platform. Currently deployed to:
@@ -36,6 +32,10 @@ To test the codebase simply run:
 ```
 $ npm run test
 ```
+
+<div style="text-align:center">
+![Polymath](https://i.imgur.com/FwdD8nS.png)
+</div>
 
 [polymath]: https://polymath.network
 [ethereum]: https://www.ethereum.org/
