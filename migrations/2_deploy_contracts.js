@@ -1,16 +1,24 @@
 const SafeMath = artifacts.require('./SafeMath.sol');
 const Ownable = artifacts.require('./Ownable.sol');
 const ERC20 = artifacts.require('./ERC20.sol');
-var PolyToken = artifacts.require('./PolyToken.sol');
-var SecurityToken = artifacts.require('./SecurityToken.sol');
-var Compliance = artifacts.require('./Compliance.sol');
-var Customers = artifacts.require('./Customers.sol');
-var SecurityTokens = artifacts.require('./SecurityTokens.sol');
+const PolyToken = artifacts.require('./PolyToken.sol');
+const SecurityToken = artifacts.require('./SecurityToken.sol');
+const Compliance = artifacts.require('./Compliance.sol');
+const Customers = artifacts.require('./Customers.sol');
+const SecurityTokens = artifacts.require('./SecurityTokens.sol');
 
-module.exports = (deployer) => {
-  deployer.deploy(PolyToken);
-  deployer.deploy(SecurityToken);
-  deployer.deploy(Compliance);
-  deployer.deploy(Customers);
-  deployer.deploy(SecurityTokens);
+module.exports = async (deployer, network) => {
+  console.log(`Deploying Polymath Network Smart contracts to ${network}...`);
+  await deployer.deploy(PolyToken);
+  await deployer.deploy(SecurityTokens, PolyToken.address);
+  await deployer.deploy(SecurityToken);
+  await deployer.deploy(Compliance);
+  await deployer.deploy(Customers);
+  console.log(`\nPolymath Network Smart Contracts Deployed:\n
+    PolyToken: ${PolyToken.address}\n
+    SecurityTokens: ${SecurityTokens.address}\n
+    SecurityToken: ${SecurityToken.address}\n
+    Compliance: ${Compliance.address}\n
+    Customers: ${Customers.address}\n
+  `);
 };

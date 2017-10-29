@@ -1,16 +1,43 @@
 pragma solidity ^0.4.15;
-
-import './Ownable.sol';
-
+contract Ownable {
+    address public owner;
+    address public newOwnerCandidate;
+    event OwnershipRequested(address indexed _by, address indexed _to);
+    event OwnershipTransferred(address indexed _from, address indexed _to);
+    function Ownable() {
+      owner = msg.sender;
+    }
+    modifier onlyOwner() {
+      if (msg.sender != owner) {
+        revert();
+      }
+      _;
+    }
+    modifier onlyOwnerCandidate() {
+      if (msg.sender != newOwnerCandidate) {
+        revert();
+      }
+      _;
+    }
+    function requestOwnershipTransfer(address _newOwnerCandidate) external onlyOwner {
+      require(_newOwnerCandidate != address(0));
+      newOwnerCandidate = _newOwnerCandidate;
+      OwnershipRequested(msg.sender, newOwnerCandidate);
+    }
+    function acceptOwnership() external onlyOwnerCandidate {
+      address previousOwner = owner;
+      owner = newOwnerCandidate;
+      newOwnerCandidate = address(0);
+      OwnershipTransferred(previousOwner, owner);
+    }
+}
 /*
   Polymath customer registry is used to ensure regulatory compliance
   of the investors, provider, and issuers. The customers registry is a central
   place where ethereum addresses can be whitelisted to purchase certain security
   tokens based on their verifications by KYC providers.
 */
-
 contract Customers is Ownable {
-
   // A Polymath Customer
   struct Customer {
     bytes8 jurisdiction;
@@ -23,7 +50,6 @@ contract Customers is Ownable {
   }
   // Provider address => {customer address => Customer}
   mapping(address => mapping(address => Customer)) public customers;
-
   // KYC Provider
   struct Provider {
     string name;
@@ -33,11 +59,9 @@ contract Customers is Ownable {
   }
   // Provider address => Provider
   mapping(address => Provider) public providers;
-
   // Notifications
   event NewCustomer(address customer, address provider, bytes32 jurisdiction, uint8 role, bytes32 proof, bool verified);
   event NewProvider(address providerAddress, string name, bytes32 application, bool approved);
-
   /// Allow new investor applications
   /// @param _jurisdiction The jurisdiction code of the customer
   /// @param _provider The provider selected by the customer to do verification
@@ -53,7 +77,6 @@ contract Customers is Ownable {
     customers[_provider][msg.sender].proof = _proof;
     NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
   }
-
   /// Verify an investor
   /// @param _customer The customer's public key address
   /// @param _jurisdiction The jurisdiction code of the customer
@@ -70,7 +93,6 @@ contract Customers is Ownable {
     customers[msg.sender][_customer].verified = true;
     NewCustomer(_customer, msg.sender, _jurisdiction, _role, _proof, true);
   }
-
   /// Allow new provider applications
   /// @param _providerAddress The provider's public key address
   /// @param _name The provider's name
@@ -83,7 +105,6 @@ contract Customers is Ownable {
     providers[_providerAddress].approved = false;
     NewProvider(_providerAddress, _name, _application, false);
   }
-
   /// Approve or reject a new provider application
   /// @param _providerAddress The provider's public key address
   /// @param _approved Is the provider approved or not
@@ -98,5 +119,4 @@ contract Customers is Ownable {
       delete providers[_providerAddress];
     }
   }
-
 }

@@ -1,16 +1,17 @@
 {
   "name": "polymath-security-token",
-  "version": "0.0.1",
-  "description": "Polymath Security Token Smart Contracts",
+  "version": "0.1.0",
+  "description": "Polymath Network Smart Contracts",
   "repository": "git@github.com:PolymathNetwork/SecurityToken.git",
-  "author": "Sukhveer Sanghera",
-  "license": "GPL-3.0",
+  "author": "Polymath Inc.",
+  "license": "MIT",
   "main": "truffle.js",
   "scripts": {
     "test": "truffle test",
     "compile": "truffle compile",
-    "migrate": "truffle migrate",
-    "ropsten": "truffle migrate --network=ropsten"
+    "migrate-local": "truffle migrate --network=local --reset",
+    "migrate-ropsten": "truffle migrate --network=ropsten",
+    "flatten": "node ./flatten.js ./contracts/SecurityTokens.sol && node ./flatten.js ./contracts/SecurityToken.sol && node ./flatten.js ./contracts/PolyToken.sol && node ./flatten.js ./contracts/Compliance.sol && node ./flatten.js ./contracts/Customers.sol"
   },
   "bugs": {
     "url": "https://github.com/polymathnetwork/securitytoken/issues"
