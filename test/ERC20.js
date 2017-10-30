@@ -1,6 +1,6 @@
 import expectRevert from './helpers/expectRevert';
 
-const ERC20Mock = artifacts.require('./helpers/ERC20Mock.sol');
+const ERC20Mock = artifacts.require('./helpers/PolyTokenMock.sol');
 
 contract('ERC20', (accounts) => {
     let token;

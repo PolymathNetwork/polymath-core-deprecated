@@ -8,9 +8,9 @@ contract PolyToken is IERC20 {
 
     using SafeMath for uint256;
     uint256 public totalSupply = 1000000;
-    string public name = 'Polymath Network';
+    string public name = "Polymath Network";
     uint8 public decimals = 18;
-    string public symbol = 'POLY';
+    string public symbol = "POLY";
 
     mapping (address => uint256) balances;
     mapping (address => mapping (address => uint256)) allowed;
