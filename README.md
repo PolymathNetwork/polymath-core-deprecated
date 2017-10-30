@@ -43,3 +43,7 @@ Copyright © 2017 Polymath Inc.
 [solidity]: https://solidity.readthedocs.io/en/develop/
 [truffle]: http://truffleframework.com/
 [testrpc]: https://github.com/ethereumjs/testrpc
+
+## Style Guide 
+
+The style guide for Polymath follows the style guide laid out by the Solidity Team at http://solidity.readthedocs.io/en/develop/style-guide.html 
