@@ -46,4 +46,4 @@ Copyright © 2017 Polymath Inc.
 
 ## Style Guide 
 
-The style guide for Polymath follows the style guide laid out by the Solidity Team at http://solidity.readthedocs.io/en/develop/style-guide.html 
+The style guide for Polymath follows the style guide laid out by the Solidity Team at: http://solidity.readthedocs.io/en/develop/style-guide.html 
