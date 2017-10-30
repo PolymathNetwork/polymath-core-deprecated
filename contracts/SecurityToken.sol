@@ -1,10 +1,11 @@
 pragma solidity ^0.4.15;
 
-import './ERC20.sol';
+import './SafeMath.sol';
+import './interfaces/IERC20.sol';
 import './PolyToken.sol';
 import './Customers.sol';
 
-contract SecurityToken is ERC20 {
+contract SecurityToken is IERC20 {
 
     string public version = '0.1';
 
@@ -43,6 +44,11 @@ contract SecurityToken is ERC20 {
     PolyToken public POLY;
 
     Customers PolyCustomers;
+
+    // ERC20 Fields
+    address public owner;
+    mapping (address => mapping (address => uint256)) allowed;
+    mapping (address => uint256) balances;
 
     // Notifications
     event LogDelegateSet(address indexed delegateAddress);
@@ -140,7 +146,10 @@ contract SecurityToken is ERC20 {
     /// @return bool success
     function transfer(address _to, uint256 _value) returns (bool success) {
       if (investors[_to] && balances[msg.sender] >= _value && _value > 0) {
-        return super.transfer(_to, _value); //super gives access to .transfer in parent contract
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        Transfer(msg.sender, _to, _value);
+        return true;
       } else {
         return false;
       }
@@ -154,7 +163,12 @@ contract SecurityToken is ERC20 {
     /// TODO: eliminate msg.sender for 0x
     function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
       if (investors[_to] && investors[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
-        return super.transferFrom(_from, _to, _value);
+        uint256 _allowance = allowed[_from][msg.sender];
+        balances[_from] = balances[_from].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        allowed[_from][msg.sender] = _allowance.sub(_value);
+        Transfer(_from, _to, _value);
+        return true;
       } else {
         return false;
       }
@@ -166,17 +180,14 @@ contract SecurityToken is ERC20 {
     /// @return bool success
     function approve(address _spender, uint256 _value) returns (bool success) {
       if (investors[_spender]) {
-        return super.approve(_spender, _value);
+        if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) {
+          revert();
+        }
+        allowed[msg.sender][_spender] = _value;
+        Approval(msg.sender, _spender, _value);
+        return true;
       } else {
         return false;
       }
-    }
-
-    /// Allow transfer of any accidentally sent ERC20 tokens to the contract owner
-    /// @param _tokenAddress Address of ERC20 token
-    /// @param _amount Amount of tokens to send
-    /// @return bool success
-    function transferAnyERC20Token(address _tokenAddress, uint256 _amount) onlyOwner returns (bool success) {
-      return ERC20(_tokenAddress).transfer(owner, _amount);
     }
 }
