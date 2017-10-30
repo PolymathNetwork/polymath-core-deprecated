@@ -1,5 +1,6 @@
 pragma solidity ^0.4.15;
 
+import './SafeMath.sol';
 import './SecurityToken.sol';
 import './Ownable.sol';
 
@@ -7,6 +8,7 @@ contract SecurityTokens is Ownable {
 
     uint256 public totalSecurityTokens;
     address public polyTokenAddress;
+    PolyToken POLY;
 
     // Security Token
     struct SecurityTokenMetadata {
@@ -16,6 +18,7 @@ contract SecurityTokens is Ownable {
       address owner;
       address tokenAddress;
       uint8 securityType;
+      uint256 developerFee;
     }
     // Mapping of ticker name to Security Token details
     mapping(string => SecurityTokenMetadata) securityTokens;
@@ -44,8 +47,12 @@ contract SecurityTokens is Ownable {
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
     /// @param _type Type of security being tokenized
-    function createSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, uint8 _type) external {
+    function createSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, uint8 _type, uint256 _fee) external {
       //TODO require(SecurityTokens[_ticker] != address(0));
+
+      // Collect developer fee
+      // POLY = PolyToken(_polyTokenAddress).transferFrom(_owner, this, _fee);
+
       // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _decimals, _totalSupply, _owner, polyTokenAddress);
 
@@ -56,6 +63,7 @@ contract SecurityTokens is Ownable {
       newToken.totalSupply = _totalSupply;
       newToken.owner = _owner;
       newToken.securityType = _type;
+      newToken.developerFee = _fee;
       newToken.tokenAddress = newSecurityTokenAddress;
       securityTokens[_ticker] = newToken;
 

@@ -7,6 +7,8 @@ import './Customers.sol';
 
 contract SecurityToken is IERC20 {
 
+    using SafeMath for uint256;
+
     string public version = '0.1';
 
     // Compliance Template Proposal
@@ -46,7 +48,11 @@ contract SecurityToken is IERC20 {
     Customers PolyCustomers;
 
     // ERC20 Fields
+    string public name;
+    uint8 public decimals;
+    string public symbol;
     address public owner;
+    uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
     mapping (address => uint256) balances;
 
@@ -174,6 +180,12 @@ contract SecurityToken is IERC20 {
       }
     }
 
+    /// @param _owner The address from which the balance will be retrieved
+    /// @return The balance
+    function balanceOf(address _owner) constant returns (uint256 balance) {
+      return balances[_owner];
+    }
+
     /// Approve transfer of tokens manually
     /// @param _spender Address to approve transfer to
     /// @param _value Amount of tokens to approve for transfer
@@ -189,5 +201,12 @@ contract SecurityToken is IERC20 {
       } else {
         return false;
       }
+    }
+
+    /// @param _owner The address of the account owning tokens
+    /// @param _spender The address of the account able to transfer the tokens
+    /// @return Amount of remaining tokens allowed to spent
+    function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
+      return allowed[_owner][_spender];
     }
 }

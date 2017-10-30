@@ -9,7 +9,6 @@ contract IERC20 {
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
-// An ERC20 token standard faucet
 /// @title Math operations with safety checks
 library SafeMath {
     function mul(uint256 a, uint256 b) internal returns (uint256) {
@@ -45,18 +44,54 @@ library SafeMath {
       return a < b ? a : b;
     }
 }
-/// Basic ERC20 token contract implementation.
-/// Based on OpenZeppelin's StandardToken.
-contract ERC20 is IERC20 {
+// An ERC20 token standard faucet
+contract PolyToken is IERC20 {
     using SafeMath for uint256;
-    string public name;
-    string public symbol;
-    uint8 public decimals;
-    uint256 public totalSupply;
-    address public owner;
-    mapping (address => mapping (address => uint256)) allowed;
+    uint256 public totalSupply = 1000000;
+    string public name = 'Polymath Network';
+    uint8 public decimals = 18;
+    string public symbol = 'POLY';
     mapping (address => uint256) balances;
-    /// Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+    mapping (address => mapping (address => uint256)) allowed;
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+    /* Token faucet - Not part of the ERC20 standard */
+    function getTokens (uint256 _amount) {
+      balances[msg.sender] += _amount;
+      totalSupply += _amount;
+    }
+    /// @notice send `_value` token to `_to` from `msg.sender`
+    /// @param _to The address of the recipient
+    /// @param _value The amount of token to be transferred
+    /// @return Whether the transfer was successful or not
+    function transfer(address _to, uint256 _value) public returns (bool) {
+      balances[msg.sender] = balances[msg.sender].sub(_value);
+      balances[_to] = balances[_to].add(_value);
+      Transfer(msg.sender, _to, _value);
+      return true;
+    }
+    /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
+    /// @param _from The address of the sender
+    /// @param _to The address of the recipient
+    /// @param _value The amount of token to be transferred
+    /// @return Whether the transfer was successful or not
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+      uint256 _allowance = allowed[_from][msg.sender];
+      balances[_from] = balances[_from].sub(_value);
+      balances[_to] = balances[_to].add(_value);
+      allowed[_from][msg.sender] = _allowance.sub(_value);
+      Transfer(_from, _to, _value);
+      return true;
+    }
+    /// @param _owner The address from which the balance will be retrieved
+    /// @return The balance
+    function balanceOf(address _owner) constant returns (uint256 balance) {
+      return balances[_owner];
+    }
+    /// @notice `msg.sender` approves `_spender` to spend `_value` tokens
+    /// @param _spender The address of the account able to transfer the tokens
+    /// @param _value The amount of tokens to be approved for transfer
+    /// @return Whether the approval was successful or not
     function approve(address _spender, uint256 _value) public returns (bool) {
       // https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
       if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) {
@@ -66,39 +101,10 @@ contract ERC20 is IERC20 {
       Approval(msg.sender, _spender, _value);
       return true;
     }
-    /// Function to check the amount of tokens that an owner allowed to a spender.
+    /// @param _owner The address of the account owning tokens
+    /// @param _spender The address of the account able to transfer the tokens
+    /// @return Amount of remaining tokens allowed to spent
     function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
       return allowed[_owner][_spender];
-    }
-    /// Gets the balance of the specified address.
-    function balanceOf(address _owner) constant returns (uint256 balance) {
-      return balances[_owner];
-    }
-    /// Transfer token to a specified address.
-    function transfer(address _to, uint256 _value) public returns (bool) {
-      balances[msg.sender] = balances[msg.sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      Transfer(msg.sender, _to, _value);
-      return true;
-    }
-    /// Transfer tokens from one address to another.
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-      uint256 _allowance = allowed[_from][msg.sender];
-      balances[_from] = balances[_from].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      allowed[_from][msg.sender] = _allowance.sub(_value);
-      Transfer(_from, _to, _value);
-      return true;
-    }
-}
-contract PolyToken is ERC20 {
-    uint256 public totalSupply = 1000000;
-    string public name = 'Polymath Network';
-    uint8 public decimals = 18;
-    string public symbol = 'POLY';
-    /* Token faucet - Not part of the ERC20 standard */
-    function getTokens (uint256 _amount) {
-      balances[msg.sender] += _amount;
-      totalSupply += _amount;
     }
 }

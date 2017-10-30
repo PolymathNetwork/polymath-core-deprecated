@@ -11,8 +11,10 @@ build on top of the Polymath platform.
 ### SecurityTokens.sol flow
 
 1. Polymath Launches the SecurityTokens smart contract to Ethereum, now users can create Security Tokens
-2. A User of Polymath decides to launch an ST, and calls createSecurityToken(). It uses SecurityToken.sol to make one
-3. See SecurityToken.sol workflow to see how a User who launched an ST would get legal and developer help on their token
+2. Issuer purchases POLY tokens
+3. Issuer decides to launch a ST, and calls createSecurityToken().
+4. Developer bounty is transferedFrom the issuers POLY balance into the SecurityTokens contract
+5. A new SecurityToken.sol is created and owned by the issuer
 
 ### SecurityToken.sol flow
 

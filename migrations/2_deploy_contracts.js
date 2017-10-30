@@ -1,6 +1,5 @@
 const SafeMath = artifacts.require('./SafeMath.sol');
 const Ownable = artifacts.require('./Ownable.sol');
-const ERC20 = artifacts.require('./ERC20.sol');
 const PolyToken = artifacts.require('./PolyToken.sol');
 const SecurityToken = artifacts.require('./SecurityToken.sol');
 const Compliance = artifacts.require('./Compliance.sol');

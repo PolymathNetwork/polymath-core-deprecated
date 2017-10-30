@@ -6,11 +6,11 @@ The Ethereum smart contracts for [Polymath][polymath], the securities token plat
 
 | Contract       | Address                                    |
 | :-------------| :-----------------------------------------:|
-| [PolyToken](./contracts/PolyToken.sol)     | [0xb01b5e6d5648104f08498a25d97bf90d4c69759f](https://ropsten.etherscan.io/address/0xb01b5e6d5648104f08498a25d97bf90d4c69759f) |
-| [SecurityTokens](./contracts/SecurityTokens.sol) | [0xe79af7d86cf086e330d3578648a293cecdb4be5b](https://ropsten.etherscan.io/address/0xe79af7d86cf086e330d3578648a293cecdb4be5b) |
-| [SecurityToken](./contracts/SecurityToken.sol)  | [0x11a168c04ed3f5d8c0b75a5e07a54d07d73ccb57](https://ropsten.etherscan.io/address/0x11a168c04ed3f5d8c0b75a5e07a54d07d73ccb57) |
-| [Compliance](./contracts/Compliance.sol)     | [0x36649046872a80e2e0d383d6782b8ae9ede0a2ab](https://ropsten.etherscan.io/address/0x36649046872a80e2e0d383d6782b8ae9ede0a2ab) |
-| [Customers](./contracts/Customers.sol)      | [0x472edfd8766fec5850fa2900a284d49f1063f67a](https://ropsten.etherscan.io/address/0x472edfd8766fec5850fa2900a284d49f1063f67a) |
+| [PolyToken](./contracts/PolyToken.sol)     | [0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7](https://ropsten.etherscan.io/address/0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7) |
+| [SecurityTokens](./contracts/SecurityTokens.sol) | [0x2e6eb6009832a0e1f1ffe970dbe1ea44ff4b5461](https://ropsten.etherscan.io/address/0x2e6eb6009832a0e1f1ffe970dbe1ea44ff4b5461) |
+| [SecurityToken](./contracts/SecurityToken.sol)  | [0xbc2a5cc6e723a829d231b207e8ec0c0a8e573c93](https://ropsten.etherscan.io/address/0xbc2a5cc6e723a829d231b207e8ec0c0a8e573c93) |
+| [Compliance](./contracts/Compliance.sol)     | [0xcc1f38392f98443b1d25947be91c595ea4e78210](https://ropsten.etherscan.io/address/0xcc1f38392f98443b1d25947be91c595ea4e78210) |
+| [Customers](./contracts/Customers.sol)      | [0xbe40f369c413a2c7eaab9d9cc85cfc1dbe664ec6](https://ropsten.etherscan.io/address/0xbe40f369c413a2c7eaab9d9cc85cfc1dbe664ec6) |
 
 ## Setup
 
