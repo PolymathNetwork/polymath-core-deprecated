@@ -1,0 +1,154 @@
+import expectRevert from './helpers/expectRevert';
+
+const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
+
+contract('SecurityTokens', (accounts) => {
+
+    let security;
+
+    const name = 'Polymath Inc.';
+    const ticker = 'POLY';
+    const decimals = 1;
+    const totalSupply = 1234567890;
+    const securityType = 5
+    const numberOfSecurityTypes = 8 //8 is chosen for testing, we don't have all security types spec'd out yet
+    //polyTokenAddress - hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
+    //ropsten address for polyToken is "0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7"
+    const polyTokenAddress = "0x377bbcae5327695b32a1784e0e13bedc8e078c9c";
+
+    let owner = accounts[0];
+    let spender = accounts[1];
+    let to1 = accounts[2];
+    let to2 = accounts[3];
+    let to3 = accounts[4];
+
+    let allowedAmount = 100;  // Spender allowance
+    let transferredFunds = 1200;  // Funds to be transferred around in tests
+
+
+
+    describe('Constructor', async () => {
+
+        it('should have polyTokenAddress updated to contract storage', async () => {
+
+        });
+    });
+
+    describe('function createSecurityToken', async () => {
+        it('should allow for the creation of a Security Token.', async () => {
+
+        });
+        describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {
+            it('should confirm decimals is between 0-18', async () => {
+
+            });
+            it('should confirm total supply is between 0 and (2^256)-1', async () => {
+
+            });
+            it(`should confirm security type is one of the approved numbers representing a type. it is between 0 - ${numberOfSecurityTypes} `, async () => {
+
+            });
+            it('should confirm developer fee is between 0 and (2^256)-1', async () => {
+
+            });
+            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
+
+            });
+            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
+
+            });
+            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
+
+            });
+        })
+
+        it('should increment totalSecurityTokens by 1 every time a new SecurityToken is made', async () => {
+
+        });
+        it('should log the event', async () => {
+
+        });
+        it('should properly update registry of security tokens (securityTokens mapping)', async () => {
+
+        });
+        it('should allow Developer bounty to be transferedFrom the issuers POLY balance into the SecurityTokens contract', async () => {
+            //this is not coded in yet. this will be a long test
+        });
+    });
+
+    //this is developer workflow. it needs to be updated in the https://github.com/PolymathNetwork/Solidity/blob/master/docs/SecurityToken.md file - dk nov 1
+    describe('function newSecurityTokenOfferingContract ', async () => {
+        it('should allow for the creation of a new STO contract.', async () => {
+
+        });
+        it('should allow only approved Developers to call this function.', async () => {
+            //needs to be added into the code - dk nov 1
+        });
+        describe('Creation of SecurityTokenOfferingContract Struct is within its proper limitations', async () => {
+            it('should confirm address is not 0', async () => {
+
+            });
+            it('should confirm the token address has never been used before, no overwriting the struct', async () => {
+                //i belive right now the contract address and creator address are mixed up in the real code - dk nov 1 
+                //also, will need to be added into the code - dk nov 1
+            });
+            it('should confirm fee submitted is between 0 and (2^256)-1', async () => {
+
+            });
+        });
+        it('should log the event', async () => {
+
+        });
+        it('should properly update registry of STO contracts (securityTokenOfferingContracts mapping)', async () => {
+
+        });
+    });
+
+    // function approveSecurityTokenOfferingContract(address _contractAddress, bool _approved, uint256 _fee) onlyOwner {
+    describe('function approveSecurityTokenOfferingContract', async () => {
+        it('should confirm this function is only callable by owner.', async () => {
+
+        });
+        //START HERE NEXT - note for dave where to start
+        it('should allow for the approval of a Security Token Offering contract.', async () => {
+
+        });
+        describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {
+            it('should confirm decimals is between 0-18', async () => {
+
+            });
+            it('should confirm total supply is between 0 and (2^256)-1', async () => {
+
+            });
+            it(`should confirm security type is one of the approved numbers representing a type. it is between 0 - ${numberOfSecurityTypes} `, async () => {
+
+            });
+            it('should confirm developer fee is between 0 and (2^256)-1', async () => {
+
+            });
+            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
+
+            });
+            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
+
+            });
+            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
+
+            });
+        })
+
+        it('should increment totalSecurityTokens by 1 every time a new SecurityToken is made', async () => {
+
+        });
+        it('should log the event', async () => {
+
+        });
+        it('should properly update registry of security tokens (securityTokens mapping)', async () => {
+
+        });
+        it('should allow Developer bounty to be transferedFrom the issuers POLY balance into the SecurityTokens contract', async () => {
+            //this is not coded in yet. this will be a long test
+        });
+    });
+
+});
