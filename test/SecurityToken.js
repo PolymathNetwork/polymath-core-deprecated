@@ -25,7 +25,11 @@ contract('SecurityToken', (accounts) => {
     security = await SecurityToken.new(name, ticker, decimals, totalSupply, owner, polyTokenAddress, { from: owner });
   });
 
-  describe('creation', async () => {
+
+
+
+
+  describe('creation of SecurityToken from constructor', async () => {
     it('should be ownable', async () => {
       assert.equal(await security.owner(), owner);
     });
@@ -217,4 +221,60 @@ contract('SecurityToken', (accounts) => {
       });
     */
   });
+
+  //owner like functions
+  describe("compliance templates. function proposeComplianceTemplate", async () => {
+    //setDelegate inside here too, and updateComplianceProof 
+
+    //struct ComplianceTemplate
+    //mapping complianceTemplateProposals
+
+    //event LogComplianceTemplateProposal
+    //event LogNewComplianceProof
+  })
+
+  describe("Legal Delegates. function setDelegate setSTO", async () => {
+    //i belive function updateComplianceProof should be in here 
+
+    //address public delegate
+    //address public STO
+
+    // event LogDelegateSet
+    //event LogSecuirtyTokenOffering
+  })
+
+  describe("KYC. function setKYC", async () => {
+
+
+    //address public KYC
+    //event LogSetKYC
+  })
+
+  describe("ERC20 Tokens function transfer, transferFrom balanceOf, approve allowance", async () => {
+    //these probably don't need to be repeated , I imagine they are somewhere else, but they will have to be included
+  
+    //string public name;
+    //uint8 public decimals;
+    //string public symbol;
+    //address public owner;
+    //uint256 public totalSupply;
+    //mapping (address => mapping (address => uint256)) allowed;
+    //mapping (address => uint256) balances;
+  
+  
+  })
+
 });
+
+
+//don't know about 
+//    PolyToken public POLY;
+//    Customers PolyCustomers;
+
+//    mapping(address => bool) public investors;
+
+// modifiers
+//string public version = '0.1';
+
+
+// ALL THE IMPORTED CONTRACTS! some have tests , some dont! 

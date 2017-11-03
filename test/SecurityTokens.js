@@ -1,30 +1,34 @@
+//this thing is essentially coded in full for a quick once over, not perfect but should be 80% i hope - dave nov 3
+
 import expectRevert from './helpers/expectRevert';
 
 const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
 
 contract('SecurityTokens', (accounts) => {
 
-    let security;
-
+    //createSecurityToken variables
     const name = 'Polymath Inc.';
     const ticker = 'POLY';
     const decimals = 1;
     const totalSupply = 1234567890;
     const securityType = 5
     const numberOfSecurityTypes = 8 //8 is chosen for testing, we don't have all security types spec'd out yet
+    const createSecurityTokenFee = 100000;
+
     //polyTokenAddress - hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
     //ropsten address for polyToken is "0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7"
     const polyTokenAddress = "0x377bbcae5327695b32a1784e0e13bedc8e078c9c";
 
+    //account
     let owner = accounts[0];
-    let spender = accounts[1];
-    let to1 = accounts[2];
-    let to2 = accounts[3];
-    let to3 = accounts[4];
+    let acct1 = accounts[1];
+    let acct2 = accounts[2];
+    let acct3 = accounts[3];
+    let acct4 = accounts[4];
 
-    let allowedAmount = 100;  // Spender allowance
-    let transferredFunds = 1200;  // Funds to be transferred around in tests
-
+    //newSecurityTokenOfferingcontract variables
+    const stoContractAddress = ""; //need to fill this in
+    const stoFee = 50000;
 
 
     describe('Constructor', async () => {
@@ -109,45 +113,17 @@ contract('SecurityTokens', (accounts) => {
         it('should confirm this function is only callable by owner.', async () => {
 
         });
-        //START HERE NEXT - note for dave where to start
-        it('should allow for the approval of a Security Token Offering contract.', async () => {
+        it('Fee should be 0 and (2^256)-1.', async () => {
 
         });
-        describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {
-            it('should confirm decimals is between 0-18', async () => {
-
-            });
-            it('should confirm total supply is between 0 and (2^256)-1', async () => {
-
-            });
-            it(`should confirm security type is one of the approved numbers representing a type. it is between 0 - ${numberOfSecurityTypes} `, async () => {
-
-            });
-            it('should confirm developer fee is between 0 and (2^256)-1', async () => {
-
-            });
-            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
-
-            });
-            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
-
-            });
-            it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {
-
-            });
-        })
-
-        it('should increment totalSecurityTokens by 1 every time a new SecurityToken is made', async () => {
+        it('should prevent address 0 or any other address in use to be used as _contractAddress.', async () => {
 
         });
-        it('should log the event', async () => {
+        it('If _approved is true, it should update .approved and .fee with _approved and _fee, and Log _contractAddress and true', async () => {
 
         });
-        it('should properly update registry of security tokens (securityTokens mapping)', async () => {
-
-        });
-        it('should allow Developer bounty to be transferedFrom the issuers POLY balance into the SecurityTokens contract', async () => {
-            //this is not coded in yet. this will be a long test
+        it('If _approved is false, delete the STO from mapping securityTokenOfferingContracts and confirm it is removed ', async () => {
+            
         });
     });
 
