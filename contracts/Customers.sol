@@ -48,8 +48,8 @@ contract Customers is Ownable {
   /// @param _jurisdiction The jurisdiction code of the customer
   /// @param _provider The provider selected by the customer to do verification
   /// @param _role The type of customer - investor:1 or issuer:2
-  /// @param _witness The SHA256 hash of the documentation provided to prove identity
-  function newCustomer(bytes8 _jurisdiction, address _provider, uint8 _role, bytes32 _witness) {
+  /// @param _proof The SHA256 hash of the documentation provided to prove identity
+  function newCustomer(bytes8 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) {
     require(providers[_provider].approved);
     require(_role == 1 || _role == 2);
     customers[_provider][msg.sender].jurisdiction = _jurisdiction;
@@ -57,8 +57,8 @@ contract Customers is Ownable {
     customers[_provider][msg.sender].verified = false;
     customers[_provider][msg.sender].accredited = false;
     customers[_provider][msg.sender].flagged = false;
-    customers[_provider][msg.sender].proof = _witness;
-    NewCustomer(msg.sender, _provider, _jurisdiction, _role, _witness, false);
+    customers[_provider][msg.sender].proof = _proof;
+    NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
   }
 
   /// Verify an investor
@@ -66,9 +66,9 @@ contract Customers is Ownable {
   /// @param _jurisdiction The jurisdiction code of the customer
   /// @param _role The type of customer - investor:1 or issuer:2
   /// @param _accredited Whether the customer is accredited or not (only applied to investors)
-  /// @param _witness The SHA256 hash of the documentation provided to prove identity
+  /// @param _proof The SHA256 hash of the documentation provided to prove identity
   /// @param _expires The time the KYC verification expires
-  function verifyCustomer(address _customer, bytes8 _jurisdiction, uint8 _role, bool _accredited, bytes32 _witness, uint256 _expires) onlyProvider {
+  function verifyCustomer(address _customer, bytes8 _jurisdiction, uint8 _role, bool _accredited, bytes32 _proof, uint256 _expires) onlyProvider {
     require(customers[msg.sender][_customer].verified == false);
     //this is testing that the customer actually picked this KYC provider to review them. 
     //becuase to apply in the first place with one provider, they will are required to set their own role
@@ -80,7 +80,7 @@ contract Customers is Ownable {
     customers[msg.sender][_customer].expires = _expires;
     customers[msg.sender][_customer].verified = true;
     //this is very confusing to me, why are we making a new customer? shouldnt we be updating the instance of the customer we have stored in customers? - dk nov 5
-    NewCustomer(_customer, msg.sender, _jurisdiction, _role, _witness, true);
+    NewCustomer(_customer, msg.sender, _jurisdiction, _role, _proof, true);
   }
 
   /// Allow new provider applications
