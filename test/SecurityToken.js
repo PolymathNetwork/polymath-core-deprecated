@@ -99,8 +99,9 @@ contract('SecurityToken', (accounts) => {
     });
   });
 
+  /*********************Compliance Functions Below**************************************** */
   //owner like functions
-  describe("compliance templates. function proposeComplianceTemplate", async () => {
+  describe("function proposeComplianceTemplate", async () => {
     //setDelegate inside here too, and updateComplianceProof 
 
     //struct ComplianceTemplate
@@ -108,6 +109,7 @@ contract('SecurityToken', (accounts) => {
 
     //event LogComplianceTemplateProposal
     //event LogNewComplianceProof
+    //bytes32 public complianceWitness
 
     it('should allow only approved templates to be proposed', async () => {
       //waiting to go forward, see NOTE.0.1 in SecurityToken.sol
@@ -117,6 +119,28 @@ contract('SecurityToken', (accounts) => {
     });
     it('should only allow templates that have not expired', async () => {
       //waiting to go forward, see NOTE.0.1 in SecurityToken.sol
+    });
+
+  })
+
+  describe("function updateComplianceWitness", async () => {
+    //setDelegate inside here too, and updateComplianceProof 
+
+    //struct ComplianceTemplate
+    //mapping complianceTemplateProposals
+
+    //event LogComplianceTemplateProposal
+    //event LogNewComplianceProof
+    //bytes32 public complianceWitness
+
+    it('should allow only owner or delegate to call the function', async () => {
+
+    });
+    it('', async () => {
+
+    });
+    it('', async () => {
+
     });
 
   })

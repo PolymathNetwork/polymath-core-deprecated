@@ -34,8 +34,8 @@ contract SecurityToken is IERC20 {
     // Legal delegate
     address public delegate;
 
-    // Proof of compliance process (merkle root hash)
-    bytes32 public complianceProof;
+    // Witness of compliance process (merkle root hash)
+    bytes32 public complianceWitness;
 
     // STO address
     address public STO;
@@ -66,7 +66,7 @@ contract SecurityToken is IERC20 {
     event LogDelegateSet(address indexed delegateAddress);
     event LogComplianceTemplateProposal(address indexed delegateAddress, bytes32 complianceTemplate);
     event LogSecurityTokenOffering(address indexed STOAddress);
-    event LogNewComplianceProof(bytes32 merkleRoot, bytes32 complianceProofHash);
+    event LogNewComplianceWitness(bytes32 merkleRoot, bytes32 complianceWitnessHash);
     event LogSetKYC(address kycProvider);
 
     modifier onlyOwner() {
@@ -76,6 +76,12 @@ contract SecurityToken is IERC20 {
 
     modifier onlyDelegate() {
       require(delegate == msg.sender);
+      _;
+    }
+    
+    //Used to allow both to update root hash (complianceWitness state variable)
+    modifier onlyDelegateAndOwner() {
+      require(delegate == msg.sender || owner == msg.sender);
       _;
     }
 
@@ -127,14 +133,14 @@ contract SecurityToken is IERC20 {
       return true;
     }
 
-    /// Update compliance proof
-    /// @param _newMerkleRoot New merkle root hash of the compliance proofs
-    /// @param _complianceProof Compliance proof hash
+    /// Update compliance Witness
+    /// @param _newMerkleRoot New merkle root hash of the compliance Witnesss
+    /// @param _complianceWitness Compliance Witness hash
     /// @return bool success
-    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) returns (bool success) {
+    function updateComplianceWitness(bytes32 _newMerkleRoot, bytes32 _complianceWitness) onlyDelegateAndOwner returns (bool success) {
       require(msg.sender == owner || msg.sender == delegate);
-      complianceProof = _newMerkleRoot;
-      LogNewComplianceProof(_newMerkleRoot, _complianceProof);
+      complianceWitness = _newMerkleRoot;
+      LogNewComplianceWitness(_newMerkleRoot, _complianceWitness);
       return true;
     }
 
@@ -142,7 +148,7 @@ contract SecurityToken is IERC20 {
     /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
     /// @return bool success
     function setSTO(address _securityTokenOfferingAddress) onlyDelegate returns (bool success) {
-      require(complianceProof != 0);
+      require(complianceWitness != 0);
       //TODO require(_securityTokenOfferingAddress = address(0));
       STO = _securityTokenOfferingAddress;
       LogSecurityTokenOffering(_securityTokenOfferingAddress);
@@ -154,7 +160,7 @@ contract SecurityToken is IERC20 {
     /// @return bool success
     function setKYC(address _kycProvider) onlyOwner returns (bool success) {
       require(_kycProvider != address(0));
-      require(complianceProof != 0);
+      require(complianceWitness != 0);
       KYC = _kycProvider;
       LogSetKYC(_kycProvider);
       return true;
