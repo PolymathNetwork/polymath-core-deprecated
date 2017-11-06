@@ -4,6 +4,7 @@ import './SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './PolyToken.sol';
 import './Customers.sol';
+import './Compliance.sol';
 
 contract SecurityToken is IERC20 {
 
@@ -24,14 +25,17 @@ contract SecurityToken is IERC20 {
       uint256 vestingPeriod;
       uint256 delegateFee;
     }
+
     // Mapping of Legal Delegate addresses to proposed ComplianceTemplates
+    // One legal delegate proposes one compliance template per security token
     mapping(address => ComplianceTemplate) public complianceTemplateProposals;
+
 
     // Legal delegate
     address public delegate;
 
-    // Proof of compliance process (merkle root hash)
-    bytes32 public complianceProof;
+    // Witness of compliance process (merkle root hash)
+    bytes32 public complianceWitness;
 
     // STO address
     address public STO;
@@ -47,6 +51,8 @@ contract SecurityToken is IERC20 {
 
     Customers PolyCustomers;
 
+    Compliance public ComplianceInstance;
+
     // ERC20 Fields
     string public name;
     uint8 public decimals;
@@ -60,7 +66,7 @@ contract SecurityToken is IERC20 {
     event LogDelegateSet(address indexed delegateAddress);
     event LogComplianceTemplateProposal(address indexed delegateAddress, bytes32 complianceTemplate);
     event LogSecurityTokenOffering(address indexed STOAddress);
-    event LogNewComplianceProof(bytes32 merkleRoot, bytes32 complianceProofHash);
+    event LogNewComplianceWitness(bytes32 merkleRoot, bytes32 complianceWitnessHash);
     event LogSetKYC(address kycProvider);
 
     modifier onlyOwner() {
@@ -70,6 +76,12 @@ contract SecurityToken is IERC20 {
 
     modifier onlyDelegate() {
       require(delegate == msg.sender);
+      _;
+    }
+    
+    //Used to allow both to update root hash (complianceWitness state variable)
+    modifier onlyDelegateAndOwner() {
+      require(delegate == msg.sender || owner == msg.sender);
       _;
     }
 
@@ -92,10 +104,18 @@ contract SecurityToken is IERC20 {
     /// Propose a new compliance template for the Security Token
     /// @param _delegate Legal Delegate public ethereum address
     /// @param _complianceTemplate Compliance Template being proposed
+    /// @param _complianceContract The Address of the compliance contract where Templates are stored
     /// @return bool success
-    function proposeComplianceTemplate(address _delegate, bytes32 _complianceTemplate) returns (bool success){
+    function proposeComplianceTemplate(address _delegate, bytes32 _complianceTemplate, address _complianceContract) returns (bool success) {
       //TODO require(complianceTemplateProposals[_delegate] == address(0));
       // complianceTemplateProposals[_delegate] = _complianceTemplate;
+
+      //Grab the compliance.sol file with contract address, find the template and check if its approved and not expired
+      //NOTE.0.1 - not sure if these is exactly how it should be, confused that there is a struct ComplianceTemplate in this sol file, and a struct Template in Compliance.sol
+      ComplianceInstance = Compliance(_complianceContract);
+      require(ComplianceInstance.templates(_complianceTemplate).approved == true);
+      require(ComplianceInstance.templates(_complianceTemplate).expires < now);
+
       LogComplianceTemplateProposal(_delegate, _complianceTemplate);
       return true;
     }
@@ -113,14 +133,14 @@ contract SecurityToken is IERC20 {
       return true;
     }
 
-    /// Update compliance proof
-    /// @param _newMerkleRoot New merkle root hash of the compliance proofs
-    /// @param _complianceProof Compliance proof hash
+    /// Update compliance Witness
+    /// @param _newMerkleRoot New merkle root hash of the compliance Witnesss
+    /// @param _complianceWitness Compliance Witness hash
     /// @return bool success
-    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) returns (bool success) {
+    function updateComplianceWitness(bytes32 _newMerkleRoot, bytes32 _complianceWitness) onlyDelegateAndOwner returns (bool success) {
       require(msg.sender == owner || msg.sender == delegate);
-      complianceProof = _newMerkleRoot;
-      LogNewComplianceProof(_newMerkleRoot, _complianceProof);
+      complianceWitness = _newMerkleRoot;
+      LogNewComplianceWitness(_newMerkleRoot, _complianceWitness);
       return true;
     }
 
@@ -128,7 +148,7 @@ contract SecurityToken is IERC20 {
     /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
     /// @return bool success
     function setSTO(address _securityTokenOfferingAddress) onlyDelegate returns (bool success) {
-      require(complianceProof != 0);
+      require(complianceWitness != 0);
       //TODO require(_securityTokenOfferingAddress = address(0));
       STO = _securityTokenOfferingAddress;
       LogSecurityTokenOffering(_securityTokenOfferingAddress);
@@ -140,7 +160,7 @@ contract SecurityToken is IERC20 {
     /// @return bool success
     function setKYC(address _kycProvider) onlyOwner returns (bool success) {
       require(_kycProvider != address(0));
-      require(complianceProof != 0);
+      require(complianceWitness != 0);
       KYC = _kycProvider;
       LogSetKYC(_kycProvider);
       return true;
