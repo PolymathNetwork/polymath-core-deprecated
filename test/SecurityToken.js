@@ -25,10 +25,6 @@ contract('SecurityToken', (accounts) => {
     security = await SecurityToken.new(name, ticker, decimals, totalSupply, owner, polyTokenAddress, { from: owner });
   });
 
-
-
-
-
   describe('creation of SecurityToken from constructor', async () => {
     it('should be ownable', async () => {
       assert.equal(await security.owner(), owner);
@@ -59,8 +55,6 @@ contract('SecurityToken', (accounts) => {
       await expectRevert(security.transfer(owner, to1));
       console.log("HIHIIH");
     });*/
-
-
 
     //incomplete tests 
 
@@ -103,123 +97,6 @@ contract('SecurityToken', (accounts) => {
     it('should allow', async () => {
 
     });
-
-
-
-
-
-
-    /* I BELIEVE ALL TESTS BELOW ARE OLD - dk nov 1
-    
-    
-      describe('activation', async () => {
-        
-        it('should update balances correctly after minting', async () => {
-          
-          assert.equal((await security.balanceOf(owner)).toNumber(), totalSupply);
-    
-          await security.mint(to1, transferredFunds);
-    
-          // Checking owner balance stays on 0 since minting happens for
-          // other accounts.
-          assert.equal((await security.balanceOf(owner)).toNumber(), 0);
-          assert.equal((await security.balanceOf(to1)).toNumber(), transferredFunds);
-    
-          await security.mint(to2, transferredFunds);
-          assert.equal((await security.balanceOf(to2)).toNumber(), transferredFunds);
-    
-          await security.mint(to3, transferredFunds);
-          assert.equal((await security.balanceOf(to3)).toNumber(), transferredFunds);
-    
-          assert.equal((await security.balanceOf(owner)).toNumber(), 0);
-        });
-    
-        it('should update totalSupply correctly after minting', async () => {
-          assert.equal((await security.totalSupply()).toNumber(), 0);
-    
-          await security.mint(to1, transferredFunds);
-          assert.equal((await security.totalSupply()).toNumber(), transferredFunds);
-    
-          await security.mint(to1, transferredFunds);
-          assert.equal((await security.totalSupply()).toNumber(), transferredFunds * 2);
-    
-          await security.mint(to2, transferredFunds);
-          assert.equal((await security.totalSupply()).toNumber(), transferredFunds * 3);
-        });
-    
-        it('should end minting', async () => {
-          await security.endMinting();
-          assert.isFalse(await security.isMinting());
-        });
-    
-        it('should allow to end minting more than once', async () => {
-          await security.endMinting();
-          await security.endMinting();
-          await security.endMinting();
-        });
-    
-        it('should not allow to mint after minting has ended', async () => {
-          await security.endMinting();
-          await expectRevert(security.mint(to1, transferredFunds));
-        });
-    
-        it('should not allow approve() before minting has ended', async () => {
-          await expectRevert(security.approve(spender, allowedAmount));
-        });
-    
-        it('should allow approve() after minting has ended', async () => {
-          await security.endMinting();
-          await security.approve(spender, allowedAmount);
-        });
-    
-        it('should not allow transfer() before minting has ended', async () => {
-          await expectRevert(security.transfer(spender, allowedAmount));
-        });
-    
-        it('should allow transfer() after minting has ended', async () => {
-          await security.mint(owner, transferredFunds);
-          await security.endMinting();
-          await security.transfer(to1, transferredFunds);
-        });
-    
-        it('should not allow transferFrom() before minting has ended', async () => {
-          await expectRevert(security.transferFrom(owner, to1, allowedAmount, {from: spender}));
-        });
-    
-        it('should allow transferFrom() after minting has ended', async () => {
-          await security.mint(owner, transferredFunds);
-          await security.endMinting();
-          await security.approve(spender, allowedAmount);
-          await security.transferFrom(owner, to1, allowedAmount, {from: spender});
-        });
-      });
-    
-      describe('approval', async () => {
-        it('should log mint event after minting', async () => {
-          let result = await security.mint(to1, transferredFunds);
-    
-          assert.lengthOf(result.logs, 1);
-          let event = result.logs[0];
-          assert.equal(event.event, 'Transfer');
-          assert.equal(event.args.from, 0);
-          assert.equal(event.args.to, to1);
-          assert.equal(Number(event.args.value), transferredFunds);
-        });
-    
-        it('should log minting ended event after minting has ended', async () => {
-          let result = await security.endMinting();
-    
-          assert.lengthOf(result.logs, 1);
-          assert.equal(result.logs[0].event, 'MintingEnded');
-    
-                // Additional calls should not emit events.
-          result = await security.endMinting();
-          assert.equal(result.logs.length, 0);
-          result = await security.endMinting();
-          assert.equal(result.logs.length, 0);
-        });
-      });
-    */
   });
 
   //owner like functions
@@ -231,6 +108,17 @@ contract('SecurityToken', (accounts) => {
 
     //event LogComplianceTemplateProposal
     //event LogNewComplianceProof
+
+    it('should allow only approved templates to be proposed', async () => {
+      //waiting to go forward, see NOTE.0.1 in SecurityToken.sol
+    });
+    it('should only allow templates that have not expired', async () => {
+      //waiting to go forward, see NOTE.0.1 in SecurityToken.sol
+    });
+    it('should only allow templates that have not expired', async () => {
+      //waiting to go forward, see NOTE.0.1 in SecurityToken.sol
+    });
+
   })
 
   describe("Legal Delegates. function setDelegate setSTO", async () => {
@@ -252,7 +140,7 @@ contract('SecurityToken', (accounts) => {
 
   describe("ERC20 Tokens function transfer, transferFrom balanceOf, approve allowance", async () => {
     //these probably don't need to be repeated , I imagine they are somewhere else, but they will have to be included
-  
+
     //string public name;
     //uint8 public decimals;
     //string public symbol;
@@ -260,9 +148,17 @@ contract('SecurityToken', (accounts) => {
     //uint256 public totalSupply;
     //mapping (address => mapping (address => uint256)) allowed;
     //mapping (address => uint256) balances;
-  
-  
+
+
   })
+
+  describe("Tests that will have to be written in the future. Comments for now. Need to wait for Solidity code to get updated", async () => {
+    //2.7.5 Ratings Tasks
+    //Of coder (only if issuer used this coder and process is compelte or expired)
+    //Of legal deelgate (only if issuer used this LD and process is complete or expired)
+    //Of compliance template (only if this was compilance template used)
+  })
+
 
 });
 
