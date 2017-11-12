@@ -42,6 +42,7 @@ The style guide for Polymath follows the style guide laid out by the Solidity Te
 Solium is used as the linter for solidity code. You can see the code for solium here: https://github.com/duaraghav8/Solium
 
 Solium creates two files:
+
 | File       | Purpose                                    |
 | :-------------| :-----------------------------------------:|
 | [.soliumignore](./soliumignore)     | [contains names of files and directories to ignore while linting.]|
