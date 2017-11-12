@@ -35,7 +35,15 @@ $ npm run test
 
 ## Style Guide 
 
-The style guide for Polymath follows the style guide laid out by the Solidity Team at: http://solidity.readthedocs.io/en/develop/style-guide.html 
+The style guide for Polymath follows the style guide laid out by the Solidity Team at: http://solidity.readthedocs.io/en/develop/style-guide.html
+
+## Linting 
+ 
+Solium is used as the linter for solidity code. You can see the code for solium here: https://github.com/duaraghav8/Solium
+
+Solium creates two files:
+.soliumignore - contains names of files and directories to ignore while linting.
+.soliumrc.json - contains configuration that tells solium how to lint your project. It can be  modified to configure rules, plugins and sharable configs. 
 
 ![Polymath](Polymath.png)
 
