@@ -45,8 +45,8 @@ Solium creates two files:
 
 | File       | Purpose                                    |
 | :-------------| :-----------------------------------------:|
-| [.soliumignore](./soliumignore)     | [contains names of files and directories to ignore while linting.]|
-| [.soliumrc.json](./soliumrc.json) | [contains configuration that tells solium how to lint your project. It can be  modified to configure rules, plugins and sharable configs] |
+| [.soliumignore](./soliumignore)     | contains names of files and directories to ignore while linting|
+| [.soliumrc.json](./soliumrc.json) | contains configuration that tells solium how to lint your project. It can be  modified to configure rules, plugins and sharable configs |
 
 ![Polymath](Polymath.png)
 
