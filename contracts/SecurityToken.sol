@@ -17,7 +17,8 @@ contract SecurityToken is IERC20 {
       bytes32 securityType;
       bytes32 complianceProcess;
       bytes8 issuerJurisdiction;
-      bytes8[] restrictedJurisdictions;
+      mapping(bytes8 => bool) allowedJurisdictions;
+      bool accredation;
       uint256 templateValidUntil;
       uint256 proposalValidUntil;
       uint256 estimatedTimeToComplete;
@@ -69,8 +70,22 @@ contract SecurityToken is IERC20 {
     }
 
     modifier onlyDelegate() {
-      require(delegate == msg.sender);
+      require (delegate == msg.sender);
       _;
+    }
+
+    modifier onlyWhitelist(address _investor) {
+      require (investors[_investor] == true);
+      _;
+    }
+
+    function joinWhitelist(address _investorAddress){
+      require(KYC != address(0));
+      //require(complianceTemplateProposals[delegate].allowedJurisdictions[PolyCustomers.customers[_kycProvider][msg.sender].jurisdiction] == true);
+      if (complianceTemplateProposals[delegate].accredation) {
+        require(PolyCustomers.customers[KYC][msg.sender].accredited == true);
+      }
+      investors[_investorAddress] = true;
     }
 
     /// Set default security token parameters
@@ -78,8 +93,10 @@ contract SecurityToken is IERC20 {
     /// @param _ticker Ticker name of the security
     /// @param _decimals Divisibility of the token
     /// @param _totalSupply Total amount of tokens being created
-    /// @param _owner Ethereum public key address of the security token owner
-    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, address _polyTokenAddress) {
+    /// @param _owner Ethereum address of the security token owner
+    /// @param _polyTokenAddress Ethereum address of the POLY token contract
+    /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
+    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, address _polyTokenAddress, address _polyCustomersAddress) {
       owner = _owner;
       name = _name;
       symbol = _ticker;
@@ -87,6 +104,7 @@ contract SecurityToken is IERC20 {
       totalSupply = _totalSupply;
       balances[_owner] = _totalSupply;
       POLY = PolyToken(_polyTokenAddress);
+      PolyCustomers = Customers(_polyCustomersAddress);
     }
 
     /// Propose a new compliance template for the Security Token
@@ -127,6 +145,8 @@ contract SecurityToken is IERC20 {
     /// Set the STO contract address
     /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
     /// @return bool success
+    // TODO start time/end time
+    // TODO check bounty meets STO reqs
     function setSTO(address _securityTokenOfferingAddress) onlyDelegate returns (bool success) {
       require(complianceProof != 0);
       //TODO require(_securityTokenOfferingAddress = address(0));

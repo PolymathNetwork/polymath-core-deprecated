@@ -8,23 +8,23 @@ build on top of the Polymath platform.
 
 ## Issuers workflow
 
-### SecurityTokens.sol flow
+### SecurityTokenRegistrar.sol flow
 
-1. Polymath Launches the SecurityTokens smart contract to Ethereum, now users can create Security Tokens
-2. Issuer purchases POLY tokens
-3. Issuer decides to launch a ST, and calls createSecurityToken().
-4. Developer bounty is transferedFrom the issuers POLY balance into the SecurityTokens contract
-5. A new SecurityToken.sol is created and owned by the issuer
+1. Polymath Launches the SecurityTokenRegistrar smart contract to Ethereum, now anyone can register a Security Token
+2. Issuer purchases POLY utility tokens from PolyToken smart contract
+3. Issuer approves transfer of 10000 POLY to SecurityTokenRegistrar contract
+4. Issuer calls createSecurityToken() to create and register a new SecurityToken (Poly is transferedFrom Issuer's POLY balance)
 
 ### SecurityToken.sol flow
 
-1. Token exists on the network after creation from SecurityTokens.sol
+1. Token exists on the network after creation from SecurityTokenRegistrar.sol
 2. A legal delegate will be notified of creation, review details and calls proposeComplianceTemplate() with a template and bid for the offering
-3. The issuer reviews all proposals and calls setDelegate() with the address of the proposal they wish to move forward with
-4. Note: the issuer must have sent enough POLY to cover the bounty specified in the bid
-5. The issuer begins the compliance process (using the open sourced templates) and calls updateComplianceProof() when process steps are completed
-6. Upon final approval, the delegate can set setSTOAddress() to specify the SecurityTokenOffering contract that will be used for the initial offering
-7. The issuer selects a KYC provider for the issuance using setKYC()
+3. The issuer reviews all proposals and calls setDelegate() with the Ethereum address of the legal delegate they wish to work with on the issuance
+4. Note: the issuer must have sent enough POLY to the SecurityToken contract address to cover the bounty specified in the bid
+5. The issuer/delegate begin completing the compliance process (using the open sourced template) and calls updateComplianceProof() when steps are completed
+6. Developers are also notified of the creation, review details and create STO contracts that meet the compliance specifications
+7. Upon final approval, the legal delegate can use setSTOAddress() to specify the SecurityTokenOffering contract address that will be used for the initial offering
+8. STO contract address can be changed as long as the new/old start time > now and no tokens have been sent to the contract address (balances[STO] == 0)
 
 ## Delegates workflow
 
