@@ -1,6 +1,7 @@
+
 import expectRevert from './helpers/expectRevert';
 
-const ERC20Mock = artifacts.require('./helpers/ERC20Mock.sol');
+const PolyTokenMock = artifacts.require('./helpers/PolyTokenMock.sol'); // - ERC20Mock has been renamed to PolyTokenMock - dk - nov 1
 
 contract('ERC20', (accounts) => {
     let token;
@@ -20,7 +21,7 @@ contract('ERC20', (accounts) => {
     let balanceTo;
 
     beforeEach(async () => {
-        token = await ERC20Mock.new();
+        token = await PolyTokenMock.new();
 
         // Should return 0 balance for owner account
         assert.equal((await token.balanceOf(owner)).toNumber(), 0);
@@ -35,7 +36,7 @@ contract('ERC20', (accounts) => {
 
     describe('construction', async () => {
         it('should return correct initial totalSupply after construction', async () => {
-            assert.equal((await token.totalSupply()).toNumber(), 0);
+            assert.equal((await token.totalSupply()).toNumber(), 1000000);
         });
     })
 
@@ -134,10 +135,11 @@ contract('ERC20', (accounts) => {
 
             assert.lengthOf(result.logs, 1);
             let event = result.logs[0];
+            console.log(result.logs[0]);
             assert.equal(event.event, 'Transfer');
-            assert.equal(event.args.from, owner);
-            assert.equal(event.args.to, spender);
-            assert.equal(Number(event.args.value), transferredFunds);
+            assert.equal(event.args._from, owner);
+            assert.equal(event.args._to, spender);
+            assert.equal(Number(event.args._value), transferredFunds);
         });
 
         it('should log Transfer event after transferFrom()', async () => {
@@ -149,9 +151,9 @@ contract('ERC20', (accounts) => {
             assert.lengthOf(result.logs, 1);
             let event = result.logs[0];
             assert.equal(event.event, 'Transfer');
-            assert.equal(event.args.from, owner);
-            assert.equal(event.args.to, to);
-            assert.equal(Number(event.args.value), value);
+            assert.equal(event.args._from, owner);
+            assert.equal(event.args._to, to);
+            assert.equal(Number(event.args._value), value);
         });
 
         it('should log Approve event after approve()', async () => {
@@ -160,8 +162,8 @@ contract('ERC20', (accounts) => {
             assert.lengthOf(result.logs, 1);
             let event = result.logs[0];
             assert.equal(event.event, 'Approval');
-            assert.equal(event.args.spender, spender);
-            assert.equal(Number(event.args.value), allowedAmount);
+            assert.equal(event.args._spender, spender);
+            assert.equal(Number(event.args._value), allowedAmount);
         });
 
     });

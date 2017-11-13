@@ -37,6 +37,12 @@ contract Customers is Ownable {
   event NewCustomer(address customer, address provider, bytes32 jurisdiction, uint8 role, bytes32 proof, bool verified);
   event NewProvider(address providerAddress, string name, bytes32 details);
 
+  modifier onlyProvider() {
+    require(providers[msg.sender].approved == true);
+    require(providers[msg.sender].expires > now);
+    _;
+  }
+
   /// Allow new investor applications
   /// @param _jurisdiction The jurisdiction code of the customer
   /// @param _provider The provider selected by the customer to do verification
@@ -59,14 +65,18 @@ contract Customers is Ownable {
   /// @param _accredited Whether the customer is accredited or not (only applied to investors)
   /// @param _proof The SHA256 hash of the documentation provided to prove identity
   /// @param _expires The time the KYC verification expires
-  function verifyCustomer(address _customer, bytes8 _jurisdiction, uint8 _role, bool _accredited, bytes32 _proof, uint256 _expires) {
-    require(providers[msg.sender].details != 0);
+  function verifyCustomer(address _customer, bytes8 _jurisdiction, uint8 _role, bool _accredited, bytes32 _proof, uint256 _expires) onlyProvider {
     require(customers[msg.sender][_customer].verified == false);
+    //this is testing that the customer actually picked this KYC provider to review them.
+    //becuase to apply in the first place with one provider, they will are required to set their own role
+    //if no role is ever set, they never applied with this specific provider, and it should fail
+    require(customers[msg.sender][_customer].role != 0);
     customers[msg.sender][_customer].jurisdiction = _jurisdiction;
     customers[msg.sender][_customer].role = _role;
     customers[msg.sender][_customer].accredited = _accredited;
     customers[msg.sender][_customer].expires = _expires;
     customers[msg.sender][_customer].verified = true;
+    //this is very confusing to me, why are we making a new customer? shouldnt we be updating the instance of the customer we have stored in customers? - dk nov 5
     NewCustomer(_customer, msg.sender, _jurisdiction, _role, _proof, true);
   }
 

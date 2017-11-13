@@ -4,6 +4,7 @@ import './SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './PolyToken.sol';
 import './Customers.sol';
+import './Compliance.sol';
 
 contract SecurityToken is IERC20 {
 
@@ -25,8 +26,11 @@ contract SecurityToken is IERC20 {
       uint256 vestingPeriod;
       uint256 delegateFee;
     }
+
     // Mapping of Legal Delegate addresses to proposed ComplianceTemplates
+    // One legal delegate proposes one compliance template per security token
     mapping(address => ComplianceTemplate) public complianceTemplateProposals;
+
 
     // Legal delegate
     address public delegate;
@@ -47,6 +51,8 @@ contract SecurityToken is IERC20 {
     PolyToken public POLY;
 
     Customers PolyCustomers;
+
+    Compliance public ComplianceInstance;
 
     // ERC20 Fields
     string public name;
@@ -71,6 +77,12 @@ contract SecurityToken is IERC20 {
 
     modifier onlyDelegate() {
       require (delegate == msg.sender);
+      _;
+    }
+    
+    //Used to allow both to update root hash (complianceProof state variable)
+    modifier onlyDelegateAndOwner() {
+      require(delegate == msg.sender || owner == msg.sender);
       _;
     }
 
@@ -110,10 +122,18 @@ contract SecurityToken is IERC20 {
     /// Propose a new compliance template for the Security Token
     /// @param _delegate Legal Delegate public ethereum address
     /// @param _complianceTemplate Compliance Template being proposed
+    /// @param _complianceContract The Address of the compliance contract where Templates are stored
     /// @return bool success
-    function proposeComplianceTemplate(address _delegate, bytes32 _complianceTemplate) returns (bool success){
+    function proposeComplianceTemplate(address _delegate, bytes32 _complianceTemplate, address _complianceContract) returns (bool success) {
       //TODO require(complianceTemplateProposals[_delegate] == address(0));
       // complianceTemplateProposals[_delegate] = _complianceTemplate;
+
+      //Grab the compliance.sol file with contract address, find the template and check if its approved and not expired
+      //NOTE.0.1 - not sure if these is exactly how it should be, confused that there is a struct ComplianceTemplate in this sol file, and a struct Template in Compliance.sol
+      ComplianceInstance = Compliance(_complianceContract);
+      require(ComplianceInstance.templates(_complianceTemplate).approved == true);
+      require(ComplianceInstance.templates(_complianceTemplate).expires < now);
+
       LogComplianceTemplateProposal(_delegate, _complianceTemplate);
       return true;
     }
@@ -131,11 +151,11 @@ contract SecurityToken is IERC20 {
       return true;
     }
 
-    /// Update compliance proof
-    /// @param _newMerkleRoot New merkle root hash of the compliance proofs
-    /// @param _complianceProof Compliance proof hash
+    /// Update compliance Proof
+    /// @param _newMerkleRoot New merkle root hash of the compliance Proofs
+    /// @param _complianceProof Compliance Proof hash
     /// @return bool success
-    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) returns (bool success) {
+    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) onlyDelegateAndOwner returns (bool success) {
       require(msg.sender == owner || msg.sender == delegate);
       complianceProof = _newMerkleRoot;
       LogNewComplianceProof(_newMerkleRoot, _complianceProof);

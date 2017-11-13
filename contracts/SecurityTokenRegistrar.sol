@@ -33,7 +33,7 @@ contract SecurityTokenRegistrar is Ownable {
 
     // Mapping of contract creator address to contract details
     mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
-
+    //dk - i think this is wrong, should be STO contract address - nov 3
     event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
     event LogNewSecurityTokenOffering(address contractAddress);
 
