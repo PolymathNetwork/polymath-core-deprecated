@@ -12,30 +12,20 @@ contract SecurityToken is IERC20 {
 
     string public version = '0.1';
 
-    // Compliance Template Proposal
-    struct ComplianceTemplate {
-      address creator;
-      bytes32 securityType;
-      bytes32 complianceProcess;
-      bytes8 issuerJurisdiction;
-      mapping(bytes8 => bool) allowedJurisdictions;
-      bool accredation;
-      uint256 templateValidUntil;
-      uint256 proposalValidUntil;
-      uint256 estimatedTimeToComplete;
-      uint256 vestingPeriod;
-      uint256 delegateFee;
-    }
-
-    // Mapping of Legal Delegate addresses to proposed ComplianceTemplates
-    // One legal delegate proposes one compliance template per security token
-    mapping(address => ComplianceTemplate) public complianceTemplateProposals;
-
-
     // Legal delegate
     address public delegate;
 
-    // Proof of compliance process (merkle root hash)
+    // Delegate Bids
+    struct Bid {
+      uint256 fee;
+      uint256 expires;
+    }
+    mapping(address => Bid) public bids;
+
+    // Template
+    bytes32 public template;
+
+    // Proof of process
     bytes32 public complianceProof;
 
     // STO address
@@ -50,9 +40,11 @@ contract SecurityToken is IERC20 {
     // Instance of the POLY token contract
     PolyToken public POLY;
 
-    Customers PolyCustomers;
+    // Instance of the Compliance contract
+    Compliance public PolyCompliance;
 
-    Compliance public ComplianceInstance;
+    // Instance of the Customers contract
+    Customers PolyCustomers;
 
     // ERC20 Fields
     string public name;
@@ -64,11 +56,11 @@ contract SecurityToken is IERC20 {
     mapping (address => uint256) balances;
 
     // Notifications
+    event LogDelegateBid(address indexed delegateAddress, uint256 bid);
     event LogDelegateSet(address indexed delegateAddress);
-    event LogComplianceTemplateProposal(address indexed delegateAddress, bytes32 complianceTemplate);
-    event LogSecurityTokenOffering(address indexed STOAddress);
-    event LogNewComplianceProof(bytes32 merkleRoot, bytes32 complianceProofHash);
-    event LogSetKYC(address kycProvider);
+    event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 complianceProofHash);
+    event LogSetKYCProvider(address indexed kycProvider);
+    event LogSetSTOContract(address indexed STOAddress);
 
     modifier onlyOwner() {
       require (msg.sender == owner);
@@ -76,76 +68,61 @@ contract SecurityToken is IERC20 {
     }
 
     modifier onlyDelegate() {
-      require (delegate == msg.sender);
-      _;
-    }
-    
-    //Used to allow both to update root hash (complianceProof state variable)
-    modifier onlyDelegateAndOwner() {
-      require(delegate == msg.sender || owner == msg.sender);
+      require (msg.sender == delegate);
       _;
     }
 
-    modifier onlyWhitelist(address _investor) {
+    modifier onlyOwnerOrDelegate() {
+      require (msg.sender == delegate || msg.sender == owner);
+      _;
+    }
+
+    modifier onlyInvestor(address _investor) {
       require (investors[_investor] == true);
       _;
-    }
-
-    function joinWhitelist(address _investorAddress){
-      require(KYC != address(0));
-      //require(complianceTemplateProposals[delegate].allowedJurisdictions[PolyCustomers.customers[_kycProvider][msg.sender].jurisdiction] == true);
-      if (complianceTemplateProposals[delegate].accredation) {
-        require(PolyCustomers.customers[KYC][msg.sender].accredited == true);
-      }
-      investors[_investorAddress] = true;
     }
 
     /// Set default security token parameters
     /// @param _name Name of the security token
     /// @param _ticker Ticker name of the security
-    /// @param _decimals Divisibility of the token
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum address of the security token owner
+    /// @param _template Hash of the compliance template
     /// @param _polyTokenAddress Ethereum address of the POLY token contract
     /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
-    function SecurityToken(string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, address _polyTokenAddress, address _polyCustomersAddress) {
+    /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
+    function SecurityToken(string _name, string _ticker, uint256 _totalSupply, address _owner, bytes32 _template, address _polyTokenAddress, address _polyCustomersAddress, address _polyComplianceAddress) {
       owner = _owner;
       name = _name;
       symbol = _ticker;
-      decimals = _decimals;
+      decimals = 0;
+      template = _template;
       totalSupply = _totalSupply;
       balances[_owner] = _totalSupply;
       POLY = PolyToken(_polyTokenAddress);
       PolyCustomers = Customers(_polyCustomersAddress);
+      PolyCompliance = Compliance(_polyComplianceAddress);
     }
 
-    /// Propose a new compliance template for the Security Token
-    /// @param _delegate Legal Delegate public ethereum address
-    /// @param _complianceTemplate Compliance Template being proposed
-    /// @param _complianceContract The Address of the compliance contract where Templates are stored
+    /// Make a new bid to be the legal delegate
+    /// @param _fee The bounty fee requested to become legal delegate
+    /// @param _expires The timestamp the bid expires at
     /// @return bool success
-    function proposeComplianceTemplate(address _delegate, bytes32 _complianceTemplate, address _complianceContract) returns (bool success) {
-      //TODO require(complianceTemplateProposals[_delegate] == address(0));
-      // complianceTemplateProposals[_delegate] = _complianceTemplate;
-
-      //Grab the compliance.sol file with contract address, find the template and check if its approved and not expired
-      //NOTE.0.1 - not sure if these is exactly how it should be, confused that there is a struct ComplianceTemplate in this sol file, and a struct Template in Compliance.sol
-      ComplianceInstance = Compliance(_complianceContract);
-      require(ComplianceInstance.templates(_complianceTemplate).approved == true);
-      require(ComplianceInstance.templates(_complianceTemplate).expires < now);
-
-      LogComplianceTemplateProposal(_delegate, _complianceTemplate);
+    function makeBid(uint256 _fee, uint256 _expires) returns (bool success) {
+      // require(PolyCompliance.delegates[msg.sender].details != 0x0);
+      require(_expires >= now);
+      require(_fee > 0);
+      bids[msg.sender] = Bid({fee: _fee, expires: _expires});
       return true;
     }
 
-    /// Accept a Delegate's proposal
+    /// Accept a Delegate's bid
     /// @param _delegate Legal Delegates public ethereum address
     /// @return bool success
     function setDelegate(address _delegate) onlyOwner returns (bool success) {
-      require(delegate == address(0));
-      require(complianceTemplateProposals[_delegate].proposalValidUntil > now);
-      require(complianceTemplateProposals[_delegate].templateValidUntil > now);
-      require(POLY.balanceOf(this) >= complianceTemplateProposals[_delegate].delegateFee);
+      require(_delegate == address(0));
+      require(bids[_delegate].expires > now);
+      require(POLY.balanceOf(this) >= bids[_delegate].fee);
       delegate = _delegate;
       LogDelegateSet(_delegate);
       return true;
@@ -155,10 +132,20 @@ contract SecurityToken is IERC20 {
     /// @param _newMerkleRoot New merkle root hash of the compliance Proofs
     /// @param _complianceProof Compliance Proof hash
     /// @return bool success
-    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) onlyDelegateAndOwner returns (bool success) {
+    function updateComplianceProof(bytes32 _newMerkleRoot, bytes32 _complianceProof) onlyOwnerOrDelegate returns (bool success) {
       require(msg.sender == owner || msg.sender == delegate);
       complianceProof = _newMerkleRoot;
-      LogNewComplianceProof(_newMerkleRoot, _complianceProof);
+      LogUpdatedComplianceProof(_newMerkleRoot, _complianceProof);
+      return true;
+    }
+
+    /// Set the KYC provider
+    /// @param _kycProvider Address of KYC provider
+    /// @return bool success
+    function setKYCProvider(address _kycProvider) onlyOwner returns (bool success) {
+      require(_kycProvider != address(0));
+      KYC = _kycProvider;
+      LogSetKYCProvider(_kycProvider);
       return true;
     }
 
@@ -167,23 +154,33 @@ contract SecurityToken is IERC20 {
     /// @return bool success
     // TODO start time/end time
     // TODO check bounty meets STO reqs
-    function setSTO(address _securityTokenOfferingAddress) onlyDelegate returns (bool success) {
+    function setSTOContract(address _securityTokenOfferingAddress) onlyDelegate returns (bool success) {
       require(complianceProof != 0);
       //TODO require(_securityTokenOfferingAddress = address(0));
       STO = _securityTokenOfferingAddress;
-      LogSecurityTokenOffering(_securityTokenOfferingAddress);
+      LogSetSTOContract(_securityTokenOfferingAddress);
       return true;
     }
 
-    /// Set the KYC provider
-    /// @param _kycProvider Address of KYC provider
+    /// Add an verified investor to the Security Token whitelist
+    /// @param _investorAddress Address of the investor attempting to join ST whitelist
     /// @return bool success
-    function setKYC(address _kycProvider) onlyOwner returns (bool success) {
-      require(_kycProvider != address(0));
-      require(complianceProof != 0);
-      KYC = _kycProvider;
-      LogSetKYC(_kycProvider);
+    function addInvestor(address _investorAddress) returns (bool success) {
+      require(KYC != address(0));
+      require(template != 0);
+      var (jurisdiction, accredited) = PolyCustomers.getAttestations(KYC, msg.sender);
+      bool requirementsMet = PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited);
+      require(requirementsMet);
+      investors[_investorAddress] = true;
       return true;
+    }
+
+    // Withdraw a bounty if the delegate is not set
+    /// @param _amount Amount of POLY being withdrawn from the bounty
+    /// @return bool success
+    function withdrawBounty(uint256 _amount) returns (bool success) {
+      require(delegate != address(0));
+      return POLY.transfer(owner, _amount);
     }
 
     /// Trasfer tokens from one address to another

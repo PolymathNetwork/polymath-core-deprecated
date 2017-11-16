@@ -24,24 +24,6 @@ newDelegate (
 \_delegateAddress - The Ethereum public key of the new legal delegate
 \_application - SHA256 hash of the application document
 
-## Approve legal delegate
-
-Polymath Inc. will review the legal delegate's qualifications and request any followup
-documentation if necessary. Based on the qualifications, the delegate will be approved
-to review and bid on issuances in specific jurisdictions. This function is only accessible to
-contract owners. In the future it will be transferred to a multi-sig wallet controlled by the
-entire Polymath network.
-
-```
-approveDelegate (
-  address _delegateAddress,
-  uint8[] _jurisdictions
-)
-```
-
-\_delegateAddress - The Ethereum public key of the delegate
-\_jurisdictions - An array of valid jurisdiction id's.
-
 ## Create compliance template
 
 Legal delegates can propose new compliance templates for Polymath Security Tokens by
@@ -69,21 +51,6 @@ newTemplate (
 \_type - A description of the compliance template type
 \_fee - Amount of POLY to use the template (held in escrow until issuance)
 \_expires - Timestamp the template expires
-
-## Approve compliance template
-
-A compliance template must be approved by the Polymath team, this is done using the approveTemplate function.
-In the future this will be governed by the network.
-
-```
-approveTemplate (
-  string _templateId,
-  boolean _approved
-)
-```
-
-\_templateId - The id of the compliance template being approved
-\_approved - If true, the compliance template can be applied to ST's, otherwise it is deleted
 
 ## Add a Jurisdiction
 

@@ -9,10 +9,10 @@ const SecurityTokens = artifacts.require('./SecurityTokens.sol');
 module.exports = async (deployer, network) => {
   console.log(`Deploying Polymath Network Smart contracts to ${network}...`);
   await deployer.deploy(PolyToken);
+  await deployer.deploy(Compliance);
+  await deployer.deploy(Customers, PolyToken.address);
   await deployer.deploy(SecurityTokens, PolyToken.address);
   await deployer.deploy(SecurityToken);
-  await deployer.deploy(Compliance);
-  await deployer.deploy(Customers);
   console.log(`\nPolymath Network Smart Contracts Deployed:\n
     PolyToken: ${PolyToken.address}\n
     SecurityTokens: ${SecurityTokens.address}\n

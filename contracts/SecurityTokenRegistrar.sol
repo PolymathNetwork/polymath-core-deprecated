@@ -9,6 +9,7 @@ contract SecurityTokenRegistrar is Ownable {
     uint256 public totalSecurityTokens;
     address public polyTokenAddress;
     address public polyCustomersAddress;
+    address public polyComplianceAddress;
     PolyToken POLY;
 
     // Security Token
@@ -19,11 +20,10 @@ contract SecurityTokenRegistrar is Ownable {
       address owner;
       address tokenAddress;
       uint8 securityType;
-      uint256 developerFee;
     }
 
     // Mapping of ticker name to Security Token details
-    mapping(string => SecurityTokenData) public securityTokenRegistrar;
+    mapping(string => SecurityTokenData) securityTokenRegistrar; // Can't be public, why?
 
     // Security Token Offering Contract
     struct SecurityTokenOfferingContract {
@@ -33,40 +33,39 @@ contract SecurityTokenRegistrar is Ownable {
 
     // Mapping of contract creator address to contract details
     mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
-    //dk - i think this is wrong, should be STO contract address - nov 3
+
     event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
     event LogNewSecurityTokenOffering(address contractAddress);
 
     // Constructor
-    function securityTokenRegistrar(address _polyTokenAddress, address _polyCustomersAddress) {
+    function SecurityTokenRegistrar(address _polyTokenAddress, address _polyCustomersAddress, address _polyComplianceAddress) {
       polyTokenAddress = _polyTokenAddress;
       polyCustomersAddress = _polyCustomersAddress;
+      polyComplianceAddress = _polyComplianceAddress;
     }
 
     // Creates a new Security Token and saves it to the registry
     /// @param _name Name of the security token
     /// @param _ticker Ticker name of the security
-    /// @param _decimals Divisibility of the token
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
     /// @param _type Type of security being tokenized
-    function createSecurityToken (string _name, string _ticker, uint8 _decimals, uint256 _totalSupply, address _owner, uint8 _type, uint256 _fee) external {
+    function createSecurityToken (string _name, string _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
       //TODO require(securityTokenRegistrar[_ticker] != address(0));
 
-      // Collect developer fee
-      PolyToken(polyTokenAddress).transferFrom(_owner, this, _fee);
+      // Collect creation fee
+      PolyToken(polyTokenAddress).transferFrom(_owner, this, 1000);
 
       // Create the new Security Token contract
-      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _decimals, _totalSupply, _owner, polyTokenAddress, polyCustomersAddress);
+      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _totalSupply, _owner, _template, polyTokenAddress, polyCustomersAddress, polyComplianceAddress);
 
       // Update the registry
       SecurityTokenData memory newToken = securityTokenRegistrar[_ticker];
       newToken.name = _name;
-      newToken.decimals = _decimals;
+      newToken.decimals = 0;
       newToken.totalSupply = _totalSupply;
       newToken.owner = _owner;
       newToken.securityType = _type;
-      newToken.developerFee = _fee;
       newToken.tokenAddress = newSecurityTokenAddress;
       securityTokenRegistrar[_ticker] = newToken;
 
