@@ -6,7 +6,7 @@ import './PolyToken.sol';
 import './Customers.sol';
 import './Compliance.sol';
 import './Ownable.sol';
-import './SecurityTokenOffering.sol';
+import './interfaces/ISTRegistrar.sol';
 
 contract SecurityToken is IERC20, Ownable {
 
@@ -42,6 +42,9 @@ contract SecurityToken is IERC20, Ownable {
 
     // Instance of the POLY token contract
     PolyToken public POLY;
+
+    // Instance of the registrar interface
+    ISTRegistrar public registrar;
 
     // Instance of the Compliance contract
     Compliance public PolyCompliance;
@@ -120,6 +123,7 @@ contract SecurityToken is IERC20, Ownable {
       address _polyTokenAddress,
       address _polyCustomersAddress,
       address _polyComplianceAddress,
+      address _registrar,
       uint256 _vestingPeriod
     ) {
       owner = _owner;
@@ -132,6 +136,7 @@ contract SecurityToken is IERC20, Ownable {
       POLY = PolyToken(_polyTokenAddress);
       PolyCustomers = Customers(_polyCustomersAddress);
       PolyCompliance = Compliance(_polyComplianceAddress);
+      ISTRegistrar registrar = ISTRegistrar();
       vestingPeriod = _vestingPeriod;
     }
 
@@ -188,8 +193,7 @@ contract SecurityToken is IERC20, Ownable {
     function setSTOContract(
       address _securityTokenOfferingAddress,
       uint256 _startTime,
-      uint256 _endTime,
-      address _developer
+      uint256 _endTime
     )
       public
       onlyDelegate
@@ -199,7 +203,8 @@ contract SecurityToken is IERC20, Ownable {
       require(complianceProof != 0);
       require(msg.sender != address(0));
       require(POLY.balanceOf(this) >= STO.fee + allocations[msg.sender]);
-      allocations[_developer] = STO.fee;
+      developer = registrar.getCreator(_securityTokenOfferingAddress);
+      allocations[developer] = STO.fee;
       STO = SecurityTokenOffering(_securityTokenOfferingAddress, _startTime, _endTime);
       issuanceEndTime = _endTime;
       LogSetSTOContract(_securityTokenOfferingAddress);

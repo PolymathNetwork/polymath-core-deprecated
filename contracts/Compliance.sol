@@ -24,7 +24,7 @@ contract Compliance is Ownable {
     uint256 finalizes;
     uint256 expires;
     uint256 fee;
-  }
+  } 
 
   // All compliance templates are stored in a mapping
   mapping(bytes32 => Template) templates;
