@@ -13,7 +13,7 @@ contract SecurityToken is IERC20, Ownable {
 
     using SafeMath for uint256;
 
-    string public version = '0.1';
+    string public version = "0.1";
 
     // Legal delegate
     address public delegate;
@@ -192,25 +192,25 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
     /// @return bool success
     function setSTOContract(
-      address _securityTokenOfferingAddress,
-      uint256 _startTime,
-      uint256 _endTime
+        address _securityTokenOfferingAddress,
+        uint256 _startTime,
+        uint256 _endTime
     )
-      public
-      onlyDelegate
-      returns (bool success)
+        public
+        onlyDelegate
+        returns (bool success)
     {
-      require(_securityTokenOfferingAddress != address(0));
-      require(complianceProof != 0);
-      require(msg.sender != address(0));
-      fee = registrar.getFee(_securityTokenOfferingAddress);
-      require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
-      developer = registrar.getCreator(_securityTokenOfferingAddress);
-      allocations[developer] = fee;
-      STO = SecurityTokenOffering(_securityTokenOfferingAddress, _startTime, _endTime);
-      issuanceEndTime = _endTime;
-      LogSetSTOContract(_securityTokenOfferingAddress);
-      return true;
+        require(_securityTokenOfferingAddress != address(0));
+        require(complianceProof != 0);
+        require(msg.sender != address(0));
+        uint256 fee = registrar.getFee(_securityTokenOfferingAddress);
+        require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
+        address developer = registrar.getCreator(_securityTokenOfferingAddress);
+        allocations[developer] = fee;
+        STO = SecurityTokenOffering(_securityTokenOfferingAddress);
+        issuanceEndTime = _endTime;
+        LogSetSTOContract(_securityTokenOfferingAddress);
+        return true;
     }
 
     /// Add an verified investor to the Security Token whitelist
