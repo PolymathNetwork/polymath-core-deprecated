@@ -328,7 +328,7 @@ contract SecurityToken is IERC20, Ownable {
 			require(issuanceEndTime < now);
 			require(issuancePaidOut[msg.sender] == false);
 			require(issuanceEndBalances[msg.sender] != 0);
-			require(transfer(msg.sender, issuanceEndBalances[msg.sender]);
+			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
 		}
 
     /// @param _owner The address from which the balance will be retrieved
