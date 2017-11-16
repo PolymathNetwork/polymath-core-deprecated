@@ -23,5 +23,16 @@ interface ISTRegistrar {
     /// @param _fee The fee charged for the services provided in POLY
     function newSecurityTokenOfferingContract(address _contractAddress, uint256 _fee) public;
 
+
+    /// @notice This is a basic getter function to allow access to the
+    ///  creator of a given STO contract through an interface.
+    /// @param _contractAddress An STO contract
+    /// @returns address The address of the STO contracts creator
     function getCreator(address _contractAddress) public returns(address);
+
+    /// @notice This is a basic getter function to allow access to the
+    ///  fee of a given STO contract through an interface.
+    /// @param _contractAddress An STO contract
+    /// @returns address The address of the STO contracts fee
+    function getFee(address _contractAddress) public returns(address);
 }

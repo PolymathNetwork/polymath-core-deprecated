@@ -7,6 +7,7 @@ import './Customers.sol';
 import './Compliance.sol';
 import './Ownable.sol';
 import './interfaces/ISTRegistrar.sol';
+import './SecurityTokenOffering.sol';
 
 contract SecurityToken is IERC20, Ownable {
 
@@ -202,9 +203,10 @@ contract SecurityToken is IERC20, Ownable {
       require(_securityTokenOfferingAddress != address(0));
       require(complianceProof != 0);
       require(msg.sender != address(0));
-      require(POLY.balanceOf(this) >= STO.fee + allocations[msg.sender]);
+      fee = registrar.getFee(_securityTokenOfferingAddress);
+      require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
       developer = registrar.getCreator(_securityTokenOfferingAddress);
-      allocations[developer] = STO.fee;
+      allocations[developer] = fee;
       STO = SecurityTokenOffering(_securityTokenOfferingAddress, _startTime, _endTime);
       issuanceEndTime = _endTime;
       LogSetSTOContract(_securityTokenOfferingAddress);
