@@ -188,7 +188,8 @@ contract SecurityToken is IERC20, Ownable {
     function setSTOContract(
       address _securityTokenOfferingAddress,
       uint256 _startTime,
-      uint256 _endTime
+      uint256 _endTime,
+      address _developer
     )
       public
       onlyDelegate
@@ -196,10 +197,9 @@ contract SecurityToken is IERC20, Ownable {
     {
       require(_securityTokenOfferingAddress != address(0));
       require(complianceProof != 0);
-      require(delegate != address(0));
-      // TODO get the developer address and fee
-      // require(POLY.balanceOf(this) >= STO.fee + allocations[_delegate]);
-      // allocations[developer] = STO.fee
+      require(msg.sender != address(0));
+      require(POLY.balanceOf(this) >= STO.fee + allocations[msg.sender]);
+      allocations[_developer] = STO.fee;
       STO = SecurityTokenOffering(_securityTokenOfferingAddress, _startTime, _endTime);
       issuanceEndTime = _endTime;
       LogSetSTOContract(_securityTokenOfferingAddress);
