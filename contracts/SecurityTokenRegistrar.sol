@@ -23,7 +23,7 @@ contract SecurityTokenRegistrar is Ownable {
     }
 
     // Mapping of ticker name to Security Token details
-    mapping(bytes8 => SecurityTokenData) securityTokenRegistrar; // Can't be public, why?
+    mapping(bytes8 => SecurityTokenData) securityTokenRegistrar;
 
     // Security Token Offering Contract
     struct SecurityTokenOfferingContract {
