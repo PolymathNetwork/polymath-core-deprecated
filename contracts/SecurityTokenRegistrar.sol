@@ -99,7 +99,7 @@ contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
     ///  fee of a given STO contract through an interface.
     /// @param _contractAddress An STO contract
     /// @returns address The address of the STO contracts fee
-    function getFee(address _contractAddress) public returns(address) {
+    function getFee(address _contractAddress) public returns(uint256) {
         return securityTokenOfferingContracts[_contractAddress].fee;
     }
 
