@@ -5,7 +5,7 @@ contract Migrations {
     uint public last_completed_migration;
 
     modifier restricted() {
-        require (msg.sender != owner);
+        require (msg.sender == owner);
         _;
     }
 
