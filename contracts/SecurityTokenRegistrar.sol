@@ -3,8 +3,10 @@ pragma solidity ^0.4.15;
 import './SafeMath.sol';
 import './SecurityToken.sol';
 import './Ownable.sol';
+import './interfaces/ISTRegistrar.sol';
 
-contract SecurityTokenRegistrar is Ownable {
+
+contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
 
     uint256 public totalSecurityTokens;
     address public polyTokenAddress;
@@ -14,34 +16,39 @@ contract SecurityTokenRegistrar is Ownable {
 
     // Security Token
     struct SecurityTokenData {
-      string name;
-      uint8 decimals;
-      uint256 totalSupply;
-      address owner;
-      address tokenAddress;
-      uint8 securityType;
+        string name;
+        uint8 decimals;
+        uint256 totalSupply;
+        address owner;
+        address tokenAddress;
+        uint8 securityType;
     }
 
     // Mapping of ticker name to Security Token details
-    mapping(string => SecurityTokenData) securityTokenRegistrar; // Can't be public, why?
+    mapping(bytes8 => SecurityTokenData) securityTokenRegistrar;
 
     // Security Token Offering Contract
     struct SecurityTokenOfferingContract {
-      address creator;
-      uint256 fee;
+        address creator;
+        uint256 fee;
     }
 
-    // Mapping of contract creator address to contract details
+    // Mapping of contract address to contract details
     mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
 
     event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
     event LogNewSecurityTokenOffering(address contractAddress);
 
     // Constructor
-    function SecurityTokenRegistrar(address _polyTokenAddress, address _polyCustomersAddress, address _polyComplianceAddress) {
-      polyTokenAddress = _polyTokenAddress;
-      polyCustomersAddress = _polyCustomersAddress;
-      polyComplianceAddress = _polyComplianceAddress;
+    function SecurityTokenRegistrar(
+        address _polyTokenAddress,
+        address _polyCustomersAddress,
+        address _polyComplianceAddress
+    ) public
+    {
+        polyTokenAddress = _polyTokenAddress;
+        polyCustomersAddress = _polyCustomersAddress;
+        polyComplianceAddress = _polyComplianceAddress;
     }
 
     // Creates a new Security Token and saves it to the registry
@@ -50,7 +57,7 @@ contract SecurityTokenRegistrar is Ownable {
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
     /// @param _type Type of security being tokenized
-    function createSecurityToken (string _name, string _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
+    function createSecurityToken (string _name, bytes8 _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
       //TODO require(securityTokenRegistrar[_ticker] != address(0));
 
       // Collect creation fee
@@ -77,11 +84,32 @@ contract SecurityTokenRegistrar is Ownable {
     /// Allow new security token offering contract
     /// @param _contractAddress The security token offering contract's public key address
     /// @param _fee The fee charged for the services provided in POLY
-    function newSecurityTokenOfferingContract(address _contractAddress, uint256 _fee) {
-      require(_contractAddress != address(0));
-      SecurityTokenOfferingContract memory newSTO = SecurityTokenOfferingContract({creator: msg.sender, fee: _fee});
-      securityTokenOfferingContracts[_contractAddress] = newSTO;
-      LogNewSecurityTokenOffering(_contractAddress);
+    function newSecurityTokenOfferingContract(
+        address _contractAddress,
+        uint256 _fee
+    ) public
+    {
+        require(_contractAddress != address(0));
+        SecurityTokenOfferingContract memory newSTO = SecurityTokenOfferingContract({creator: msg.sender, fee: _fee});
+        securityTokenOfferingContracts[_contractAddress] = newSTO;
+        LogNewSecurityTokenOffering(_contractAddress);
+    }
+
+
+    /// @notice This is a basic getter function to allow access to the
+    ///  creator of a given STO contract through an interface.
+    /// @param _contractAddress An STO contract
+    /// @returns address The address of the STO contracts creator
+    function getCreator(address _contractAddress) public returns(address) {
+        return securityTokenOfferingContracts[_contractAddress].creator;
+    }
+
+    /// @notice This is a basic getter function to allow access to the
+    ///  fee of a given STO contract through an interface.
+    /// @param _contractAddress An STO contract
+    /// @returns address The address of the STO contracts fee
+    function getFee(address _contractAddress) public returns(uint256) {
+        return securityTokenOfferingContracts[_contractAddress].fee;
     }
 
 }
