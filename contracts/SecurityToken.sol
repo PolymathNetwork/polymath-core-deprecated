@@ -55,7 +55,7 @@ contract SecurityToken is IERC20, Ownable {
     // ERC20 Fields
     string public name;
     uint8 public decimals;
-    string public symbol;
+    bytes8 public symbol;
     address public owner;
     uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
@@ -112,28 +112,27 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
     /// @param _vestingPeriod Vesting period for bounty funds
     function SecurityToken(
-        string _name,
-        string _ticker,
-        uint256 _totalSupply,
-        address _owner,
-        bytes32 _template,
-        address _polyTokenAddress,
-        address _polyCustomersAddress,
-        address _polyComplianceAddress,
-        uint256 _vestingPeriod
-    ) public
-    {
-        owner = _owner;
-        name = _name;
-        symbol = _ticker;
-        decimals = 0;
-        template = _template;
-        totalSupply = _totalSupply;
-        balances[_owner] = _totalSupply;
-        POLY = PolyToken(_polyTokenAddress);
-        PolyCustomers = Customers(_polyCustomersAddress);
-        PolyCompliance = Compliance(_polyComplianceAddress);
-        vestingPeriod = _vestingPeriod;
+      string _name,
+      bytes8 _ticker,
+      uint256 _totalSupply,
+      address _owner,
+      bytes32 _template,
+      address _polyTokenAddress,
+      address _polyCustomersAddress,
+      address _polyComplianceAddress,
+      uint256 _vestingPeriod
+    ) {
+      owner = _owner;
+      name = _name;
+      symbol = _ticker;
+      decimals = 0;
+      template = _template;
+      totalSupply = _totalSupply;
+      balances[_owner] = _totalSupply;
+      POLY = PolyToken(_polyTokenAddress);
+      PolyCustomers = Customers(_polyCustomersAddress);
+      PolyCompliance = Compliance(_polyComplianceAddress);
+      vestingPeriod = _vestingPeriod;
     }
 
     /// Make a new bid to be the legal delegate
@@ -142,8 +141,8 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _quorum The percentage of initial investors required to freeze bounty funds
     /// @return bool success
     function makeBid(
-        uint256 _fee, 
-        uint256 _expires, 
+        uint256 _fee,
+        uint256 _expires,
         uint32 _quorum)
     public returns (bool success)
     {
@@ -157,7 +156,7 @@ contract SecurityToken is IERC20, Ownable {
     /// Accept a Delegate's bid
     /// @param _delegate Legal Delegates public ethereum address
     /// @return bool success
-    function setDelegate(address _delegate) 
+    function setDelegate(address _delegate)
     public onlyOwner returns (bool success)
     {
         require(_delegate == address(0));
@@ -174,7 +173,7 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _complianceProof Compliance Proof hash
     /// @return bool success
     function updateComplianceProof(
-        bytes32 _newMerkleRoot, 
+        bytes32 _newMerkleRoot,
         bytes32 _complianceProof
     ) public onlyOwnerOrDelegate returns (bool success)
     {
@@ -227,7 +226,7 @@ contract SecurityToken is IERC20, Ownable {
     /// Add an verified investor to the Security Token whitelist
     /// @param _investorAddress Address of the investor attempting to join ST whitelist
     /// @return bool success
-    function addInvestor(address _investorAddress) 
+    function addInvestor(address _investorAddress)
     public returns (bool success)
     {
         require(KYC != address(0));
@@ -277,7 +276,7 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _to Ethereum public address to transfer tokens to
     /// @param _value Amount of tokens to send
     /// @return bool success
-    function transfer(address _to, uint256 _value) 
+    function transfer(address _to, uint256 _value)
     public returns (bool success)
     {
         if (investors[_to] && balances[msg.sender] >= _value && _value > 0) {
@@ -313,7 +312,7 @@ contract SecurityToken is IERC20, Ownable {
 
     /// @param _owner The address from which the balance will be retrieved
     /// @return The balance
-    function balanceOf(address _owner) 
+    function balanceOf(address _owner)
     public constant returns (uint256 balance)
     {
         return balances[_owner];
@@ -340,7 +339,7 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _owner The address of the account owning tokens
     /// @param _spender The address of the account able to transfer the tokens
     /// @return Amount of remaining tokens allowed to spent
-    function allowance(address _owner, address _spender) 
+    function allowance(address _owner, address _spender)
     public constant returns (uint256 remaining)
     {
         return allowed[_owner][_spender];
