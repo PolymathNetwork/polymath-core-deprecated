@@ -56,6 +56,12 @@ contract SecurityToken is IERC20, Ownable {
     // Instance of the Customers contract
     Customers PolyCustomers;
 
+    // Until the securityVestingPeriod has ended disable transfers
+    uint256 public securityVestingPeriod;
+
+    // By default bountys vest out after 1 month
+    uint256 public bountyVestingPeriod = 2592000;
+
     // ERC20 Fields
     string public name;
     uint8 public decimals;
@@ -70,13 +76,21 @@ contract SecurityToken is IERC20, Ownable {
         bool hasVoted;
         bool vote;
     }
-    uint256 public vestingPeriod;
+
+		// Values for the start and end time of the STO
     uint256 public issuanceEndTime;
+    uint256 public issuanceStartTime;
+
+		// Tally values for Bounty voting
     uint256 public yay;
     uint256 public yayPercent;
     bool public bountyFrozen;
     mapping (address => Vote) votes;
+		
+		// Variables for issuance status
     mapping (address => uint256) issuanceEndBalances;
+		mapping (address => bool) issuancePaidOut;
+		uint totalIssuance = 0;
 
     // Notifications
     event LogDelegateBid(address indexed delegateAddress, uint256 bid);
@@ -99,6 +113,11 @@ contract SecurityToken is IERC20, Ownable {
         require (msg.sender == delegate || msg.sender == owner);
         _;
     }
+
+		modifier onlySTO() {
+			require (msg.sender == address(STO));
+			_;
+		}
 
     modifier onlyInvestor(address _investor) {
         require (investors[_investor] == true);
@@ -246,32 +265,31 @@ contract SecurityToken is IERC20, Ownable {
     /// Allow the bounty to be withdrawn by owner, delegate, and the STO developer at appropriate times
     /// @param _amount Amount of POLY being withdrawn from the bounty
     /// @return bool success
-    function withdrawBounty(uint256 _amount)
-    public returns (bool success)
-    {
-        if (delegate == address(0)) {
-            return POLY.transfer(owner, _amount);
-        } else {
-            require(bountyFrozen == false);
-            require(allocations[msg.sender] >= _amount);
-            allocations[msg.sender] = allocations[msg.sender].sub(_amount);
-            return POLY.transfer(msg.sender, _amount);
-        }
+    function withdrawBounty(uint256 _amount) public returns (bool success) { 
+			if (delegate == address(0)) {
+        return POLY.transfer(owner, _amount);
+      } else {
+				require(now > issuanceEndTime + bountyVestingPeriod);
+        require(bountyFrozen == false);
+        require(allocations[msg.sender] >= _amount);
+				require(POLY.transfer(msg.sender, _amount));
+        allocations[msg.sender] = allocations[msg.sender].sub(_amount);
+        return true;
+      }
     }
 
     /// Vote to freeze the compliance bounty fund
     /// @param _freezeVote `true` will vote to freeze, `false` will do nothing.
-    function voteToFreeze(bool _freezeVote)
-    public returns (bool success)
-    {
-        require(delegate != address(0));
-        require(votes[msg.sender].hasVoted == false);
-        if (_freezeVote) {
-            yay = yay + issuanceEndBalances[msg.sender];
-            yayPercent = yay.mul(100).div(totalSupply);
-            if (yayPercent > bids[delegate].quorum) {
-                bountyFrozen = true;
-            }
+    function voteToFreeze(bool _freezeVote) public returns (bool success)  {
+      require(delegate != address(0));
+      require(now > issuanceEndTime);
+      require(now < issuanceEndTime + bountyVestingPeriod);
+      require(votes[msg.sender].hasVoted == false);
+      if (_freezeVote) {
+        yay = yay + issuanceEndBalances[msg.sender];
+        yayPercent = yay.mul(100).div(totalSupply);
+        if (yayPercent > bids[delegate].quorum) {
+          bountyFrozen = true;
         }
         votes[msg.sender] = Vote({ hasVoted: true, vote: _freezeVote });
         return true;
@@ -314,6 +332,30 @@ contract SecurityToken is IERC20, Ownable {
             return false;
         }
     }
+
+		/// @notice `registerIssuance` is used by the STO to register
+		///  value to be paid out at the end of the issuance.
+		/// @param _contributor The address of the person whose contributing
+		/// @param _amount The amount of ST to pay out.
+		function registerIssuance(address _contributor, address _amount)
+		public
+		onlySTO
+		{
+			require(issuanceEndTime > now);
+			require(totalIssuance.add(_amount) > balanceOf(this));
+			totalIssuance = totalIssuance.add(_amount);
+			issuanceEndBalances(_contributor) = issuanceEndBalances(_contributor)
+				.add(_amount);
+		}
+
+		/// @notice `collectIssuance` is used to collect ST tokens
+		///  after the issuance period has passed.
+		function collectIssuance() public {
+			require(issuanceEndTime < now);
+			require(issuancePaidOut[msg.sender] == false);
+			require(issuanceEndBalances[msg.sender] != 0);
+			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
+		}
 
     /// @param _owner The address from which the balance will be retrieved
     /// @return The balance
