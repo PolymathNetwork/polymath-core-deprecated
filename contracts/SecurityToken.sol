@@ -55,7 +55,7 @@ contract SecurityToken is IERC20, Ownable {
     // ERC20 Fields
     string public name;
     uint8 public decimals;
-    string public symbol;
+    bytes8 public symbol;
     address public owner;
     uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
@@ -113,7 +113,7 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _vestingPeriod Vesting period for bounty funds
     function SecurityToken(
       string _name,
-      string _ticker,
+      bytes8 _ticker,
       uint256 _totalSupply,
       address _owner,
       bytes32 _template,

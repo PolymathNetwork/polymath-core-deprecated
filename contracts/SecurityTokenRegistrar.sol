@@ -50,7 +50,7 @@ contract SecurityTokenRegistrar is Ownable {
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
     /// @param _type Type of security being tokenized
-    function createSecurityToken (string _name, string _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
+    function createSecurityToken (string _name, bytes8 _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
       //TODO require(securityTokenRegistrar[_ticker] != address(0));
 
       // Collect creation fee
