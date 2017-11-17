@@ -3,8 +3,10 @@ pragma solidity ^0.4.15;
 import './SafeMath.sol';
 import './SecurityToken.sol';
 import './Ownable.sol';
+import './interfaces/ISTRegistrar.sol';
 
-contract SecurityTokenRegistrar is Ownable {
+
+contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
 
     uint256 public totalSecurityTokens;
     address public polyTokenAddress;
@@ -31,7 +33,7 @@ contract SecurityTokenRegistrar is Ownable {
         uint256 fee;
     }
 
-    // Mapping of contract creator address to contract details
+    // Mapping of contract address to contract details
     mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
 
     event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
@@ -91,6 +93,23 @@ contract SecurityTokenRegistrar is Ownable {
         SecurityTokenOfferingContract memory newSTO = SecurityTokenOfferingContract({creator: msg.sender, fee: _fee});
         securityTokenOfferingContracts[_contractAddress] = newSTO;
         LogNewSecurityTokenOffering(_contractAddress);
+    }
+
+
+    /// @notice This is a basic getter function to allow access to the
+    ///  creator of a given STO contract through an interface.
+    /// @param _contractAddress An STO contract
+    /// @returns address The address of the STO contracts creator
+    function getCreator(address _contractAddress) public returns(address) {
+        return securityTokenOfferingContracts[_contractAddress].creator;
+    }
+
+    /// @notice This is a basic getter function to allow access to the
+    ///  fee of a given STO contract through an interface.
+    /// @param _contractAddress An STO contract
+    /// @returns address The address of the STO contracts fee
+    function getFee(address _contractAddress) public returns(uint256) {
+        return securityTokenOfferingContracts[_contractAddress].fee;
     }
 
 }

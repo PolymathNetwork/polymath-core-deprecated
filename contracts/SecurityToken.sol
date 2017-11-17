@@ -6,6 +6,7 @@ import './PolyToken.sol';
 import './Customers.sol';
 import './Compliance.sol';
 import './Ownable.sol';
+import './interfaces/ISTRegistrar.sol';
 import './SecurityTokenOffering.sol';
 
 contract SecurityToken is IERC20, Ownable {
@@ -42,6 +43,9 @@ contract SecurityToken is IERC20, Ownable {
 
     // Instance of the POLY token contract
     PolyToken public POLY;
+
+    // Instance of the registrar interface
+    ISTRegistrar public registrar;
 
     // Instance of the Compliance contract
     Compliance public PolyCompliance;
@@ -112,27 +116,31 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
     /// @param _vestingPeriod Vesting period for bounty funds
     function SecurityToken(
-      string _name,
-      bytes8 _ticker,
-      uint256 _totalSupply,
-      address _owner,
-      bytes32 _template,
-      address _polyTokenAddress,
-      address _polyCustomersAddress,
-      address _polyComplianceAddress,
-      uint256 _vestingPeriod
-    ) {
-      owner = _owner;
-      name = _name;
-      symbol = _ticker;
-      decimals = 0;
-      template = _template;
-      totalSupply = _totalSupply;
-      balances[_owner] = _totalSupply;
-      POLY = PolyToken(_polyTokenAddress);
-      PolyCustomers = Customers(_polyCustomersAddress);
-      PolyCompliance = Compliance(_polyComplianceAddress);
-      vestingPeriod = _vestingPeriod;
+        string _name,
+        string _ticker,
+        uint256 _totalSupply,
+        address _owner,
+        bytes32 _template,
+        address _polyTokenAddress,
+        address _polyCustomersAddress,
+        address _polyComplianceAddress,
+        address _registrar,
+        uint256 _vestingPeriod
+    )
+    public
+    {
+        owner = _owner;
+        name = _name;
+        symbol = _ticker;
+        decimals = 0;
+        template = _template;
+        totalSupply = _totalSupply;
+        balances[_owner] = _totalSupply;
+        POLY = PolyToken(_polyTokenAddress);
+        PolyCustomers = Customers(_polyCustomersAddress);
+        PolyCompliance = Compliance(_polyComplianceAddress);
+        registrar = ISTRegistrar(_registrar);
+        vestingPeriod = _vestingPeriod;
     }
 
     /// Make a new bid to be the legal delegate
@@ -209,15 +217,12 @@ contract SecurityToken is IERC20, Ownable {
     {
         require(_securityTokenOfferingAddress != address(0));
         require(complianceProof != 0);
-        require(delegate != address(0));
-        // TODO get the developer address and fee
-        // require(POLY.balanceOf(this) >= STO.fee + allocations[_delegate]);
-        // allocations[developer] = STO.fee
-        STO = SecurityTokenOffering(
-            _securityTokenOfferingAddress,
-            _startTime,
-            _endTime
-        );
+        require(msg.sender != address(0));
+        uint256 fee = registrar.getFee(_securityTokenOfferingAddress);
+        require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
+        address developer = registrar.getCreator(_securityTokenOfferingAddress);
+        allocations[developer] = fee;
+        STO = SecurityTokenOffering(_securityTokenOfferingAddress);
         issuanceEndTime = _endTime;
         LogSetSTOContract(_securityTokenOfferingAddress);
         return true;
