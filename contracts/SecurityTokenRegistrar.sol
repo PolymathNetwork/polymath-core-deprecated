@@ -6,7 +6,7 @@ import './Ownable.sol';
 import './interfaces/ISTRegistrar.sol';
 
 
-contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
+contract SecurityTokenRegistrar is ISTRegistrar {
 
     uint256 public totalSecurityTokens;
     address public polyTokenAddress;
@@ -36,7 +36,7 @@ contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
     // Mapping of contract address to contract details
     mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
 
-    event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner);
+    event LogNewSecurityToken(bytes8 indexed ticker, address securityTokenAddress, address owner);
     event LogNewSecurityTokenOffering(address contractAddress);
 
     // Constructor
@@ -64,7 +64,7 @@ contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
       PolyToken(polyTokenAddress).transferFrom(_owner, this, 1000);
 
       // Create the new Security Token contract
-      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _totalSupply, _owner, _template, polyTokenAddress, polyCustomersAddress, polyComplianceAddress);
+      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _totalSupply, _owner, _template, polyTokenAddress, polyCustomersAddress, polyComplianceAddress, this);
 
       // Update the registry
       SecurityTokenData memory newToken = securityTokenRegistrar[_ticker];
@@ -77,7 +77,7 @@ contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
       securityTokenRegistrar[_ticker] = newToken;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, owner);
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
       totalSecurityTokens++;
     }
 
@@ -99,16 +99,16 @@ contract SecurityTokenRegistrar is Ownable, ISTRegistrar {
     /// @notice This is a basic getter function to allow access to the
     ///  creator of a given STO contract through an interface.
     /// @param _contractAddress An STO contract
-    /// @returns address The address of the STO contracts creator
-    function getCreator(address _contractAddress) public returns(address) {
+    /// @return creator The address of the STO contracts creator
+    function getCreator(address _contractAddress) public returns(address creator) {
         return securityTokenOfferingContracts[_contractAddress].creator;
     }
 
     /// @notice This is a basic getter function to allow access to the
     ///  fee of a given STO contract through an interface.
     /// @param _contractAddress An STO contract
-    /// @returns address The address of the STO contracts fee
-    function getFee(address _contractAddress) public returns(uint256) {
+    /// @return fee The fee paid to the developer of the STO
+    function getFee(address _contractAddress) public returns(uint256 fee) {
         return securityTokenOfferingContracts[_contractAddress].fee;
     }
 

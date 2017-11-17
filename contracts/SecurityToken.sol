@@ -23,6 +23,8 @@ contract SecurityToken is IERC20, Ownable {
         uint256 fee;
         uint256 expires;
         uint32 quorum;
+        uint256 vestingPeriod;
+        address attestor;
     }
     mapping(address => Bid) public bids;
 
@@ -35,32 +37,23 @@ contract SecurityToken is IERC20, Ownable {
     // STO address
     SecurityTokenOffering public STO;
 
-    // KYC Provider
-    address public KYC;
+    // Attestation provider
+    address public attestor;
 
-    // Security Token Whitelisted Investors
-    mapping(address => bool) public investors;
+    // Security token shareholders
+    mapping(address => bool) public shareholders;
 
     // Instance of the POLY token contract
     PolyToken public POLY;
 
-    // Instance of the registrar interface
-    ISTRegistrar public registrar;
+    // Instance of the Security Token Registrar interface
+    ISTRegistrar public SecurityTokenRegistrar;
 
     // Instance of the Compliance contract
     Compliance public PolyCompliance;
 
-    // Allocations
-    mapping(address => uint256) allocations;
-
     // Instance of the Customers contract
     Customers PolyCustomers;
-
-    // Until the securityVestingPeriod has ended disable transfers
-    uint256 public securityVestingPeriod;
-
-    // By default bountys vest out after 1 month
-    uint256 public bountyVestingPeriod = 2592000;
 
     // ERC20 Fields
     string public name;
@@ -71,6 +64,9 @@ contract SecurityToken is IERC20, Ownable {
     mapping (address => mapping (address => uint256)) allowed;
     mapping (address => uint256) balances;
 
+    // Bounty allocations
+    mapping(address => uint256) allocations;
+
     // Bounty voting
     struct Vote {
         bool hasVoted;
@@ -78,26 +74,29 @@ contract SecurityToken is IERC20, Ownable {
     }
 
 		// Values for the start and end time of the STO
-    uint256 public issuanceEndTime;
     uint256 public issuanceStartTime;
+    uint256 public issuanceEndTime;
+
+    // The period which ST holders can vote to freeze the bounty
+    uint256 public bountyVestingPeriod;
 
 		// Tally values for Bounty voting
     uint256 public yay;
     uint256 public yayPercent;
-    bool public bountyFrozen;
+    bool public freezeBounty;
     mapping (address => Vote) votes;
-		
+
 		// Variables for issuance status
     mapping (address => uint256) issuanceEndBalances;
 		mapping (address => bool) issuancePaidOut;
-		uint totalIssuance = 0;
+		uint securityTokensIssued = 0;
 
     // Notifications
-    event LogDelegateBid(address indexed delegateAddress, uint256 bid);
-    event LogDelegateSet(address indexed delegateAddress);
-    event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 complianceProofHash);
-    event LogSetKYCProvider(address indexed kycProvider);
-    event LogSetSTOContract(address indexed STOAddress);
+    event LogDelegateBid(address indexed _delegateAddress, uint256 _bid);
+    event LogDelegateSet(address indexed _delegateAddress);
+    event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
+    event LogSetAttestor(address indexed _attestor);
+    event LogSetSTOContract(address indexed _STOAddress);
 
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -119,8 +118,8 @@ contract SecurityToken is IERC20, Ownable {
 			_;
 		}
 
-    modifier onlyInvestor(address _investor) {
-        require (investors[_investor] == true);
+    modifier onlyShareholder(address _shareholder) {
+        require (shareholders[_shareholder] == true);
         _;
     }
 
@@ -133,20 +132,18 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _polyTokenAddress Ethereum address of the POLY token contract
     /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
     /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
-    /// @param _vestingPeriod Vesting period for bounty funds
+    /// @param _polySecurityTokenRegistrar Security Token Registrar address
     function SecurityToken(
         string _name,
-        string _ticker,
+        bytes8 _ticker,
         uint256 _totalSupply,
         address _owner,
         bytes32 _template,
         address _polyTokenAddress,
         address _polyCustomersAddress,
         address _polyComplianceAddress,
-        address _registrar,
-        uint256 _vestingPeriod
-    )
-    public
+        address _polySecurityTokenRegistrar
+    ) public
     {
         owner = _owner;
         name = _name;
@@ -158,34 +155,38 @@ contract SecurityToken is IERC20, Ownable {
         POLY = PolyToken(_polyTokenAddress);
         PolyCustomers = Customers(_polyCustomersAddress);
         PolyCompliance = Compliance(_polyComplianceAddress);
-        registrar = ISTRegistrar(_registrar);
-        vestingPeriod = _vestingPeriod;
+        SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
     }
 
     /// Make a new bid to be the legal delegate
     /// @param _fee The bounty fee requested to become legal delegate
     /// @param _expires The timestamp the bid expires at
-    /// @param _quorum The percentage of initial investors required to freeze bounty funds
+    /// @param _quorum The percentage of initial shareholders required to freeze bounty funds
+    /// @param _vestingPeriod The period of time shareholders can freeze bounty funds
     /// @return bool success
     function makeBid(
+        bytes32 _template,
         uint256 _fee,
         uint256 _expires,
-        uint32 _quorum)
-    public returns (bool success)
+        uint32 _quorum,
+        uint256 _vestingPeriod,
+        address _attestor
+    ) public returns (bool success)
     {
-    // require(PolyCompliance.delegates[msg.sender].details != 0x0);
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
+        require(verified == true);
+        require(role == 2);
         require(_expires >= now);
         require(_fee > 0);
-        bids[msg.sender] = Bid({fee: _fee, expires: _expires, quorum: _quorum});
+        require(_vestingPeriod >= 7777777);
+        bids[msg.sender] = Bid({fee: _fee, expires: _expires, quorum: _quorum, vestingPeriod: _vestingPeriod, attestor: _attestor});
         return true;
     }
 
     /// Accept a Delegate's bid
     /// @param _delegate Legal Delegates public ethereum address
     /// @return bool success
-    function setDelegate(address _delegate)
-    public onlyOwner returns (bool success)
-    {
+    function setDelegate(address _delegate) public onlyOwner returns (bool success) {
         require(_delegate == address(0));
         require(bids[_delegate].expires > now);
         require(POLY.balanceOf(this) >= bids[_delegate].fee);
@@ -202,23 +203,10 @@ contract SecurityToken is IERC20, Ownable {
     function updateComplianceProof(
         bytes32 _newMerkleRoot,
         bytes32 _complianceProof
-    ) public onlyOwnerOrDelegate returns (bool success)
-    {
+    ) public onlyOwnerOrDelegate returns (bool success) {
         require(msg.sender == owner || msg.sender == delegate);
         complianceProof = _newMerkleRoot;
         LogUpdatedComplianceProof(_newMerkleRoot, _complianceProof);
-        return true;
-    }
-
-    /// Set the KYC provider
-    /// @param _kycProvider Address of KYC provider
-    /// @return bool success
-    function setKYCProvider(address _kycProvider)
-    public onlyOwner returns (bool success)
-    {
-        require(_kycProvider != address(0));
-        KYC = _kycProvider;
-        LogSetKYCProvider(_kycProvider);
         return true;
     }
 
@@ -229,17 +217,12 @@ contract SecurityToken is IERC20, Ownable {
         address _securityTokenOfferingAddress,
         uint256 _startTime,
         uint256 _endTime
-    )
-    public
-    onlyDelegate
-    returns (bool success)
-    {
+    ) public onlyDelegate returns (bool success) {
         require(_securityTokenOfferingAddress != address(0));
         require(complianceProof != 0);
-        require(msg.sender != address(0));
-        uint256 fee = registrar.getFee(_securityTokenOfferingAddress);
+        uint256 fee = SecurityTokenRegistrar.getFee(_securityTokenOfferingAddress);
+        address developer = SecurityTokenRegistrar.getCreator(_securityTokenOfferingAddress);
         require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
-        address developer = registrar.getCreator(_securityTokenOfferingAddress);
         allocations[developer] = fee;
         STO = SecurityTokenOffering(_securityTokenOfferingAddress);
         issuanceEndTime = _endTime;
@@ -247,30 +230,28 @@ contract SecurityToken is IERC20, Ownable {
         return true;
     }
 
-    /// Add an verified investor to the Security Token whitelist
-    /// @param _investorAddress Address of the investor attempting to join ST whitelist
+    /// Add a verified address to the Security Token whitelist
+    /// @param _shareholderAddress Address attempting to join ST whitelist
     /// @return bool success
-    function addInvestor(address _investorAddress)
-    public returns (bool success)
-    {
-        require(KYC != address(0));
+    function addToWhitelist(address _shareholderAddress) public returns (bool success) {
+        require(attestor != address(0));
         require(template != 0);
-        var (jurisdiction, accredited) = PolyCustomers.getAttestations(KYC, msg.sender);
-        bool requirementsMet = PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited);
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(bids[delegate].attestor, msg.sender);
+        bool requirementsMet = PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role);
         require(requirementsMet);
-        investors[_investorAddress] = true;
+        shareholders[_shareholderAddress] = true;
         return true;
     }
 
     /// Allow the bounty to be withdrawn by owner, delegate, and the STO developer at appropriate times
     /// @param _amount Amount of POLY being withdrawn from the bounty
     /// @return bool success
-    function withdrawBounty(uint256 _amount) public returns (bool success) { 
+    function withdrawBounty(uint256 _amount) public returns (bool success) {
 			if (delegate == address(0)) {
         return POLY.transfer(owner, _amount);
       } else {
-				require(now > issuanceEndTime + bountyVestingPeriod);
-        require(bountyFrozen == false);
+				require(now > issuanceEndTime + bids[delegate].vestingPeriod);
+        require(freezeBounty == false);
         require(allocations[msg.sender] >= _amount);
 				require(POLY.transfer(msg.sender, _amount));
         allocations[msg.sender] = allocations[msg.sender].sub(_amount);
@@ -280,7 +261,8 @@ contract SecurityToken is IERC20, Ownable {
 
     /// Vote to freeze the compliance bounty fund
     /// @param _freezeVote `true` will vote to freeze, `false` will do nothing.
-    function voteToFreeze(bool _freezeVote) public returns (bool success)  {
+    /// @return bool success
+    function voteToFreeze(bool _freezeVote) public returns (bool success) {
       require(delegate != address(0));
       require(now > issuanceEndTime);
       require(now < issuanceEndTime + bountyVestingPeriod);
@@ -289,20 +271,38 @@ contract SecurityToken is IERC20, Ownable {
         yay = yay + issuanceEndBalances[msg.sender];
         yayPercent = yay.mul(100).div(totalSupply);
         if (yayPercent > bids[delegate].quorum) {
-          bountyFrozen = true;
+          freezeBounty = true;
         }
-        votes[msg.sender] = Vote({ hasVoted: true, vote: _freezeVote });
-        return true;
+      }
+      votes[msg.sender] = Vote({ hasVoted: true, vote: _freezeVote });
+      return true;
     }
+
+		/// @notice `issueSecurityTokens` is used by the STO to issue ST's to shareholders
+		///  at the end of the issuance.
+		/// @param _contributor The address of the person whose contributing
+		/// @param _amount The amount of ST to pay out.
+		function issueSecurityTokens(address _contributor, uint256 _amount) public onlySTO {
+			require(issuanceEndTime > now);
+			require(securityTokensIssued.add(_amount) <= balanceOf(this));
+			securityTokensIssued = securityTokensIssued.add(_amount);
+			issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
+		}
+
+		/// @notice `collectIssuance` is used to collect ST tokens
+		///  after the issuance period has passed.
+		function collectIssuance() public {
+			require(now > issuanceEndTime);
+			require(issuanceEndBalances[msg.sender] != 0);
+			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
+		}
 
     /// Trasfer tokens from one address to another
     /// @param _to Ethereum public address to transfer tokens to
     /// @param _value Amount of tokens to send
     /// @return bool success
-    function transfer(address _to, uint256 _value)
-    public returns (bool success)
-    {
-        if (investors[_to] && balances[msg.sender] >= _value && _value > 0) {
+    function transfer(address _to, uint256 _value) public returns (bool success) {
+        if (shareholders[_to] && balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = balances[msg.sender].sub(_value);
             balances[_to] = balances[_to].add(_value);
             Transfer(msg.sender, _to, _value);
@@ -318,10 +318,8 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _value Number of tokens to transfer
     /// @return bool success
     /// TODO: eliminate msg.sender for 0x
-    function transferFrom(address _from, address _to, uint256 _value)
-    public returns (bool success)
-    {
-        if (investors[_to] && investors[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+        if (shareholders[_to] && shareholders[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
             balances[_to] = balances[_to].add(_value);
@@ -333,35 +331,9 @@ contract SecurityToken is IERC20, Ownable {
         }
     }
 
-		/// @notice `registerIssuance` is used by the STO to register
-		///  value to be paid out at the end of the issuance.
-		/// @param _contributor The address of the person whose contributing
-		/// @param _amount The amount of ST to pay out.
-		function registerIssuance(address _contributor, address _amount)
-		public
-		onlySTO
-		{
-			require(issuanceEndTime > now);
-			require(totalIssuance.add(_amount) > balanceOf(this));
-			totalIssuance = totalIssuance.add(_amount);
-			issuanceEndBalances(_contributor) = issuanceEndBalances(_contributor)
-				.add(_amount);
-		}
-
-		/// @notice `collectIssuance` is used to collect ST tokens
-		///  after the issuance period has passed.
-		function collectIssuance() public {
-			require(issuanceEndTime < now);
-			require(issuancePaidOut[msg.sender] == false);
-			require(issuanceEndBalances[msg.sender] != 0);
-			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
-		}
-
     /// @param _owner The address from which the balance will be retrieved
     /// @return The balance
-    function balanceOf(address _owner)
-    public constant returns (uint256 balance)
-    {
+    function balanceOf(address _owner) public constant returns (uint256 balance) {
         return balances[_owner];
     }
 
@@ -369,10 +341,8 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _spender Address to approve transfer to
     /// @param _value Amount of tokens to approve for transfer
     /// @return bool success
-    function approve(address _spender, uint256 _value)
-    public returns (bool success)
-    {
-        if (investors[_spender]) {
+    function approve(address _spender, uint256 _value) public returns (bool success) {
+        if (shareholders[_spender]) {
             // @dev the logic on this looks screwey. Worth a look in testing
             require ((_value != 0) && (allowed[msg.sender][_spender] != 0));
             allowed[msg.sender][_spender] = _value;
@@ -386,9 +356,7 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _owner The address of the account owning tokens
     /// @param _spender The address of the account able to transfer the tokens
     /// @return Amount of remaining tokens allowed to spent
-    function allowance(address _owner, address _spender)
-    public constant returns (uint256 remaining)
-    {
+    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
 }

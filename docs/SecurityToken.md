@@ -18,29 +18,28 @@ build on top of the Polymath platform.
 ### SecurityToken.sol flow
 
 1. Token exists on the network after creation from SecurityTokenRegistrar.sol
-2. A legal delegate will be notified of creation, review details and calls proposeComplianceTemplate() with a template and bid for the offering
-3. The issuer reviews all proposals and calls setDelegate() with the Ethereum address of the legal delegate they wish to work with on the issuance
-4. Note: the issuer must have sent enough POLY to the SecurityToken contract address to cover the bounty specified in the bid
-5. The issuer/delegate begin completing the compliance process (using the open sourced template) and calls updateComplianceProof() when steps are completed
-6. Developers are also notified of the creation, review details and create STO contracts that meet the compliance specifications
-7. Upon final approval, the legal delegate can use setSTOAddress() to specify the SecurityTokenOffering contract address that will be used for the initial offering
-8. STO contract address can be changed as long as the new/old start time > now and no tokens have been sent to the contract address (balances[STO] == 0)
+2. The issuer sets the KYC provider they wish to use for the issuance
+3. Legal delegates make bids on the issuance
+4. The issuer reviews all bids and calls setDelegate() with the Ethereum address of the legal delegate they wish to work with on the issuance
+5. Note: the issuer must have sent enough POLY to the SecurityToken contract address to cover the bounty specified in the bid
+6. The issuer/delegate begin completing the compliance process (using the open sourced template) and calls updateComplianceProof() when steps are completed
+7. Developers are also notified of the creation, review details and create STO contracts that meet the compliance specifications
+8. Upon final approval, the legal delegate can use setSTOContract() to specify the SecurityTokenOffering contract address that will be used for the initial offering
+9. STO contract address can be changed as long as the new/old start time > now and no tokens have been sent to the contract address (balances[STO] == 0)
 
 ## Delegates workflow
 
 ### Compliance.sol flow
 
-1. A delegate calls newDelegate() with their application to become a new Polymath delegate
-2. Polymath network reviews the application and either approves or rejects the application
-3. Approved delegates can call createTemplate() to create new ST compliance templates
-4. Polymath network reviews the compliance template and either approves or rejects it
-5. Delegates can now re-use templates for issuances and earn royalties if it becomes widely adopted by issuers
+1. A delegate calls newDelegate() with their details to become a new Polymath delegate
+2. Delegates can call createTemplate() to create new ST compliance templates
+4. Delegates can now re-use templates for issuances and earn royalties if it becomes widely adopted by issuers
 
 ## KYC Providers workflow
 
-1. A KYC provider calls newProvider() with their application to become a new Polymath KYC provider
-2. Polymath network reviews the application and either approves or rejects the application
-3. Approved KYC providers can now verifyInvestor()'s and earn tokens for doing so
+1. A KYC provider calls newProvider() with their details to become a new Polymath KYC provider
+2. Note: KYC Providers must pay N POLY tokens to get added as a KYC Provider
+3. Approved KYC providers can now verifyInvestor()'s and earn tokens (the fee they specified) for doing so
 
 ## Investors (and issuers/delegates) workflow
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.15;
 
 interface ISTRegistrar {
 
@@ -10,12 +10,12 @@ interface ISTRegistrar {
     /// @param _type Type of security being tokenized
     function createSecurityToken (
         string _name,
-        string _ticker,
+        bytes8 _ticker,
         uint256 _totalSupply,
         address _owner,
         bytes32 _template,
         uint8 _type
-        ) external;
+    ) external;
 
     /// Allow new security token offering contract
     /// @param _contractAddress The security token offering contract's
@@ -27,12 +27,12 @@ interface ISTRegistrar {
     /// @notice This is a basic getter function to allow access to the
     ///  creator of a given STO contract through an interface.
     /// @param _contractAddress An STO contract
-    /// @returns address The address of the STO contracts creator
+    /// @return address The address of the STO contracts creator
     function getCreator(address _contractAddress) public returns(address);
 
     /// @notice This is a basic getter function to allow access to the
     ///  fee of a given STO contract through an interface.
     /// @param _contractAddress An STO contract
-    /// @returns address The address of the STO contracts fee
+    /// @return address The address of the STO contracts fee
     function getFee(address _contractAddress) public returns(uint256);
 }
