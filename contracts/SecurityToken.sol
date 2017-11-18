@@ -7,7 +7,7 @@ import './Customers.sol';
 import './Compliance.sol';
 import './Ownable.sol';
 import './interfaces/ISTRegistrar.sol';
-import './SecurityTokenOffering.sol';
+import './interfaces/ISTO.sol';
 
 contract SecurityToken is IERC20, Ownable {
 
@@ -20,6 +20,7 @@ contract SecurityToken is IERC20, Ownable {
 
     // Delegate Bids
     struct Bid {
+        bytes32 template;
         uint256 fee;
         uint256 expires;
         uint32 quorum;
@@ -35,7 +36,7 @@ contract SecurityToken is IERC20, Ownable {
     bytes32 public complianceProof;
 
     // STO address
-    SecurityTokenOffering public STO;
+    ISTO public STO;
 
     // Attestation provider
     address public attestor;
@@ -173,13 +174,14 @@ contract SecurityToken is IERC20, Ownable {
         address _attestor
     ) public returns (bool success)
     {
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
+        var (,, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
         require(verified == true);
         require(role == 2);
+        require(expires > now);
         require(_expires >= now);
         require(_fee > 0);
         require(_vestingPeriod >= 7777777);
-        bids[msg.sender] = Bid({fee: _fee, expires: _expires, quorum: _quorum, vestingPeriod: _vestingPeriod, attestor: _attestor});
+        bids[msg.sender] = Bid({template: _template, fee: _fee, expires: _expires, quorum: _quorum, vestingPeriod: _vestingPeriod, attestor: _attestor});
         return true;
     }
 
@@ -224,7 +226,7 @@ contract SecurityToken is IERC20, Ownable {
         address developer = SecurityTokenRegistrar.getCreator(_securityTokenOfferingAddress);
         require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
         allocations[developer] = fee;
-        STO = SecurityTokenOffering(_securityTokenOfferingAddress);
+        STO = ISTO(_securityTokenOfferingAddress);
         issuanceEndTime = _endTime;
         LogSetSTOContract(_securityTokenOfferingAddress);
         return true;
@@ -237,6 +239,7 @@ contract SecurityToken is IERC20, Ownable {
         require(attestor != address(0));
         require(template != 0);
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(bids[delegate].attestor, msg.sender);
+        require(verified && expires > now);
         bool requirementsMet = PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role);
         require(requirementsMet);
         shareholders[_shareholderAddress] = true;

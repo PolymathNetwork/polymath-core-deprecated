@@ -36,6 +36,12 @@ contract Compliance {
     // Notifications
     event TemplateCreated(address creator, bytes32 _template, string _name);
 
+    // Constructor
+    /// @param _polyCustomersAddress The address of the Polymath Customers contract
+    function Compliance(address _polyCustomersAddress) {
+      PolyCustomers = Customers(_polyCustomersAddress);
+    }
+
     /// `createTemplate` is a simple function to create a new compliance template
     /// @param _template A SHA256 hash of the JSON schema containing full compliance process/requirements
     /// @param _attestor The attestation provider to be used for the issuance
@@ -55,15 +61,15 @@ contract Compliance {
         uint256 _fee
     ) public
     {
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
+        var (,, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
         require(verified);
         require(role == 2);
+        require(expires > now);
         require(templates[_template].owner == address(0));
         require(_finalizes > now);
         require(_expires >= _finalizes);
         templates[_template].owner = msg.sender;
         templates[_template].issuerJurisdiction = _issuerJurisdiction;
-        templates[_template].name = _name;
         templates[_template].name = _name;
         templates[_template].fee = _fee;
         templates[_template].accredited = _accredited;
