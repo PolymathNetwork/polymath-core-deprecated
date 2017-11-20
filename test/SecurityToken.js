@@ -1,29 +1,97 @@
-import expectRevert from './helpers/expectRevert';
+import expectRevert from './helpers/expectRevert'
 
-const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
+const SecurityToken = artifacts.require('../contracts/SecurityToken.sol')
+const POLY = artifacts.require('../contracts/PolyToken.sol')
+const Customers = artifacts.require('../contracts/Customers.sol');
+const Compliance = artifacts.require('../contracts/Compliance.sol')
+const Registrar = artifacts.require('../contracts/SecurityTokenRegistrar.sol')
 
 contract('SecurityToken', (accounts) => {
 
-  let security;
-
-  const name = 'Polymath Inc.';
-  const ticker = 'POLY';
-  const decimals = 1;
-  const totalSupply = 1234567890;
-  const polyTokenAddress = "0x377bbcae5327695b32a1784e0e13bedc8e078c9c"; //hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
-
-  let owner = accounts[0];
-  let spender = accounts[1];
-  let to1 = accounts[2];
-  let to2 = accounts[3];
-  let to3 = accounts[4];
+  const templateSHA  = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
   let allowedAmount = 100;  // Spender allowance
   let transferredFunds = 1200;  // Funds to be transferred around in tests
 
-  beforeEach(async () => {
-    security = await SecurityToken.new(name, ticker, decimals, totalSupply, owner, polyTokenAddress, { from: owner });
+  //holders for the 4 functions in Customers.sol
+  let newCustomerApplication;
+  let verifyCustomerApplication;
+  let newKycProviderApplication;
+  let approveProviderApplication;
+
+  //accounts
+  let owner = accounts[0]
+  let spender = accounts[1]
+  let to1 = accounts[2]
+  let to2 = accounts[3]
+  let to3 = accounts[4]
+  let attestor0 = accounts[5];
+  let attestor1 = accounts[6];
+  let customer0 = accounts[7];
+  let customer1 = accounts[8];
+  let provider0 = accounts[9];
+  let provider1 = accounts[0];
+  
+  //newCustomer() constants
+  const jurisdiction0 = "0";
+  const jurisdiction1 = "1";
+  const customerInvestorRole = 1;
+  const customerIssuerRole = 2;
+  const witnessProof0 = "ASffjflfgffgf";
+  const witnessProof1 = "asfretgtredfgsdfd";
+
+  //verifyCustomer() and approveProvider constants
+  const expcurrentTime = new Date().getTime() / 1000; //should get time currently
+  const willNotExipre = 1577836800; //Jan 1st 2020, to represent a time that won't fail for testing
+  const willExpire = 1500000000; //July 14 2017 will expire
+
+  //newProvider() constants
+  const providerName0 = "KYC-Chain"
+  const providerName1 = "Uport"
+  const providerApplication1 = "0xlfkeGlsdjs"
+  const providerApplication2 = "0xlfsvrgeX"
+
+  //SecurityToken variables
+  const name = 'Polymath Inc.'
+  const ticker = 'POLY'
+  const totalSupply = 1234567890  
+
+  let compliance, poly, customers, customer, registrar, security;
+  before(async () => {
+    compliance = await Compliance.new.apply(this)
+    poly = await POLY.new.apply(this)
+    customers = await Customers.new.apply(this, [poly.address])
+    customer1 = await customers.newCustomer(jurisdiction0, attestor0, customerInvestorRole, witnessProof0)
+    customer1 = await customers.newCustomer(jurisdiction0, attestor1, customerIssuerRole, witnessProof1)
+    registrar = await Registrar.new.apply(this, [poly.address, customers.address, compliance.address])
+    security = await SecurityToken.new.apply(
+      this,
+      [
+        name,
+        ticker,
+        totalSupply,
+        owner,
+        templateSHA,
+        poly.address,
+        customers.address,
+        compliance.address,
+        registrar.address,
+        { from: owner }
+      ]
+    );
   });
+
+  // This should be put in a helper file; here for now
+  function convertTicker(hexx) {
+    var hex = hexx.toString();//force conversion
+    var str = ''
+    for (var i = 0; i < hex.length; i += 2){
+        let char = String.fromCharCode(parseInt(hex.substr(i, 2), 16))
+        if(char != '\u0000')
+          str += char
+    }
+    return str
+  }
 
   describe('creation of SecurityToken from constructor', async () => {
     it('should be ownable', async () => {
@@ -35,26 +103,21 @@ contract('SecurityToken', (accounts) => {
     });
 
     it('should return correct ticker after creation', async () => {
-      assert.equal(await security.symbol(), ticker);
+      let symbol = await security.symbol();
+      assert.equal(convertTicker(symbol), ticker);
     });
 
     it('should return correct decimal points after creation', async () => {
-      assert.equal(await security.decimals(), decimals);
+      assert.equal((await security.decimals()).toNumber(), 0);
     });
 
     it('should return correct total supply after creation', async () => {
-      assert.equal(await security.totalSupply(), totalSupply);
+      assert.equal((await security.totalSupply()).toNumber(), totalSupply);
     });
 
     it('should allocate the total supply to the owner after creation', async () => {
       assert.equal((await security.balanceOf(owner)).toNumber(), totalSupply);
     });
-    /*This is not implemented yet in SecurityToken.sol. there are no links that i see that prevent this -dk nov 1
-    it('should restrict transfer of an unapproved security to all addresses', async () => {
-      await expectRevert(security.transfer(owner, spender)); //these were missing await, and failing
-      await expectRevert(security.transfer(owner, to1));
-      console.log("HIHIIH");
-    });*/
 
     //incomplete tests 
 

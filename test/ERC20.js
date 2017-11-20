@@ -135,7 +135,6 @@ contract('ERC20', (accounts) => {
 
             assert.lengthOf(result.logs, 1);
             let event = result.logs[0];
-            console.log(result.logs[0]);
             assert.equal(event.event, 'Transfer');
             assert.equal(event.args._from, owner);
             assert.equal(event.args._to, spender);
