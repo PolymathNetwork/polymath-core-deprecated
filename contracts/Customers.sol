@@ -59,9 +59,9 @@ contract Customers is Ownable {
     /// @param _fee The fee charged for customer verification
     function newAttestor(address _attestorAddress, string _name, bytes32 _details, uint256 _fee) public {
         require(_attestorAddress != address(0));
-        require(attestors[_attestorAddress].details != 0);
+        require(_details != 0);
         // Require 10,000 POLY fee
-        POLY.transferFrom(_attestorAddress, this, 10000);
+        require(POLY.transferFrom(_attestorAddress, this, 10000));
         attestors[_attestorAddress].name = _name;
         attestors[_attestorAddress].details = _details;
         attestors[_attestorAddress].fee = _fee;
@@ -105,7 +105,7 @@ contract Customers is Ownable {
     {
         require(customers[msg.sender][_customer].verified == false);
         require(customers[msg.sender][_customer].role != 0);
-        POLY.transferFrom(_customer, msg.sender, attestors[msg.sender].fee);
+        require(POLY.transferFrom(_customer, msg.sender, attestors[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;
         customers[msg.sender][_customer].accredited = _accredited;

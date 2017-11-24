@@ -52,32 +52,6 @@ contract('Customers', (accounts) => {
     });
 
     describe('function newCustomer', async () => {
-
-        it('should allow', async () => {
-
-        });
-
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
     });
 
     describe("function verifyCustomer", async () => {
@@ -92,48 +66,11 @@ contract('Customers', (accounts) => {
         it('Ensure KYC providers can only approve a customer if they were chosen to represent them by the customer', async () => {
 
         });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
     })
 
     describe("function newProvider", async () => {
 
         it('KYC providers can apply their data to the chain', async () => {
-
-        });
-
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
 
         });
     })
@@ -149,29 +86,5 @@ contract('Customers', (accounts) => {
         it('owner cant delete a KYC provider if they have been approved, even if they were later unapproved or expired', async () => {
 
         });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
-        it('should allow', async () => {
-
-        });
     })
-
-    describe("Tests that will have to be written in the future. Comments for now. Need to wait for Solidity code to get updated", async () => {
-
-    })
-
-
 });
-
-
-//don't know about 

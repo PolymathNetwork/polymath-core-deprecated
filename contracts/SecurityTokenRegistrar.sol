@@ -57,14 +57,14 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
     /// @param _type Type of security being tokenized
-    function createSecurityToken (string _name, bytes8 _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
+    function createSecurityToken (string _name, bytes8 _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external returns(address st) {
       //TODO require(securityTokenRegistrar[_ticker] != address(0));
 
       // Collect creation fee
       PolyToken(polyTokenAddress).transferFrom(_owner, this, 1000);
 
       // Create the new Security Token contract
-      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _totalSupply, _owner, _template, polyTokenAddress, polyCustomersAddress, polyComplianceAddress, this);
+      st = new SecurityToken(_name, _ticker, _totalSupply, _owner, _template, polyTokenAddress, polyCustomersAddress, polyComplianceAddress, this);
 
       // Update the registry
       SecurityTokenData memory newToken = securityTokenRegistrar[_ticker];
@@ -73,11 +73,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       newToken.totalSupply = _totalSupply;
       newToken.owner = _owner;
       newToken.securityType = _type;
-      newToken.tokenAddress = newSecurityTokenAddress;
+      newToken.tokenAddress = st;
       securityTokenRegistrar[_ticker] = newToken;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+      LogNewSecurityToken(_ticker, st, _owner);
       totalSecurityTokens++;
     }
 

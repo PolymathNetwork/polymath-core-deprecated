@@ -169,7 +169,7 @@ contract SecurityToken is IERC20 {
         uint32 _quorum,
         uint256 _vestingPeriod,
         address _attestor
-    ) public returns (bool success)
+    ) public returns (bool)
     {
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
         require(verified == true);
@@ -185,9 +185,9 @@ contract SecurityToken is IERC20 {
     /// @param _delegate Legal Delegates public ethereum address
     /// @return bool success
     function setDelegate(address _delegate) public onlyOwner returns (bool success) {
-        require(_delegate == address(0));
+        require(_delegate != address(0x0));
         require(bids[_delegate].expires > now);
-        require(POLY.balanceOf(this) >= bids[_delegate].fee);
+        require(POLY.transferFrom(owner, this, bids[_delegate].fee));
         delegate = _delegate;
         allocations[_delegate] = bids[_delegate].fee;
         LogDelegateSet(_delegate);
@@ -220,7 +220,7 @@ contract SecurityToken is IERC20 {
         require(complianceProof != 0);
         uint256 fee = SecurityTokenRegistrar.getFee(_securityTokenOfferingAddress);
         address developer = SecurityTokenRegistrar.getCreator(_securityTokenOfferingAddress);
-        require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
+        require(POLY.transferFrom(delegate, this, fee ));
         allocations[developer] = fee;
         STO = SecurityTokenOffering(_securityTokenOfferingAddress);
         issuanceEndTime = _endTime;
@@ -276,24 +276,24 @@ contract SecurityToken is IERC20 {
       return true;
     }
 
-		/// @notice `issueSecurityTokens` is used by the STO to issue ST's to shareholders
-		///  at the end of the issuance.
-		/// @param _contributor The address of the person whose contributing
-		/// @param _amount The amount of ST to pay out.
-		function issueSecurityTokens(address _contributor, uint256 _amount) public onlySTO {
-			require(issuanceEndTime > now);
-			require(securityTokensIssued.add(_amount) <= balanceOf(this));
-			securityTokensIssued = securityTokensIssued.add(_amount);
-			issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
-		}
+    /// @notice `issueSecurityTokens` is used by the STO to issue ST's to shareholders
+    ///  at the end of the issuance.
+    /// @param _contributor The address of the person whose contributing
+    /// @param _amount The amount of ST to pay out.
+    function issueSecurityTokens(address _contributor, uint256 _amount) public onlySTO {
+        require(issuanceEndTime > now);
+        require(securityTokensIssued.add(_amount) <= balanceOf(this));
+        securityTokensIssued = securityTokensIssued.add(_amount);
+        issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
+    }
 
-		/// @notice `collectIssuance` is used to collect ST tokens
-		///  after the issuance period has passed.
-		function collectIssuance() public {
-			require(now > issuanceEndTime);
-			require(issuanceEndBalances[msg.sender] != 0);
-			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
-		}
+    /// @notice `collectIssuance` is used to collect ST tokens
+    ///  after the issuance period has passed.
+    function collectIssuance() public {
+        require(now > issuanceEndTime);
+        require(issuanceEndBalances[msg.sender] != 0);
+        require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
+    }
 
     /// Trasfer tokens from one address to another
     /// @param _to Ethereum public address to transfer tokens to

@@ -42,6 +42,7 @@ contract PolyToken is IERC20 {
     /// @return Whether the transfer was successful or not
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
         uint256 _allowance = allowed[_from][msg.sender];
+        require(_allowance >= _value);
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = _allowance.sub(_value);

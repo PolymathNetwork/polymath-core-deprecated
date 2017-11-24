@@ -14,8 +14,6 @@ contract('ERC20', (accounts) => {
     let spender = accounts[1];
     let to = accounts[2];
 
-    // These need to be reset before every test
-    // in a beforeEach() clause
     let balanceOwner;
     let balanceSpender;
     let balanceTo;
