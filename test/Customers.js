@@ -57,7 +57,7 @@ contract('Customers', (accounts) => {
     describe("function verifyCustomer", async () => {
 
         it('if a KYC provider is expired or unnapproved, they cant verify customers', async () => {
-
+            
         });
 
         it('An approved and active KYC provider can validate customers as being in a jurisdiction and accredit a customer', async () => {

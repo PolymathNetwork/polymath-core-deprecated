@@ -314,6 +314,8 @@ contract('SecurityToken', (accounts) => {
 
   })
 
+
+  /*
   describe('Check other stuff', async () =>{
     it('should restrict approval for transfer to any address', async () => {
       
@@ -334,7 +336,7 @@ contract('SecurityToken', (accounts) => {
 
   /*********************Compliance Functions Below**************************************** */
   //owner like functions
-  describe("function proposeComplianceTemplate", async () => {
+  /*describe("function proposeComplianceTemplate", async () => {
     //setDelegate inside here too, and updateComplianceProof 
 
     //struct ComplianceTemplate
@@ -409,6 +411,6 @@ contract('SecurityToken', (accounts) => {
     //Of legal deelgate (only if issuer used this LD and process is complete or expired)
     //Of compliance template (only if this was compilance template used)
   })
-
+  */
 
 });
