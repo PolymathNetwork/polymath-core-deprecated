@@ -64,7 +64,7 @@ contract Compliance {
     /// @param _offeringType The name of the security being issued
     /// @param _issuerJurisdiction The jurisdiction id of the issuer
     /// @param _accredited Accreditation status required for investors
-    /// @param _provider KYC provider used by the template
+    /// @param _KYC KYC provider used by the template
     /// @param _details Details of the offering requirements
     /// @param _finalized Timestamp of when the template will finalize and become non-editable
     /// @param _expires Timestamp of when the template will expire
@@ -169,10 +169,14 @@ contract Compliance {
     /// Propose a STO contract for an issuance
     /// @param _securityToken The security token being bid on
     /// @param _contractAddress The security token offering contract address
+    /// @param _template The unique template hash
+    /// @param _templateIndex The array index of the template proposal
     /// @return bool success
     function proposeContract(
         address _securityToken,
-        address _contractAddress
+        address _contractAddress,
+        bytes32 _template,
+        uint8 _templateIndex
     ) public returns (bool success)
     {
         var (,, role, verified, expires) = PolyCustomers.getCustomer(templates[_template].KYC, msg.sender);
@@ -187,9 +191,9 @@ contract Compliance {
     /// history of a security token to keep track of previous uses
     /// @param _template The unique template id
     /// @param _templateIndex The array index of the template proposal
-    function updateTemplateReputation (bytes32 _template, uint8 _templateIndex) {
+    function updateTemplateReputation (bytes32 _template, uint8 _templateIndex) public returns (bool success) {
       require(templateProposals[msg.sender][_templateIndex] == _template);
-      template[_template].usedBy.push(msg.sender);
+      templates[_template].usedBy.push(msg.sender);
       templateProposals[msg.sender][_templateIndex].selected = true;
       return true;
     }
@@ -198,9 +202,9 @@ contract Compliance {
     /// history of a security token to keep track of previous uses
     /// @param _contractAddress The smart contract address
     /// @param _contractIndex The array index of the contract proposal
-    function updateContractReputation (address _contractAddress, uint8 _contractIndex) {
-      require(issuanceContracts[msg.sender][_contractIndex] == _contractAddress);
-      issuanceContracts[_contractAddress].usedBy.push(msg.sender);
+    function updateContractReputation (address _contractAddress, uint8 _contractIndex) public returns (bool success) {
+      require(contractProposals[msg.sender][_contractIndex] == _contractAddress);
+      contractProposals[_contractAddress].usedBy.push(msg.sender);
       return true;
     }
 
@@ -238,7 +242,7 @@ contract Compliance {
     /// @param _securityTokenAddress The security token ethereum address
     /// @param _templateIndex The array index of the template being checked
     /// return Template struct
-    function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) {
+    function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex)  public {
       return (templates[templateProposals[_securityTokenAddress][_templateIndex]]);
     }
 
@@ -246,7 +250,7 @@ contract Compliance {
     /// @param _securityTokenAddress The security token ethereum address
     /// @param _contractIndex The array index of the STO contract being checked
     /// return Contract struct
-    function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) {
+    function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) public {
       return (issuanceContracts[contractProposals[_securityTokenAddress][_contractIndex]]);
     }
 

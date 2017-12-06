@@ -15,7 +15,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     PolyToken POLY;
 
     // Security Token
-    struct SecurityTokenData {
+    struct SecurityToken {
         string name;
         uint8 decimals;
         uint256 totalSupply;
@@ -24,9 +24,10 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         uint8 securityType;
         bytes32 template;
     }
+    mapping(address => SecurityToken) securityTokens;
 
-    // Mapping of ticker name to Security Token details
-    mapping(address => SecurityTokenData) securityTokenRegistrar;
+    // Mapping of ticker name to Security Token
+    mapping(bytes8 => address) tickers;
 
     event LogNewSecurityToken(bytes8 indexed ticker, address securityTokenAddress, address owner);
 
@@ -67,7 +68,8 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint256 _lockupPeriod,
       uint8 _quorum
     ) external {
-      require(securityTokenRegistrar[_ticker].owner != address(0));
+      require(owner != address(0));
+      require(tickers[_ticker] == address(0));
 
       // Collect creation fee
       PolyToken(polyTokenAddress).transferFrom(msg.sender, _host, _fee);
@@ -88,7 +90,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       );
 
       // Update the registry
-      SecurityTokenData memory st = securityTokenRegistrar[newSecurityTokenAddress];
+      SecurityToken memory st = securityTokens[newSecurityTokenAddress];
       st.name = _name;
       st.decimals = 0;
       st.totalSupply = _totalSupply;
@@ -96,10 +98,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       st.securityType = _type;
       st.ticker = _ticker;
       st.template = 0x0;
-      securityTokenRegistrar[newSecurityTokenAddress] = st;
+      securityTokens[newSecurityTokenAddress] = st;
+      tickers[_ticker] = newSecurityTokenAddress;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, st, _owner);
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
       totalSecurityTokens++;
     }
 

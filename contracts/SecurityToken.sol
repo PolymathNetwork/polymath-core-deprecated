@@ -112,8 +112,7 @@ contract SecurityToken is IERC20 {
     /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
     /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
     /// @param _polySecurityTokenRegistrar Security Token Registrar address
-    /// @param _etherRaise Amount of ether being raised
-    /// @param _polyRaise Amount of POLY being raised
+    /// @param _maxPoly Amount of POLY being raised
     /// @param _lockupPeriod Length of time raised POLY will be locked up for dispute
     /// @param _quorum Percent of initial investors required to freeze POLY raise
     function SecurityToken(
@@ -142,17 +141,17 @@ contract SecurityToken is IERC20 {
         PolyCustomers = Customers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
-        allocations[owner] = Allocation({0, _lockupPeriod, _quorum, 0, 0, false});
+        allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
     }
 
     /// Select a proposed template for the issuance
-    /// @param _template Array index of the delegates proposed template
+    /// @param _templateIndex Array index of the delegates proposed template
     /// @return bool success
     function selectTemplate(uint256 _templateIndex) public onlyOwner returns (bool success) {
         require(_template != 0x0);
         var (_delegate,,, _KYC,, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getBid(_template);
         require(POLY.balanceOf(this) >= _fee);
-        allocations[_delegate] = Allocation({_fee, _vestingPeriod, _quorum, 0, 0, false});
+        allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
         KYC = KYC;
         PolyCompliance.updateTemplateReputation(_template, _templateIndex);
@@ -190,9 +189,9 @@ contract SecurityToken is IERC20 {
         require(_STOAddress != address(0));
         require(_startTime > now && _endTime > _startTime);
         require(POLY.balanceOf(this) >= allocations[delegate] + fee);
-        fee[developer] = Fee({fee, vestingPeriod, minimumQuorum, 0, 0, false});
+        fee[developer] = Fee(fee, vestingPeriod, minimumQuorum, 0, 0, false);
         STO = new ISTO(_STOAddress, _startTime, _endTime);
-        shareholders[STO] = Shareholder({this, true, 5});
+        shareholders[STO] = Shareholder(this, true, 5);
         startSTO = _startTime;
         endSTO = _endTime;
         PolyCompliance.updateContractReputation(_STOAddress, _templateIndex);
@@ -212,13 +211,12 @@ contract SecurityToken is IERC20 {
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(msg.sender, _whitelistAddress);
         require(verified && expires > now);
         require(PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role));
-        shareholders[_whitelistAddress] = Shareholder({msg.sender, true, role});
+        shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
         LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
         return true;
     }
 
     /// Allow POLY allocations to be withdrawn by owner, delegate, and the STO developer at appropriate times
-    /// @param _amount Amount of POLY being withdrawn from the bounty
     /// @return bool success
     function withdrawPoly() public returns (bool success) {
 			if (delegate == address(0) || now > endSTO + allocations[delegate].vestingPeriod + 777777) {
