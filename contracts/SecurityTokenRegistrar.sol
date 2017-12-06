@@ -100,7 +100,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       securityTokenRegistrar[newSecurityTokenAddress] = newToken;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+      LogNewSecurityToken(_ticker, st, _owner);
       totalSecurityTokens++;
     }
 
