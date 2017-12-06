@@ -130,27 +130,19 @@ contract SecurityToken is IERC20 {
         address _polySecurityTokenRegistrar
     ) public
     {
+        decimals = 0;
         name = _name;
         symbol = _ticker;
-<<<<<<< HEAD
-        decimals = 0;
-        template = _template;
-        maxPoly = _maxPoly;
-=======
-        template = _template;
-
->>>>>>> b6c011193e05d87176ad954c19c99d2698a886b7
-        totalSupply = _totalSupply;
         owner = _owner;
+        maxPoly = _maxPoly;
+        template = _template;
+        totalSupply = _totalSupply;
+        balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
         PolyCustomers = Customers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
-<<<<<<< HEAD
         allocations[owner] = Allocation({0, _lockupPeriod, _quorum, 0, 0, false});
-=======
-        balances[_owner] = _totalSupply;
->>>>>>> b6c011193e05d87176ad954c19c99d2698a886b7
     }
 
     /// Select a proposed template for the issuance
