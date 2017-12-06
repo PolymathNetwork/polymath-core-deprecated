@@ -34,11 +34,8 @@
     "yargs": "8.0.2"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "sol-merger": "^0.1.2"
-=======
-    "should": "^13.1.3",
-    "solidity-coverage": "^0.3.5"
->>>>>>> eef2661cf90983067ae2aa2610c2957572bc9023
+    "sol-merger": "0.1.2",
+    "should": "13.1.3",
+    "solidity-coverage": "0.3.5"
   }
 }
