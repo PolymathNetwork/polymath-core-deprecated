@@ -20,24 +20,15 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         uint8 decimals;
         uint256 totalSupply;
         address owner;
-        address tokenAddress;
+        bytes8 ticker;
         uint8 securityType;
+        bytes32 template;
     }
 
     // Mapping of ticker name to Security Token details
-    mapping(bytes8 => SecurityTokenData) securityTokenRegistrar;
-
-    // Security Token Offering Contract
-    struct SecurityTokenOfferingContract {
-        address creator;
-        uint256 fee;
-    }
-
-    // Mapping of contract address to contract details
-    mapping(address => SecurityTokenOfferingContract) public securityTokenOfferingContracts;
+    mapping(address => SecurityTokenData) securityTokenRegistrar;
 
     event LogNewSecurityToken(bytes8 indexed ticker, address securityTokenAddress, address owner);
-    event LogNewSecurityTokenOffering(address contractAddress);
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -56,60 +47,61 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     /// @param _ticker Ticker name of the security
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum public key address of the security token owner
+    /// @param _host The host of the security token wizard
+    /// @param _fee Fee being requested by the wizard host
     /// @param _type Type of security being tokenized
-    function createSecurityToken (string _name, bytes8 _ticker, uint256 _totalSupply, address _owner, bytes32 _template, uint8 _type) external {
-      //TODO require(securityTokenRegistrar[_ticker] != address(0));
+    /// @param _etherRaise Amount of ether being raised
+    /// @param _polyRaise Amount of POLY being raised
+    /// @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+    /// @param _quorum Percent of initial investors required to freeze POLY raise
+    function createSecurityToken (
+      string _name,
+      bytes8 _ticker,
+      uint256 _totalSupply,
+      address _owner,
+      address _host,
+      uint256 _fee,
+      uint8 _type,
+      uint256 _etherRaise,
+      uint256 _polyRaise,
+      uint256 _lockupPeriod,
+      uint8 _quorum
+    ) external {
+      require(securityTokenRegistrar[_ticker].owner != address(0));
 
       // Collect creation fee
-      PolyToken(polyTokenAddress).transferFrom(_owner, this, 1000);
+      PolyToken(polyTokenAddress).transferFrom(_owner, _host, _fee);
 
       // Create the new Security Token contract
-      address newSecurityTokenAddress = new SecurityToken(_name, _ticker, _totalSupply, _owner, _template, polyTokenAddress, polyCustomersAddress, polyComplianceAddress, this);
+      address newSecurityTokenAddress = new SecurityToken(
+        _name,
+        _ticker,
+        _totalSupply,
+        _owner,
+        _etherRaise,
+        _polyRaise,
+        _lockupPeriod,
+        _quorum,
+        polyTokenAddress,
+        polyCustomersAddress,
+        polyComplianceAddress,
+        this
+      );
 
       // Update the registry
-      SecurityTokenData memory newToken = securityTokenRegistrar[_ticker];
+      SecurityTokenData memory newToken = securityTokenRegistrar[newSecurityTokenAddress];
       newToken.name = _name;
       newToken.decimals = 0;
       newToken.totalSupply = _totalSupply;
       newToken.owner = _owner;
       newToken.securityType = _type;
-      newToken.tokenAddress = newSecurityTokenAddress;
-      securityTokenRegistrar[_ticker] = newToken;
+      newToken.ticker = _ticker;
+      newToken.template = 0x0;
+      securityTokenRegistrar[newSecurityTokenAddress] = newToken;
 
       // Log event and update total Security Token count
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
       totalSecurityTokens++;
-    }
-
-    /// Allow new security token offering contract
-    /// @param _contractAddress The security token offering contract's public key address
-    /// @param _fee The fee charged for the services provided in POLY
-    function newSecurityTokenOfferingContract(
-        address _contractAddress,
-        uint256 _fee
-    ) public
-    {
-        require(_contractAddress != address(0));
-        SecurityTokenOfferingContract memory newSTO = SecurityTokenOfferingContract({creator: msg.sender, fee: _fee});
-        securityTokenOfferingContracts[_contractAddress] = newSTO;
-        LogNewSecurityTokenOffering(_contractAddress);
-    }
-
-
-    /// @notice This is a basic getter function to allow access to the
-    ///  creator of a given STO contract through an interface.
-    /// @param _contractAddress An STO contract
-    /// @return creator The address of the STO contracts creator
-    function getCreator(address _contractAddress) public returns(address creator) {
-        return securityTokenOfferingContracts[_contractAddress].creator;
-    }
-
-    /// @notice This is a basic getter function to allow access to the
-    ///  fee of a given STO contract through an interface.
-    /// @param _contractAddress An STO contract
-    /// @return fee The fee paid to the developer of the STO
-    function getFee(address _contractAddress) public returns(uint256 fee) {
-        return securityTokenOfferingContracts[_contractAddress].fee;
     }
 
 }

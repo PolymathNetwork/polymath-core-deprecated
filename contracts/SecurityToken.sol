@@ -15,35 +15,6 @@ contract SecurityToken is IERC20, Ownable {
 
     string public version = "0.1";
 
-    // Legal delegate
-    address public delegate;
-
-    // Delegate Bids
-    struct Bid {
-        bytes32 template;
-        uint256 fee;
-        uint256 expires;
-        uint32 quorum;
-        uint256 vestingPeriod;
-        address attestor;
-    }
-    mapping(address => Bid) public bids;
-
-    // Template
-    bytes32 public template;
-
-    // Proof of process
-    bytes32 public complianceProof;
-
-    // STO address
-    ISTO public STO;
-
-    // Attestation provider
-    address public attestor;
-
-    // Security token shareholders
-    mapping(address => bool) public shareholders;
-
     // Instance of the POLY token contract
     PolyToken public POLY;
 
@@ -65,39 +36,47 @@ contract SecurityToken is IERC20, Ownable {
     mapping (address => mapping (address => uint256)) allowed;
     mapping (address => uint256) balances;
 
-    // Bounty allocations
-    mapping(address => uint256) allocations;
+    // Template
+    bytes32 public template;
+    address public delegate;
 
-    // Bounty voting
-    struct Vote {
-        bool hasVoted;
-        bool vote;
+    // Security token shareholders
+    struct Shareholder {
+      address verifier;
+      bool allowed;
+      uint8 role;
     }
+    mapping(address => Shareholder) public shareholders;
 
-		// Values for the start and end time of the STO
-    uint256 public issuanceStartTime;
-    uint256 public issuanceEndTime;
+    // STO address
+    ISTO public STO;
 
-    // The period which ST holders can vote to freeze the bounty
-    uint256 public bountyVestingPeriod;
+    // The start and end time of the STO
+    uint256 public startSTO;
+    uint256 public endSTO;
 
-		// Tally values for Bounty voting
-    uint256 public yay;
-    uint256 public yayPercent;
-    bool public freezeBounty;
-    mapping (address => Vote) votes;
+    // POLY allocations
+    struct Allocation {
+      uint256 amount;
+      uint256 vestingPeriod;
+      uint8 minimumQuorum;
+      uint256 yayVotes;
+      uint256 yayPercent;
+      bool frozen;
+      mapping (address => bool) votes;
+    }
+    mapping(address => Allocation) allocations;
 
-		// Variables for issuance status
-    mapping (address => uint256) issuanceEndBalances;
-		mapping (address => bool) issuancePaidOut;
-		uint securityTokensIssued = 0;
+		// Security Token Offering statistics
+    mapping (address => uint256) contributedToSTO;
+		uint tokensIssuedBySTO = 0;
 
     // Notifications
-    event LogDelegateBid(address indexed _delegateAddress, uint256 _bid);
-    event LogDelegateSet(address indexed _delegateAddress);
+    event LogTemplateSet(address indexed _delegateAddress, bytes32 _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
-    event LogSetAttestor(address indexed _attestor);
-    event LogSetSTOContract(address indexed _STOAddress);
+    event LogSetSTOContract(address _STO, address indexed _STOtemplate, uint256 _startTime, uint256 _endTime);
+    event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
+    event LogVoteToFreeze(address _recipient, uint8 _yayPercent, bool _frozen);
 
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -119,8 +98,8 @@ contract SecurityToken is IERC20, Ownable {
 			_;
 		}
 
-    modifier onlyShareholder(address _shareholder) {
-        require (shareholders[_shareholder] == true);
+    modifier onlyShareholder() {
+        require (shareholders[msg.sender].verified == true);
         _;
     }
 
@@ -134,12 +113,20 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
     /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
     /// @param _polySecurityTokenRegistrar Security Token Registrar address
+    /// @param _etherRaise Amount of ether being raised
+    /// @param _polyRaise Amount of POLY being raised
+    /// @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+    /// @param _quorum Percent of initial investors required to freeze POLY raise
     function SecurityToken(
         string _name,
         bytes8 _ticker,
         uint256 _totalSupply,
         address _owner,
         bytes32 _template,
+        uint256 _etherRaise,
+        uint256 _polyRaise,
+        uint256 _lockupPeriod,
+        uint8 _quorum,
         address _polyTokenAddress,
         address _polyCustomersAddress,
         address _polyComplianceAddress,
@@ -150,55 +137,36 @@ contract SecurityToken is IERC20, Ownable {
         name = _name;
         symbol = _ticker;
         decimals = 0;
+        etherRaise = _etherRaise;
+        polyRaise = _polyRaise;
+        lockupPeriod = _lockupPeriod;
+        quorum = _quorum;
         template = _template;
         totalSupply = _totalSupply;
-        balances[_owner] = _totalSupply;
+        balances[this] = _totalSupply;
         POLY = PolyToken(_polyTokenAddress);
         PolyCustomers = Customers(_polyCustomersAddress);
         PolyCompliance = Compliance(_polyComplianceAddress);
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
     }
 
-    /// Make a new bid to be the legal delegate
-    /// @param _fee The bounty fee requested to become legal delegate
-    /// @param _expires The timestamp the bid expires at
-    /// @param _quorum The percentage of initial shareholders required to freeze bounty funds
-    /// @param _vestingPeriod The period of time shareholders can freeze bounty funds
+    /// Select a proposed template for the issuance
+    /// @param _template Array index of the delegates proposed template
     /// @return bool success
-    function makeBid(
-        bytes32 _template,
-        uint256 _fee,
-        uint256 _expires,
-        uint32 _quorum,
-        uint256 _vestingPeriod,
-        address _attestor
-    ) public returns (bool success)
-    {
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
-        require(verified == true);
-        require(role == 2);
-        require(expires > now);
-        require(_expires >= now);
-        require(_fee > 0);
-        require(_vestingPeriod >= 7777777);
-        bids[msg.sender] = Bid({template: _template, fee: _fee, expires: _expires, quorum: _quorum, vestingPeriod: _vestingPeriod, attestor: _attestor});
-        return true;
-    }
-
-    /// Accept a Delegate's bid
-    /// @param _delegate Legal Delegates public ethereum address
-    /// @return bool success
-    function setDelegate(address _delegate) public onlyOwner returns (bool success) {
-        require(_delegate == address(0));
-        require(bids[_delegate].expires > now);
-        require(POLY.balanceOf(this) >= bids[_delegate].fee);
+    function selectTemplate(uint256 _templateIndex) public onlyOwner returns (bool success) {
+        require(_template != 0x0);
+        var (_delegate,,, _KYC,, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getBid(_template);
+        require(POLY.balanceOf(this) >= _fee);
+        allocations[_delegate] = Allocation({_fee, _vestingPeriod, _quorum, 0, 0, false});
+        allocations[owner] = Allocation({0, _vestingPeriod, _quorum, 0, 0, false});
         delegate = _delegate;
-        allocations[_delegate] = bids[_delegate].fee;
-        LogDelegateSet(_delegate);
+        KYC = KYC;
+        PolyCompliance.updateTemplateReputation(_template, _templateIndex);
+        LogTemplateSet(_delegate, _template, KYC);
         return true;
     }
 
-    /// Update compliance Proof
+    /// Update compliance proof hash for the issuance
     /// @param _newMerkleRoot New merkle root hash of the compliance Proofs
     /// @param _complianceProof Compliance Proof hash
     /// @return bool success
@@ -212,92 +180,93 @@ contract SecurityToken is IERC20, Ownable {
         return true;
     }
 
-    /// Set the STO contract address
-    /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
+    /// Select an STO contract for the issuance
+    /// @param _STOAddress Ethereum address of the STO contract
+    /// @param _startTime Start of issuance period
+    /// @param _endTime End of issuance period
     /// @return bool success
-    function setSTOContract (
-        address _securityTokenOfferingAddress,
+    function selectContract (
+        address _STOAddress,
         uint256 _startTime,
         uint256 _endTime
     ) public onlyDelegate returns (bool success) {
-        require(_securityTokenOfferingAddress != address(0));
+        var (fee, developer, vestingPeriod, minimumQuorum) = PolyCompliance.getContractByProposal(_STOAddress);
         require(complianceProof != 0);
-        uint256 fee = SecurityTokenRegistrar.getFee(_securityTokenOfferingAddress);
-        address developer = SecurityTokenRegistrar.getCreator(_securityTokenOfferingAddress);
-        require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
-        allocations[developer] = fee;
-        STO = ISTO(_securityTokenOfferingAddress);
-        issuanceEndTime = _endTime;
-        LogSetSTOContract(_securityTokenOfferingAddress);
+        require(delegate != address(0));
+        require(_STOAddress != address(0));
+        require(_startTime > now && _endTime > _startTime);
+        require(POLY.balanceOf(this) >= allocations[delegate] + fee);
+        fee[developer] = Fee({fee, vestingPeriod, minimumQuorum, 0, 0, false});
+        STO = new ISTO(_STOAddress, _startTime, _endTime);
+        shareholders[STO] = Shareholder({this, true, 5});
+        startSTO = _startTime;
+        endSTO = _endTime;
+        PolyCompliance.updateContractReputation(_STOAddress, _templateIndex);
+        LogSetSTOContract(STO, _STOAddress, _startTime, _endTime);
         return true;
     }
 
     /// Add a verified address to the Security Token whitelist
-    /// @param _shareholderAddress Address attempting to join ST whitelist
+    /// @param _whitelistAddress Address attempting to join ST whitelist
     /// @return bool success
-    function addToWhitelist(address _shareholderAddress) public returns (bool success) {
-        require(attestor != address(0));
-        require(template != 0);
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(bids[delegate].attestor, msg.sender);
+    function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success) {
+        if (now > endSTO) {
+          require(KYC[KYCProviderIndex] == msg.sender);
+        } else {
+          require(KYC[0] == msg.sender);
+        }
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(msg.sender, _whitelistAddress);
         require(verified && expires > now);
-        bool requirementsMet = PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role);
-        require(requirementsMet);
-        shareholders[_shareholderAddress] = true;
+        require(PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role));
+        shareholders[_whitelistAddress] = Shareholder({msg.sender, true, role});
+        LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
         return true;
     }
 
-    /// Allow the bounty to be withdrawn by owner, delegate, and the STO developer at appropriate times
+    /// Allow POLY allocations to be withdrawn by owner, delegate, and the STO developer at appropriate times
     /// @param _amount Amount of POLY being withdrawn from the bounty
     /// @return bool success
-    function withdrawBounty(uint256 _amount) public returns (bool success) {
-			if (delegate == address(0)) {
-        return POLY.transfer(owner, _amount);
+    function withdrawPoly() public returns (bool success) {
+			if (delegate == address(0) || now > endSTO + allocations[delegate].vestingPeriod + 777777) {
+        return POLY.transfer(owner, POLY.balanceOf(this));
       } else {
-				require(now > issuanceEndTime + bids[delegate].vestingPeriod);
-        require(freezeBounty == false);
-        require(allocations[msg.sender] >= _amount);
-				require(POLY.transfer(msg.sender, _amount));
-        allocations[msg.sender] = allocations[msg.sender].sub(_amount);
+				require(now > endSTO + allocations[msg.sender].vestingPeriod);
+        require(allocations[msg.sender].frozen == false);
+        require(allocations[msg.sender].amount > 0);
+        uint256 amount = allocations[msg.sender].amount;
+        allocations[msg.sender].amount = 0;
+				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
         return true;
       }
     }
 
-    /// Vote to freeze the compliance bounty fund
-    /// @param _freezeVote `true` will vote to freeze, `false` will do nothing.
+    /// Vote to freeze the fee of a certain network participant
+    /// @param _recipient The fee recipient being protested
     /// @return bool success
-    function voteToFreeze(bool _freezeVote) public returns (bool success) {
+    function voteToFreeze(address _recipient) public onlyShareholder returns (bool success) {
       require(delegate != address(0));
-      require(now > issuanceEndTime);
-      require(now < issuanceEndTime + bountyVestingPeriod);
-      require(votes[msg.sender].hasVoted == false);
-      if (_freezeVote) {
-        yay = yay + issuanceEndBalances[msg.sender];
-        yayPercent = yay.mul(100).div(totalSupply);
-        if (yayPercent > bids[delegate].quorum) {
-          freezeBounty = true;
-        }
+      require(now > endSTO);
+      require(now < endSTO + allocations[_recipient].vestingPeriod);
+      require(allocations[_recipient].votes[msg.sender] == false);
+      allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
+      allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
+      if (allocations[_recipient].yayPercent > allocations[_recipient].minimumQuorum) {
+        allocations[_recipient].frozen = true;
       }
-      votes[msg.sender] = Vote({ hasVoted: true, vote: _freezeVote });
+      LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].frozen);
       return true;
     }
 
-		/// @notice `issueSecurityTokens` is used by the STO to issue ST's to shareholders
-		///  at the end of the issuance.
+		/// @notice `issueSecurityTokens` is used by the STO to keep track of STO investors
 		/// @param _contributor The address of the person whose contributing
 		/// @param _amount The amount of ST to pay out.
-		function issueSecurityTokens(address _contributor, uint256 _amount) public onlySTO {
+		function issueSecurityTokens(address _contributor, uint256 _amount, uint256 _polyContributed) public onlySTO returns (bool success) {
 			require(issuanceEndTime > now);
 			require(securityTokensIssued.add(_amount) <= balanceOf(this));
 			securityTokensIssued = securityTokensIssued.add(_amount);
 			issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
-		}
-
-		/// @notice `collectIssuance` is used to collect ST tokens
-		///  after the issuance period has passed.
-		function collectIssuance() public {
-			require(now > issuanceEndTime);
-			require(issuanceEndBalances[msg.sender] != 0);
-			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
+      allocations[owner].amount = allocations[owner].amount + _polyContributed;
+      return true;
 		}
 
     /// Trasfer tokens from one address to another

@@ -16,6 +16,7 @@ contract Customers {
     // A Customer
     struct Customer {
         bytes32 jurisdiction;
+        uint256 joined;
         uint8 role;
         bool verified;
         bool accredited;
@@ -25,11 +26,12 @@ contract Customers {
     }
 
     // Customers
-    mapping (address => mapping (address => Customer)) customers;
+    mapping (address => mapping (address => Customer)) public customers;
 
     // KYC/Accreditation Provider
     struct Provider {
         string name;
+        uint256 joined;
         bytes32 details;
         uint256 fee;
     }
@@ -64,6 +66,7 @@ contract Customers {
         providers[_providerAddress].name = _name;
         providers[_providerAddress].details = _details;
         providers[_providerAddress].fee = _fee;
+        providers[_providerAddress].joined = now;
         NewProvider(_providerAddress, _name, _details);
     }
 
@@ -81,13 +84,14 @@ contract Customers {
         customers[_provider][msg.sender].accredited = false;
         customers[_provider][msg.sender].flagged = false;
         customers[_provider][msg.sender].proof = _proof;
+        customers[_provider][msg.sender].joined = now;
         NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
     }
 
     /// Verify an investor
     /// @param _customer The customer's public key address
     /// @param _jurisdiction The jurisdiction code of the customer
-    /// @param _role The type of customer - investor:1 or issuer:2
+    /// @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
     /// @param _accredited Whether the customer is accredited or
     ///  not (only applied to investors)
     /// @param _proof The SHA256 hash of the documentation provided

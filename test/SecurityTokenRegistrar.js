@@ -4,7 +4,7 @@ import expectRevert from './helpers/expectRevert';
 
 const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
 
-contract('SecurityTokens', (accounts) => {
+contract('SecurityTokenRegistrar', (accounts) => {
 
     //createSecurityToken variables
     const name = 'Polymath Inc.';
@@ -16,7 +16,7 @@ contract('SecurityTokens', (accounts) => {
     const createSecurityTokenFee = 100000;
 
     //polyTokenAddress - hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
-    //ropsten address for polyToken is "0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7"
+    //ropsten address for polyToken is "0x43b9066bbe465523fb84ed2b832e4aaedb337b65"
     const polyTokenAddress = "0x377bbcae5327695b32a1784e0e13bedc8e078c9c";
 
     //account
@@ -93,7 +93,7 @@ contract('SecurityTokens', (accounts) => {
 
             });
             it('should confirm the token address has never been used before, no overwriting the struct', async () => {
-                //i belive right now the contract address and creator address are mixed up in the real code - dk nov 1 
+                //i belive right now the contract address and creator address are mixed up in the real code - dk nov 1
                 //also, will need to be added into the code - dk nov 1
             });
             it('should confirm fee submitted is between 0 and (2^256)-1', async () => {
@@ -123,7 +123,7 @@ contract('SecurityTokens', (accounts) => {
 
         });
         it('If _approved is false, delete the STO from mapping securityTokenOfferingContracts and confirm it is removed ', async () => {
-            
+
         });
     });
 
