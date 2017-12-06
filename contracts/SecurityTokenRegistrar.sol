@@ -70,7 +70,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       require(securityTokenRegistrar[_ticker].owner != address(0));
 
       // Collect creation fee
-      PolyToken(polyTokenAddress).transferFrom(_owner, _host, _fee);
+      PolyToken(polyTokenAddress).transferFrom(msg.sender, _host, _fee);
 
       // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(
@@ -78,8 +78,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _ticker,
         _totalSupply,
         _owner,
-        _etherRaise,
-        _polyRaise,
+        _maxPoly,
         _lockupPeriod,
         _quorum,
         polyTokenAddress,

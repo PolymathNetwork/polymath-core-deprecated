@@ -50,6 +50,7 @@ contract SecurityToken is IERC20, Ownable {
 
     // STO address
     ISTO public STO;
+    uint256 public maxPoly;
 
     // The start and end time of the STO
     uint256 public startSTO;
@@ -122,9 +123,7 @@ contract SecurityToken is IERC20, Ownable {
         bytes8 _ticker,
         uint256 _totalSupply,
         address _owner,
-        bytes32 _template,
-        uint256 _etherRaise,
-        uint256 _polyRaise,
+        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
@@ -137,17 +136,15 @@ contract SecurityToken is IERC20, Ownable {
         name = _name;
         symbol = _ticker;
         decimals = 0;
-        etherRaise = _etherRaise;
-        polyRaise = _polyRaise;
-        lockupPeriod = _lockupPeriod;
-        quorum = _quorum;
         template = _template;
+        maxPoly = _maxPoly;
         totalSupply = _totalSupply;
         balances[this] = _totalSupply;
         POLY = PolyToken(_polyTokenAddress);
         PolyCustomers = Customers(_polyCustomersAddress);
         PolyCompliance = Compliance(_polyComplianceAddress);
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
+        allocations[owner] = Allocation({0, _lockupPeriod, _quorum, 0, 0, false});
     }
 
     /// Select a proposed template for the issuance
@@ -158,7 +155,6 @@ contract SecurityToken is IERC20, Ownable {
         var (_delegate,,, _KYC,, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getBid(_template);
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation({_fee, _vestingPeriod, _quorum, 0, 0, false});
-        allocations[owner] = Allocation({0, _vestingPeriod, _quorum, 0, 0, false});
         delegate = _delegate;
         KYC = KYC;
         PolyCompliance.updateTemplateReputation(_template, _templateIndex);
@@ -263,6 +259,8 @@ contract SecurityToken is IERC20, Ownable {
 		function issueSecurityTokens(address _contributor, uint256 _amount, uint256 _polyContributed) public onlySTO returns (bool success) {
 			require(issuanceEndTime > now);
 			require(securityTokensIssued.add(_amount) <= balanceOf(this));
+      require(allocations[owner].amount < maxPoly + _polyContributed);
+      require(POLY.transferFrom(_contributor, this, _polyContributed));
 			securityTokensIssued = securityTokensIssued.add(_amount);
 			issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
       allocations[owner].amount = allocations[owner].amount + _polyContributed;
