@@ -2,27 +2,26 @@ pragma solidity ^0.4.15;
 
 import './SafeMath.sol';
 import './interfaces/IERC20.sol';
-import './PolyToken.sol';
 import './Customers.sol';
-import './Compliance.sol';
-import './Ownable.sol';
+import './interfaces/ISTRegistrar.sol';
+import './interfaces/ICompliance.sol';
 import './interfaces/ISTRegistrar.sol';
 import './interfaces/ISTO.sol';
 
-contract SecurityToken is IERC20, Ownable {
+contract SecurityToken is IERC20 {
 
     using SafeMath for uint256;
 
     string public version = "0.1";
 
     // Instance of the POLY token contract
-    PolyToken public POLY;
+    IERC20 public POLY;
 
     // Instance of the Security Token Registrar interface
     ISTRegistrar public SecurityTokenRegistrar;
 
     // Instance of the Compliance contract
-    Compliance public PolyCompliance;
+    ICompliance public PolyCompliance;
 
     // Instance of the Customers contract
     Customers PolyCustomers;
@@ -109,7 +108,6 @@ contract SecurityToken is IERC20, Ownable {
     /// @param _ticker Ticker name of the security
     /// @param _totalSupply Total amount of tokens being created
     /// @param _owner Ethereum address of the security token owner
-    /// @param _template Hash of the compliance template
     /// @param _polyTokenAddress Ethereum address of the POLY token contract
     /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
     /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
@@ -132,19 +130,27 @@ contract SecurityToken is IERC20, Ownable {
         address _polySecurityTokenRegistrar
     ) public
     {
-        owner = _owner;
         name = _name;
         symbol = _ticker;
+<<<<<<< HEAD
         decimals = 0;
         template = _template;
         maxPoly = _maxPoly;
+=======
+        template = _template;
+
+>>>>>>> b6c011193e05d87176ad954c19c99d2698a886b7
         totalSupply = _totalSupply;
-        balances[this] = _totalSupply;
-        POLY = PolyToken(_polyTokenAddress);
+        owner = _owner;
+        POLY = IERC20(_polyTokenAddress);
         PolyCustomers = Customers(_polyCustomersAddress);
-        PolyCompliance = Compliance(_polyComplianceAddress);
+        PolyCompliance = ICompliance(_polyComplianceAddress);
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
+<<<<<<< HEAD
         allocations[owner] = Allocation({0, _lockupPeriod, _quorum, 0, 0, false});
+=======
+        balances[_owner] = _totalSupply;
+>>>>>>> b6c011193e05d87176ad954c19c99d2698a886b7
     }
 
     /// Select a proposed template for the issuance

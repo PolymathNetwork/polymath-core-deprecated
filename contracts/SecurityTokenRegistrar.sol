@@ -88,18 +88,18 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       );
 
       // Update the registry
-      SecurityTokenData memory newToken = securityTokenRegistrar[newSecurityTokenAddress];
-      newToken.name = _name;
-      newToken.decimals = 0;
-      newToken.totalSupply = _totalSupply;
-      newToken.owner = _owner;
-      newToken.securityType = _type;
-      newToken.ticker = _ticker;
-      newToken.template = 0x0;
-      securityTokenRegistrar[newSecurityTokenAddress] = newToken;
+      SecurityTokenData memory st = securityTokenRegistrar[newSecurityTokenAddress];
+      st.name = _name;
+      st.decimals = 0;
+      st.totalSupply = _totalSupply;
+      st.owner = _owner;
+      st.securityType = _type;
+      st.ticker = _ticker;
+      st.template = 0x0;
+      securityTokenRegistrar[newSecurityTokenAddress] = st;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+      LogNewSecurityToken(_ticker, st, _owner);
       totalSecurityTokens++;
     }
 

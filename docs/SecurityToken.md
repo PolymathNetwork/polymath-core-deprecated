@@ -19,13 +19,18 @@ build on top of the Polymath platform.
 
 1. Token exists on the network after creation from SecurityTokenRegistrar.sol
 2. The issuer sets the KYC provider they wish to use for the issuance
-3. Legal delegates make bids on the issuance
-4. The issuer reviews all bids and calls setDelegate() with the Ethereum address of the legal delegate they wish to work with on the issuance
-5. Note: the issuer must have sent enough POLY to the SecurityToken contract address to cover the bounty specified in the bid
-6. The issuer/delegate begin completing the compliance process (using the open sourced template) and calls updateComplianceProof() when steps are completed
-7. Developers are also notified of the creation, review details and create STO contracts that meet the compliance specifications
-8. Upon final approval, the legal delegate can use setSTOContract() to specify the SecurityTokenOffering contract address that will be used for the initial offering
-9. STO contract address can be changed as long as the new/old start time > now and no tokens have been sent to the contract address (balances[STO] == 0)
+3. Attestors must approve a transfer of 10,000 POLY
+3. Attestors must be added to the customers contract.
+3. Legal delegates must be added as customers
+4. Legal delegates make bids on the issuance
+5. The issuer must approve the security contract to transfer the fee of the bid into the security
+6. The issuer reviews all bids and calls setDelegate() with the Ethereum address of the legal delegate they wish to work with on the issuance
+7. The issuer/delegate begin completing the compliance process (using the open sourced template) and calls updateComplianceProof() when steps are completed
+8. Developers are also notified of the creation, review details and create STO contracts that meet the compliance specifications
+9. The STO contract must be added to the registrar.
+10. The STO fee must be approved for transfer by the ST contract.
+9. Upon final approval, the legal delegate can use setSTOContract() to specify the SecurityTokenOffering contract address that will be used for the initial offering
+10. STO contract address can be changed as long as the new/old start time > now and no tokens have been sent to the contract address (balances[STO] == 0) (this is not implemented really)
 
 ## Delegates workflow
 
