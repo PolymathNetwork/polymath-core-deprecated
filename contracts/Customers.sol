@@ -108,7 +108,7 @@ contract Customers {
     {
         require(customers[msg.sender][_customer].verified == false);
         require(customers[msg.sender][_customer].role != 0);
-        POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee);
+        require(POLY.transferFrom(_customer, msg.sender, attestors[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;
         customers[msg.sender][_customer].accredited = _accredited;

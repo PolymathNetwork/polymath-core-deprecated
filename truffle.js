@@ -3,10 +3,10 @@ require('babel-polyfill');
 
 module.exports = {
   networks: {
-    local: {
+    development: {
       host: "localhost",
       port: 8545,
-      network_id: "*"
+      network_id: "*" // Match any network id
     },
     ropsten: {
       host: "localhost",
@@ -14,6 +14,13 @@ module.exports = {
       network_id: "3",
       from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
       gas: 4612388
+    },
+    coverage: {
+      host: "localhost",
+      network_id: "*",
+      port: 8555,
+      gas: 0xfffffffffff,
+      gasPrice: 0x01
     }
   },
   mocha: {

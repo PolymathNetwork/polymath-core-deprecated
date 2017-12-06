@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-interface ISTRegistrar {
+contract ISTRegistrar {
 
     // Creates a new Security Token and saves it to the registry
     /// @param _name Name of the security token
@@ -15,7 +15,7 @@ interface ISTRegistrar {
         address _owner,
         bytes32 _template,
         uint8 _type
-    ) external;
+    ) external returns (address st);
 
     /// Allow new security token offering contract
     /// @param _contractAddress The security token offering contract's

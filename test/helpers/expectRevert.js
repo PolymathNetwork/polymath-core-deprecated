@@ -10,7 +10,9 @@ export default async (promise) => {
     // jump" event).
     const outOfGas = error.message.search('out of gas') > -1;
 
-    assert(invalidOpcode || outOfGas, `Expected throw, got ${error} instead`);
+    const revert = error.message.search('revert') > -1;    
+
+    assert(invalidOpcode || outOfGas || revert, `Expected throw, got ${error} instead`);
 
     return;
   }
