@@ -5,7 +5,7 @@ import './interfaces/IERC20.sol';
 import './Customers.sol';
 import './interfaces/ISTRegistrar.sol';
 import './interfaces/ICompliance.sol';
-import './interfaces/ISTRegistrar.sol';
+import './interfaces/ITemplate.sol';
 import './interfaces/ISTO.sol';
 
 contract SecurityToken is IERC20 {
@@ -23,6 +23,9 @@ contract SecurityToken is IERC20 {
     // Instance of the Compliance contract
     ICompliance public PolyCompliance;
 
+    // Instance of the Template contract
+    ITemplate public Template;
+
     // Instance of the Customers contract
     Customers PolyCustomers;
 
@@ -36,8 +39,10 @@ contract SecurityToken is IERC20 {
     mapping (address => uint256) balances;
 
     // Template
-    bytes32 public template;
+    address public template;
     address public delegate;
+    bytes32 public complianceProof;
+    address[] public KYC;
 
     // Security token shareholders
     struct Shareholder {
@@ -76,7 +81,7 @@ contract SecurityToken is IERC20 {
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
-    event LogVoteToFreeze(address _recipient, uint8 _yayPercent, bool _frozen);
+    event LogVoteToFreeze(address _recipient, uint256 _yayPercent, bool _frozen);
 
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -99,7 +104,7 @@ contract SecurityToken is IERC20 {
 		}
 
     modifier onlyShareholder() {
-        require (shareholders[msg.sender].verified == true);
+        require (shareholders[msg.sender].allowed == true);
         _;
     }
 
@@ -134,7 +139,6 @@ contract SecurityToken is IERC20 {
         symbol = _ticker;
         owner = _owner;
         maxPoly = _maxPoly;
-        template = _template;
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
@@ -147,15 +151,14 @@ contract SecurityToken is IERC20 {
     /// Select a proposed template for the issuance
     /// @param _templateIndex Array index of the delegates proposed template
     /// @return bool success
-    function selectTemplate(uint256 _templateIndex) public onlyOwner returns (bool success) {
-        require(_template != 0x0);
-        var (_delegate,,, _KYC,, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getBid(_template);
+    function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
+        var (_template, _delegate, _KYC, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getTemplateByProposal(this, _templateIndex);
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
-        KYC = KYC;
+        KYC[0] = _KYC;
         PolyCompliance.updateTemplateReputation(_template, _templateIndex);
-        LogTemplateSet(_delegate, _template, KYC);
+        LogTemplateSet(_delegate, _template, _KYC);
         return true;
     }
 
@@ -174,27 +177,26 @@ contract SecurityToken is IERC20 {
     }
 
     /// Select an STO contract for the issuance
-    /// @param _STOAddress Ethereum address of the STO contract
+    /// @param _STOIndex Array index of the STO proposal
     /// @param _startTime Start of issuance period
     /// @param _endTime End of issuance period
     /// @return bool success
     function selectContract (
-        address _STOAddress,
+        uint8 _STOIndex,
         uint256 _startTime,
         uint256 _endTime
     ) public onlyDelegate returns (bool success) {
-        var (fee, developer, vestingPeriod, minimumQuorum) = PolyCompliance.getContractByProposal(_STOAddress);
+        var (_STOAddress, _developer, _vestingPeriod, _quorum, _fee) = PolyCompliance.getContractByProposal(this, _STOIndex);
         require(complianceProof != 0);
         require(delegate != address(0));
-        require(_STOAddress != address(0));
         require(_startTime > now && _endTime > _startTime);
-        require(POLY.balanceOf(this) >= allocations[delegate] + fee);
-        fee[developer] = Fee(fee, vestingPeriod, minimumQuorum, 0, 0, false);
-        STO = new ISTO(_STOAddress, _startTime, _endTime);
+        require(POLY.balanceOf(this) >= allocations[delegate].amount + _fee);
+        allocations[_developer] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        STO = ISTO(_STOAddress);
         shareholders[STO] = Shareholder(this, true, 5);
         startSTO = _startTime;
         endSTO = _endTime;
-        PolyCompliance.updateContractReputation(_STOAddress, _templateIndex);
+        PolyCompliance.updateContractReputation(this, _STOIndex);
         LogSetSTOContract(STO, _STOAddress, _startTime, _endTime);
         return true;
     }
@@ -253,12 +255,12 @@ contract SecurityToken is IERC20 {
 		/// @param _contributor The address of the person whose contributing
 		/// @param _amount The amount of ST to pay out.
 		function issueSecurityTokens(address _contributor, uint256 _amount, uint256 _polyContributed) public onlySTO returns (bool success) {
-			require(issuanceEndTime > now);
-			require(securityTokensIssued.add(_amount) <= balanceOf(this));
+			require(startSTO > now && endSTO < now);
+			require(tokensIssuedBySTO.add(_amount) <= balanceOf(this));
       require(allocations[owner].amount < maxPoly + _polyContributed);
       require(POLY.transferFrom(_contributor, this, _polyContributed));
-			securityTokensIssued = securityTokensIssued.add(_amount);
-			issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
+			tokensIssuedBySTO = tokensIssuedBySTO.add(_amount);
+			contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amount);
       allocations[owner].amount = allocations[owner].amount + _polyContributed;
       return true;
 		}
@@ -268,7 +270,7 @@ contract SecurityToken is IERC20 {
     /// @param _value Amount of tokens to send
     /// @return bool success
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to] && balances[msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = balances[msg.sender].sub(_value);
             balances[_to] = balances[_to].add(_value);
             Transfer(msg.sender, _to, _value);
@@ -285,7 +287,7 @@ contract SecurityToken is IERC20 {
     /// @return bool success
     /// TODO: eliminate msg.sender for 0x
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to] && shareholders[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
             balances[_to] = balances[_to].add(_value);
@@ -308,7 +310,7 @@ contract SecurityToken is IERC20 {
     /// @param _value Amount of tokens to approve for transfer
     /// @return bool success
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        if (shareholders[_spender]) {
+        if (shareholders[_spender].allowed) {
             // @dev the logic on this looks screwey. Worth a look in testing
             require ((_value != 0) && (allowed[msg.sender][_spender] != 0));
             allowed[msg.sender][_spender] = _value;

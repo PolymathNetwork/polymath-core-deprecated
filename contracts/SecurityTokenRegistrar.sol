@@ -15,7 +15,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     PolyToken POLY;
 
     // Security Token
-    struct SecurityToken {
+    struct SecurityTokenData {
         string name;
         uint8 decimals;
         uint256 totalSupply;
@@ -24,7 +24,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         uint8 securityType;
         bytes32 template;
     }
-    mapping(address => SecurityToken) securityTokens;
+    mapping(address => SecurityTokenData) securityTokens;
 
     // Mapping of ticker name to Security Token
     mapping(bytes8 => address) tickers;
@@ -68,7 +68,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint256 _lockupPeriod,
       uint8 _quorum
     ) external {
-      require(owner != address(0));
+      require(_owner != address(0));
       require(tickers[_ticker] == address(0));
 
       // Collect creation fee
@@ -80,7 +80,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _ticker,
         _totalSupply,
         _owner,
-        _maxPoly,
+        _polyRaise,
         _lockupPeriod,
         _quorum,
         polyTokenAddress,
@@ -90,7 +90,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       );
 
       // Update the registry
-      SecurityToken memory st = securityTokens[newSecurityTokenAddress];
+      SecurityTokenData memory st = securityTokens[newSecurityTokenAddress];
       st.name = _name;
       st.decimals = 0;
       st.totalSupply = _totalSupply;

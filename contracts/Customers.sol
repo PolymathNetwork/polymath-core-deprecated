@@ -125,16 +125,20 @@ contract Customers {
     }
 
     /// Getter function for attestations
-    function getCustomer(address _provider, address _customer) public returns (
-      bytes32 jurisdiction,
-      bool accredited,
-      uint8 role,
-      bool verified,
-      uint256 expires
+    function getCustomer(address _provider, address _customer) public constant returns (
+      bytes32,
+      bool,
+      uint8,
+      bool,
+      uint256
     ) {
-        Customer memory customer = customers[_provider][_customer];
-        require(customer.verified);
-        return (customer.jurisdiction, customer.accredited, customer.role, customer.verified, customer.expires);
+        return (
+          customers[_provider][_customer].jurisdiction,
+          customers[_provider][_customer].accredited,
+          customers[_provider][_customer].role,
+          customers[_provider][_customer].verified,
+          customers[_provider][_customer].expires
+        );
     }
 
 }
