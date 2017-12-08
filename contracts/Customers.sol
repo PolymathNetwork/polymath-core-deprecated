@@ -53,30 +53,31 @@ contract Customers {
         POLY = PolyToken(_polyTokenAddress);
     }
 
-    /// Allow new provider applications
-    /// @param _providerAddress The provider's public key address
-    /// @param _name The provider's name
-    /// @param _details A SHA256 hash of the new providers details
-    /// @param _fee The fee charged for customer verification
+    /**
+        @dev Allow new provider applications
+        @param _providerAddress The provider's public key address
+        @param _name The provider's name
+        @param _details A SHA256 hash of the new providers details
+        @param _fee The fee charged for customer verification
+    
+     */
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public {
         require(_providerAddress != address(0));
         require(providers[_providerAddress].details != 0);
         // Require 10,000 POLY fee
-        POLY.transferFrom(_providerAddress, this, 10000);
-        providers[_providerAddress].name = _name;
-        providers[_providerAddress].details = _details;
-        providers[_providerAddress].fee = _fee;
-        providers[_providerAddress].joined = now;
+        require (POLY.transferFrom(_providerAddress, this, 10000));
+        providers[_providerAddress] = Provider(_name, now, _details, _fee);
         NewProvider(_providerAddress, _name, _details);
     }
 
-    /// Allow new investor applications
-    /// @param _jurisdiction The jurisdiction code of the customer
-    /// @param _provider The provider selected by the customer
-    ///  to do verification
-    /// @param _role The type of customer - investor:1, issuer:2, delegate:3
-    /// @param _proof The SHA256 hash of the documentation provided
-    ///  to prove identity
+   /**
+        @dev Allow new investor applications
+        @param _jurisdiction The jurisdiction code of the customer
+        @param _provider The provider selected by the customer to do verification
+        @param _role The type of customer - investor:1, issuer:2, delegate:3
+        @param _proof The SHA256 hash of the documentation provided to prove identity
+    */
+
     function newCustomer(bytes32 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) public {
         customers[_provider][msg.sender].jurisdiction = _jurisdiction;
         customers[_provider][msg.sender].role = _role;
@@ -88,15 +89,15 @@ contract Customers {
         NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
     }
 
-    /// Verify an investor
-    /// @param _customer The customer's public key address
-    /// @param _jurisdiction The jurisdiction code of the customer
-    /// @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
-    /// @param _accredited Whether the customer is accredited or
-    ///  not (only applied to investors)
-    /// @param _proof The SHA256 hash of the documentation provided
-    ///  to prove identity
-    /// @param _expires The time the verification expires
+    /**
+        @dev Verify an investor
+        @param _customer The customer's public key address
+        @param _jurisdiction The jurisdiction code of the customer
+        @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
+        @param _accredited Whether the customer is accredited or not (only applied to investors)
+        @param _proof The SHA256 hash of the documentation provided to prove identity
+        @param _expires The time the verification expires
+     */
     function verifyCustomer(
         address _customer,
         bytes32 _jurisdiction,

@@ -46,21 +46,26 @@ contract Compliance {
     event TemplateCreated(address creator, address _template, string _name);
     event LogNewTemplateProposal(address _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address _securityToken, address _contractAddress, address _delegate);
-
-    // Constructor
-    /// @param _polyCustomersAddress The address of the Polymath Customers contract
+    
+    /** 
+     @param _polyCustomersAddress The address of the Polymath Customers contract
+    */
+    
     function Compliance(address _polyCustomersAddress) public {
       PolyCustomers = Customers(_polyCustomersAddress);
     }
 
-    /// `createTemplate` is a simple function to create a new compliance template
-    /// @param _offeringType The name of the security being issued
-    /// @param _issuerJurisdiction The jurisdiction id of the issuer
-    /// @param _accredited Accreditation status required for investors
-    /// @param _KYC KYC provider used by the template
-    /// @param _details Details of the offering requirements
-    /// @param _expires Timestamp of when the template will expire
-    /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
+    /**
+        @dev `createTemplate` is a simple function to create a new compliance template
+        @param _offeringType The name of the security being issued
+        @param _issuerJurisdiction The jurisdiction id of the issuer
+        @param _accredited Accreditation status required for investors
+        @param _KYC KYC provider used by the template
+        @param _details Details of the offering requirements
+        @param _expires Timestamp of when the template will expire
+        @param _fee Amount of POLY to use the template (held in escrow until issuance)
+     */
+
     function createTemplate(
         string _offeringType,
         bytes32 _issuerJurisdiction,
@@ -99,10 +104,13 @@ contract Compliance {
         TemplateCreated(msg.sender, _template, _offeringType);
     }
 
-    /// Propose a bid for a security token issuance
-    /// @param _securityToken The security token being bid on
-    /// @param _template The unique template hash
-    /// @return bool success
+    /**
+        @dev Propose a bid for a security token issuance
+        @param _securityToken The security token being bid on
+        @param _template The unique template hash
+        @return bool success
+     */
+
     function proposeTemplate(
         address _securityToken,
         address _template
@@ -115,10 +123,13 @@ contract Compliance {
         return true;
     }
 
-    /// Propose a STO contract for an issuance
-    /// @param _securityToken The security token being bid on
-    /// @param _contractAddress The security token offering contract address
-    /// @return bool success
+    /**
+        @dev Propose a STO contract for an issuance
+        @param _securityToken The security token being bid on
+        @param _contractAddress The security token offering contract address
+        @return bool success
+    */
+
     function proposeContract(
         address _securityToken,
         address _contractAddress
@@ -134,40 +145,52 @@ contract Compliance {
         return true;
     }
 
-    /// `updateTemplateReputation` is a constant function that updates the
-    /// history of a security token to keep track of previous uses
-    /// @param _template The unique template id
-    /// @param _templateIndex The array index of the template proposal
+   /**
+        @dev `updateTemplateReputation` is a constant function that updates the
+        history of a security token to keep track of previous uses
+        @param _template The unique template id
+        @param _templateIndex The array index of the template proposal
+    */
+
     function updateTemplateReputation (address _template, uint8 _templateIndex) public returns (bool success) {
       require(templateProposals[msg.sender][_templateIndex] == _template);
       templates[_template].usedBy.push(msg.sender);
       return true;
     }
 
-    /// `updateSmartContractReputation` is a constant function that updates the
-    /// history of a security token to keep track of previous uses
-    /// @param _contractAddress The smart contract address
-    /// @param _contractIndex The array index of the contract proposal
+  /**
+        @dev `updateSmartContractReputation` is a constant function that updates the
+         history of a security token to keep track of previous uses
+        @param _contractAddress The smart contract address
+        @param _contractIndex The array index of the contract proposal
+   */
+
     function updateContractReputation (address _contractAddress, uint8 _contractIndex) public returns (bool success) {
       require(contractProposals[msg.sender][_contractIndex] == _contractAddress);
       contracts[_contractAddress].usedBy.push(msg.sender);
       return true;
     }
 
-    /// Get template details by the proposal index
-    /// @param _securityTokenAddress The security token ethereum address
-    /// @param _templateIndex The array index of the template being checked
-    /// return Template struct
+  /**
+        @dev Get template details by the proposal index
+        @param _securityTokenAddress The security token ethereum address
+        @param _templateIndex The array index of the template being checked
+        @return Template struct
+   */
+
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
         address template
     ){
       return templateProposals[_securityTokenAddress][_templateIndex];
     }
 
-    /// Get issuance smart contract details by the proposal index
-    /// @param _securityTokenAddress The security token ethereum address
-    /// @param _contractIndex The array index of the STO contract being checked
-    /// return Contract struct
+    /**
+        @dev Get issuance smart contract details by the proposal index
+        @param _securityTokenAddress The security token ethereum address
+        @param _contractIndex The array index of the STO contract being checked
+        @return Contract struct
+     */
+     
     function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) view public returns (
       address contractAddress,
       address auditor,
