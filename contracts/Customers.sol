@@ -68,6 +68,7 @@ contract Customers {
         providers[_providerAddress].fee = _fee;
         providers[_providerAddress].joined = now;
         NewProvider(_providerAddress, _name, _details);
+        return true;
     }
 
     /// Allow new investor applications
@@ -86,6 +87,7 @@ contract Customers {
         customers[_provider][msg.sender].proof = _proof;
         customers[_provider][msg.sender].joined = now;
         NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
+        return true;
     }
 
     /// Verify an investor

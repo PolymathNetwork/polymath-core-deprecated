@@ -1,10 +1,7 @@
 pragma solidity ^0.4.18;
 
-import './SafeMath.sol';
 import './SecurityToken.sol';
-import './Ownable.sol';
 import './interfaces/ISTRegistrar.sol';
-
 
 contract SecurityTokenRegistrar is ISTRegistrar {
 
