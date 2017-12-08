@@ -1,7 +1,5 @@
 pragma solidity ^0.4.18;
 
-import './PolyToken.sol';
-
 /*
 Polymath customer registry is used to ensure regulatory compliance
 of the investors, provider, and issuers. The customers registry is a central
@@ -9,7 +7,10 @@ place where ethereum addresses can be whitelisted to purchase certain security
 tokens based on their verifications by providers.
 */
 
-contract Customers {
+import './PolyToken.sol';
+import './interfaces/ICustomers.sol';
+
+contract Customers is ICustomers {
 
     PolyToken POLY;
 
@@ -53,15 +54,12 @@ contract Customers {
         POLY = PolyToken(_polyTokenAddress);
     }
 
-    /**
-        @dev Allow new provider applications
-        @param _providerAddress The provider's public key address
-        @param _name The provider's name
-        @param _details A SHA256 hash of the new providers details
-        @param _fee The fee charged for customer verification
-    
-     */
-    function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public {
+    /** @dev Allow new provider applications
+      @param _providerAddress The provider's public key address
+      @param _name The provider's name
+      @param _details A SHA256 hash of the new providers details
+      @param _fee The fee charged for customer verification */
+    function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
         require(providers[_providerAddress].details != 0);
         // Require 10,000 POLY fee
@@ -71,15 +69,12 @@ contract Customers {
         return true;
     }
 
-   /**
-        @dev Allow new investor applications
-        @param _jurisdiction The jurisdiction code of the customer
-        @param _provider The provider selected by the customer to do verification
-        @param _role The type of customer - investor:1, issuer:2, delegate:3
-        @param _proof The SHA256 hash of the documentation provided to prove identity
-    */
-
-    function newCustomer(bytes32 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) public {
+   /** @dev Allow new investor applications
+      @param _jurisdiction The jurisdiction code of the customer
+      @param _provider The provider selected by the customer to do verification
+      @param _role The type of customer - investor:1, issuer:2, delegate:3
+      @param _proof The SHA256 hash of the documentation provided to prove identity */
+    function newCustomer(bytes32 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) public returns (bool success) {
         customers[_provider][msg.sender].jurisdiction = _jurisdiction;
         customers[_provider][msg.sender].role = _role;
         customers[_provider][msg.sender].verified = false;
@@ -91,15 +86,13 @@ contract Customers {
         return true;
     }
 
-    /**
-        @dev Verify an investor
-        @param _customer The customer's public key address
-        @param _jurisdiction The jurisdiction code of the customer
-        @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
-        @param _accredited Whether the customer is accredited or not (only applied to investors)
-        @param _proof The SHA256 hash of the documentation provided to prove identity
-        @param _expires The time the verification expires
-     */
+    /** @dev Verify an investor
+      @param _customer The customer's public key address
+      @param _jurisdiction The jurisdiction code of the customer
+      @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
+      @param _accredited Whether the customer is accredited or not (only applied to investors)
+      @param _proof The SHA256 hash of the documentation provided to prove identity
+      @param _expires The time the verification expires */
     function verifyCustomer(
         address _customer,
         bytes32 _jurisdiction,
@@ -107,7 +100,7 @@ contract Customers {
         bool _accredited,
         bytes32 _proof,
         uint256 _expires
-    ) public onlyProvider
+    ) public onlyProvider returns (bool success)
     {
         require(customers[msg.sender][_customer].verified == false);
         require(customers[msg.sender][_customer].role != 0);
@@ -125,6 +118,7 @@ contract Customers {
             _proof,
             true
         );
+        return true;
     }
 
     /// Getter function for attestations

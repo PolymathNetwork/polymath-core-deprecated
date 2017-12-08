@@ -1,5 +1,6 @@
 pragma solidity ^0.4.18;
 
+import './PolyToken.sol';
 import './SecurityToken.sol';
 import './interfaces/ISTRegistrar.sol';
 
@@ -54,7 +55,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         @param _lockupPeriod Length of time raised POLY will be locked up for dispute
         @param _quorum Percent of initial investors required to freeze POLY raise
      */
-     
+
     function createSecurityToken (
       string _name,
       bytes8 _ticker,

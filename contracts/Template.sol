@@ -51,7 +51,7 @@ contract Template {
     /**
         @dev `addJurisdiction` allows the adding of new jurisdictions to a template
         @param _allowedJurisdictions An array of jurisdictions
-        @param _allowed An array of whether the jurisdiction is allowed to 
+        @param _allowed An array of whether the jurisdiction is allowed to
          purchase the security or not
    */
 
@@ -116,11 +116,8 @@ contract Template {
         return true;
     }
 
-    /**
-        @dev`getTemplateDetails` is a constant function that gets template details
-        @return bytes32 details, bool finalized
-     */
-     
+    /** getTemplateDetails is a constant function that gets template details
+      @return bytes32 details, bool finalized */
     function getTemplateDetails() view public returns (bytes32, bool) {
       require(expires > now);
       return (details, finalized);

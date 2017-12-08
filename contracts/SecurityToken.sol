@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './interfaces/IERC20.sol';
-import './Customers.sol';
+import './interfaces/ICustomers.sol';
 import './interfaces/ISTRegistrar.sol';
 import './interfaces/ICompliance.sol';
 import './interfaces/ITemplate.sol';
@@ -27,7 +27,7 @@ contract SecurityToken is IERC20 {
     ITemplate public Template;
 
     // Instance of the Customers contract
-    Customers PolyCustomers;
+    ICustomers public PolyCustomers;
 
     // ERC20 Fields
     string public name;
@@ -107,7 +107,7 @@ contract SecurityToken is IERC20 {
         _;
     }
 
-    /** 
+    /**
         @dev Set default security token parameters
         @param _name Name of the security token
         @param _ticker Ticker name of the security
@@ -119,7 +119,7 @@ contract SecurityToken is IERC20 {
         @param _polyTokenAddress Ethereum address of the POLY token contract
         @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
         @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
-        @param _polySecurityTokenRegistrar Security Token Registrar address 
+        @param _polySecurityTokenRegistrar Security Token Registrar address
     */
     function SecurityToken(
         string _name,
@@ -143,12 +143,12 @@ contract SecurityToken is IERC20 {
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
-        PolyCustomers = Customers(_polyCustomersAddress);
+        PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
     }
-   /** 
+   /**
         @dev `selectTemplate` Select a proposed template for the issuance
         @param _templateIndex Array index of the delegates proposed template
         @return bool success
@@ -189,12 +189,12 @@ contract SecurityToken is IERC20 {
         @param _endTime End of issuance period
         @return bool success
     */
-    
+
     function selectContract (
         uint8 _STOIndex,
         uint256 _startTime,
         uint256 _endTime
-    ) public onlyDelegate returns (bool success) 
+    ) public onlyDelegate returns (bool success)
     {
         var (_STOAddress, _developer, _vestingPeriod, _quorum, _fee) = PolyCompliance.getContractByProposal(this, _STOIndex);
         require(complianceProof != 0);
@@ -210,13 +210,13 @@ contract SecurityToken is IERC20 {
         LogSetSTOContract(STO, _STOAddress, _startTime, _endTime);
         return true;
     }
-    
+
     /**
         @dev Add a verified address to the Security Token whitelist
         @param _whitelistAddress Address attempting to join ST whitelist
         @return bool success
      */
-    
+
     function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success) {
         if (now > endSTO) {
           require(KYC[KYCProviderIndex] == msg.sender);
@@ -364,7 +364,7 @@ contract SecurityToken is IERC20 {
         @param _spender The address of the account able to transfer the tokens
         @return Amount of remaining tokens allowed to spent
     */
-    
+
     function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
