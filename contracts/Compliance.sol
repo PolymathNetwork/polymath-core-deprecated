@@ -9,6 +9,7 @@ pragma solidity ^0.4.18;
 
 import './Customers.sol';
 import './Template.sol';
+import './SecurityToken.sol';
 
 contract Compliance {
 
@@ -16,10 +17,11 @@ contract Compliance {
 
     // A compliance template
     struct TemplateReputation {
+      address owner;
       uint256 totalRaised;
       uint256 timesUsed;
       uint256 expires;
-      address owner;
+      address[] usedBy;
     }
     mapping(address => TemplateReputation) templates;
 
@@ -41,8 +43,9 @@ contract Compliance {
     Customers public PolyCustomers;
 
     // Notifications
-    event TemplateCreated(address creator, bytes32 _template, string _name);
-    event LogNewDelgateProposal(address _securityToken, bytes32 _template, address _delegate);
+    event TemplateCreated(address creator, address _template, string _name);
+    event LogNewTemplateProposal(address _securityToken, address _template, address _delegate);
+    event LogNewContractProposal(address _securityToken, address _contractAddress, address _delegate);
 
     // Constructor
     /// @param _polyCustomersAddress The address of the Polymath Customers contract
@@ -51,23 +54,19 @@ contract Compliance {
     }
 
     /// `createTemplate` is a simple function to create a new compliance template
-    /// @param _template A SHA256 hash of the JSON schema containing full compliance process/requirements
     /// @param _offeringType The name of the security being issued
     /// @param _issuerJurisdiction The jurisdiction id of the issuer
     /// @param _accredited Accreditation status required for investors
     /// @param _KYC KYC provider used by the template
     /// @param _details Details of the offering requirements
-    /// @param _finalized Timestamp of when the template will finalize and become non-editable
     /// @param _expires Timestamp of when the template will expire
     /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
     function createTemplate(
-        bytes32 _template,
         string _offeringType,
         bytes32 _issuerJurisdiction,
         bool _accredited,
         address _KYC,
         bytes32 _details,
-        bool _finalized,
         uint256 _expires,
         uint256 _fee,
         uint8 _quorum,
@@ -75,24 +74,29 @@ contract Compliance {
     ) public
     {
         var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
-        require(verified);
-        require(role == 2);
-        require(expires > now);
+        require(role == 2 && verified && expires > now);
         require(_quorum > 0 && _quorum < 100);
         require(_vestingPeriod >= 7777777);
-        address newTemplate = new Template(
+        address _template = new Template(
           msg.sender,
           _offeringType,
           _issuerJurisdiction,
           _accredited,
           _KYC,
+          _details,
           _expires,
           _fee,
           _quorum,
           _vestingPeriod
         );
-        templates[newTemplate] = TemplateReputation(msg.sender, 0, 0, [], _expires);
-        TemplateCreated(msg.sender, newTemplate, _offeringType);
+        templates[_template] = TemplateReputation({
+          owner: msg.sender,
+          totalRaised: 0,
+          timesUsed: 0,
+          expires: _expires,
+          usedBy: new address[](0)
+        });
+        TemplateCreated(msg.sender, _template, _offeringType);
     }
 
     /// Propose a bid for a security token issuance
@@ -101,38 +105,32 @@ contract Compliance {
     /// @return bool success
     function proposeTemplate(
         address _securityToken,
-        bytes32 _template
+        address _template
     ) public returns (bool success)
     {
-        require(templates[_template].finalized == true);
         require(templates[_template].expires > now);
         require(templates[_template].owner == msg.sender);
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(templates[_template].KYC, msg.sender);
-        require(verified == true);
-        require(role == 2);
         templateProposals[_securityToken].push(_template);
-        LogNewDelgateProposal(_securityToken, _template, msg.sender);
+        LogNewTemplateProposal(_securityToken, _template, msg.sender);
         return true;
     }
 
     /// Propose a STO contract for an issuance
     /// @param _securityToken The security token being bid on
     /// @param _contractAddress The security token offering contract address
-    /// @param _template The unique template hash
-    /// @param _templateIndex The array index of the template proposal
     /// @return bool success
     function proposeContract(
         address _securityToken,
-        address _contractAddress,
-        bytes32 _template,
-        uint8 _templateIndex
+        address _contractAddress
     ) public returns (bool success)
     {
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(templates[_template].KYC, msg.sender);
+        var (,,,KYC) = SecurityToken(_securityToken).getTokenDetails();
+        var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, contracts[_contractAddress].auditor);
+        require(contracts[_contractAddress].auditor == msg.sender);
         require(verified == true);
-        require(role == 3);
+        require(expires > now);
         contractProposals[_securityToken].push(_contractAddress);
-        LogNewDelgateProposal(_securityToken, _template, msg.sender);
+        LogNewContractProposal(_securityToken, _contractAddress, msg.sender);
         return true;
     }
 
@@ -140,7 +138,7 @@ contract Compliance {
     /// history of a security token to keep track of previous uses
     /// @param _template The unique template id
     /// @param _templateIndex The array index of the template proposal
-    function updateTemplateReputation (bytes32 _template, uint8 _templateIndex) public returns (bool success) {
+    function updateTemplateReputation (address _template, uint8 _templateIndex) public returns (bool success) {
       require(templateProposals[msg.sender][_templateIndex] == _template);
       templates[_template].usedBy.push(msg.sender);
       return true;
@@ -160,32 +158,17 @@ contract Compliance {
     /// @param _securityTokenAddress The security token ethereum address
     /// @param _templateIndex The array index of the template being checked
     /// return Template struct
-    function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) public returns (
-        address template,
-        address owner,
-        address KYC,
-        uint256 expires,
-        uint256 fee,
-        uint32 quorum,
-        uint256 vestingPeriod
+    function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
+        address template
     ){
-      bytes32 _template = templateProposals[_securityTokenAddress][_templateIndex];
-      return (
-        _template,
-        templates[_template].owner,
-        templates[_template].KYC,
-        templates[_template].expires,
-        templates[_template].fee,
-        templates[_template].quorum,
-        templates[_template].vestingPeriod
-      );
+      return templateProposals[_securityTokenAddress][_templateIndex];
     }
 
     /// Get issuance smart contract details by the proposal index
     /// @param _securityTokenAddress The security token ethereum address
     /// @param _contractIndex The array index of the STO contract being checked
     /// return Contract struct
-    function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) public returns (
+    function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) view public returns (
       address contractAddress,
       address auditor,
       uint256 vestingPeriod,
