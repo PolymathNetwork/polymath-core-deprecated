@@ -108,18 +108,20 @@ contract SecurityToken is IERC20 {
         _;
     }
 
-    /// Set default security token parameters
-    /// @param _name Name of the security token
-    /// @param _ticker Ticker name of the security
-    /// @param _totalSupply Total amount of tokens being created
-    /// @param _owner Ethereum address of the security token owner
-    /// @param _polyTokenAddress Ethereum address of the POLY token contract
-    /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
-    /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
-    /// @param _polySecurityTokenRegistrar Security Token Registrar address
-    /// @param _maxPoly Amount of POLY being raised
-    /// @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-    /// @param _quorum Percent of initial investors required to freeze POLY raise
+    /** 
+        @dev Set default security token parameters
+        @param _name Name of the security token
+        @param _ticker Ticker name of the security
+        @param _totalSupply Total amount of tokens being created
+        @param _owner Ethereum address of the security token owner
+        @param _maxPoly Amount of POLY being raised
+        @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+        @param _quorum Percent of initial investors required to freeze POLY raise
+        @param _polyTokenAddress Ethereum address of the POLY token contract
+        @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
+        @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
+        @param _polySecurityTokenRegistrar Security Token Registrar address 
+    */
     function SecurityToken(
         string _name,
         bytes8 _ticker,
@@ -147,10 +149,11 @@ contract SecurityToken is IERC20 {
         SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
     }
-
-    /// Select a proposed template for the issuance
-    /// @param _templateIndex Array index of the delegates proposed template
-    /// @return bool success
+   /** 
+        @dev `selectTemplate` Select a proposed template for the issuance
+        @param _templateIndex Array index of the delegates proposed template
+        @return bool success
+    */
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
         var (_template, _delegate, _KYC, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getTemplateByProposal(this, _templateIndex);
         require(POLY.balanceOf(this) >= _fee);
@@ -161,31 +164,36 @@ contract SecurityToken is IERC20 {
         LogTemplateSet(_delegate, _template, _KYC);
         return true;
     }
+    /**
+        @dev Update compliance proof hash for the issuance
+        @param _newMerkleRoot New merkle root hash of the compliance Proofs
+        @param _complianceProof Compliance Proof hash
+        @return bool success
+    */
 
-    /// Update compliance proof hash for the issuance
-    /// @param _newMerkleRoot New merkle root hash of the compliance Proofs
-    /// @param _complianceProof Compliance Proof hash
-    /// @return bool success
     function updateComplianceProof(
         bytes32 _newMerkleRoot,
         bytes32 _complianceProof
-    ) public onlyOwnerOrDelegate returns (bool success) {
-        require(msg.sender == owner || msg.sender == delegate);
+    ) public onlyOwnerOrDelegate returns (bool success)
+    {
         complianceProof = _newMerkleRoot;
         LogUpdatedComplianceProof(_newMerkleRoot, _complianceProof);
         return true;
     }
 
-    /// Select an STO contract for the issuance
-    /// @param _STOIndex Array index of the STO proposal
-    /// @param _startTime Start of issuance period
-    /// @param _endTime End of issuance period
-    /// @return bool success
+    /**
+        @dev Select an STO contract for the issuance
+        @param _STOIndex Array index of the STO proposal
+        @param _startTime Start of issuance period
+        @param _endTime End of issuance period
+        @return bool success
+    */
     function selectContract (
         uint8 _STOIndex,
         uint256 _startTime,
         uint256 _endTime
-    ) public onlyDelegate returns (bool success) {
+    ) public onlyDelegate returns (bool success) 
+    {
         var (_STOAddress, _developer, _vestingPeriod, _quorum, _fee) = PolyCompliance.getContractByProposal(this, _STOIndex);
         require(complianceProof != 0);
         require(delegate != address(0));
@@ -200,10 +208,13 @@ contract SecurityToken is IERC20 {
         LogSetSTOContract(STO, _STOAddress, _startTime, _endTime);
         return true;
     }
-
-    /// Add a verified address to the Security Token whitelist
-    /// @param _whitelistAddress Address attempting to join ST whitelist
-    /// @return bool success
+    
+    /**
+        @dev Add a verified address to the Security Token whitelist
+        @param _whitelistAddress Address attempting to join ST whitelist
+        @return bool success
+     */
+    
     function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success) {
         if (now > endSTO) {
           require(KYC[KYCProviderIndex] == msg.sender);
