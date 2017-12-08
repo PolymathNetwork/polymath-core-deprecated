@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import './PolyToken.sol';
+import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
 import './interfaces/ISTRegistrar.sol';
 
@@ -10,7 +10,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     address public polyTokenAddress;
     address public polyCustomersAddress;
     address public polyComplianceAddress;
-    PolyToken POLY;
+    IERC20 public POLY;
 
     // Security Token
     struct SecurityTokenData {
@@ -36,6 +36,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         address _polyComplianceAddress
     ) public
     {
+        POLY = IERC20(_polyTokenAddress);
         polyTokenAddress = _polyTokenAddress;
         polyCustomersAddress = _polyCustomersAddress;
         polyComplianceAddress = _polyComplianceAddress;
@@ -73,7 +74,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       require(tickers[_ticker] == address(0));
 
       // Collect creation fee
-      PolyToken(polyTokenAddress).transferFrom(msg.sender, _host, _fee);
+      require(POLY.transferFrom(msg.sender, _host, _fee));
 
       // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(

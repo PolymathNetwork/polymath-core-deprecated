@@ -7,6 +7,7 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       gas: 4612388,
+      gasPrice: 0x01,
       network_id: '*', // Match any network id
     },
     ropsten: {
@@ -15,6 +16,7 @@ module.exports = {
       network_id: '3',
       from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
       gas: 4612388,
+      gasPrice: 0x01,
     },
     coverage: {
       host: 'localhost',

@@ -2,48 +2,31 @@ pragma solidity ^0.4.18;
 
 contract ISTRegistrar {
 
-   /**
+    /**
         @dev Creates a new Security Token and saves it to the registry
         @param _name Name of the security token
         @param _ticker Ticker name of the security
         @param _totalSupply Total amount of tokens being created
         @param _owner Ethereum public key address of the security token owner
+        @param _host The host of the security token wizard
+        @param _fee Fee being requested by the wizard host
         @param _type Type of security being tokenized
-    */
-
+        @param _etherRaise Amount of ether being raised
+        @param _polyRaise Amount of POLY being raised
+        @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+        @param _quorum Percent of initial investors required to freeze POLY raise
+     */
     function createSecurityToken (
         string _name,
         bytes8 _ticker,
         uint256 _totalSupply,
         address _owner,
-        bytes32 _template,
-        uint8 _type
-    ) external returns (address st);
-
-    /**
-        @dev Allow new security token offering contract
-        @param _contractAddress The security token offering contract's
-        public key address
-        @param _fee The fee charged for the services provided in POLY
-     */
-     
-    function newSecurityTokenOfferingContract(address _contractAddress, uint256 _fee) public;
-
-    /**
-        @dev This is a basic getter function to allow access to the
-        creator of a given STO contract through an interface.
-        @param _contractAddress An STO contract
-        @return address The address of the STO contracts creator
-     */
-    
-    function getCreator(address _contractAddress) public returns(address);
-
-    /**
-        @notice This is a basic getter function to allow access to the
-        fee of a given STO contract through an interface.
-        @param _contractAddress An STO contract
-        @return address The address of the STO contracts fee
-     */
-     
-    function getFee(address _contractAddress) public returns(uint256);
+        address _host,
+        uint256 _fee,
+        uint8 _type,
+        uint256 _etherRaise,
+        uint256 _polyRaise,
+        uint256 _lockupPeriod,
+        uint8 _quorum
+    ) external;
 }
