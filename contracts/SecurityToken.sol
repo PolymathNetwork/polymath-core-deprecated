@@ -189,6 +189,7 @@ contract SecurityToken is IERC20 {
         @param _endTime End of issuance period
         @return bool success
     */
+    
     function selectContract (
         uint8 _STOIndex,
         uint256 _startTime,

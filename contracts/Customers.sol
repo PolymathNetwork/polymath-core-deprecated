@@ -65,13 +65,9 @@ contract Customers {
         require(_providerAddress != address(0));
         require(providers[_providerAddress].details != 0);
         // Require 10,000 POLY fee
-        if (POLY.transferFrom(_providerAddress, this, 10000)) {
-            providers[_providerAddress] = Provider(_name, now, _details, _fee);
-            NewProvider(_providerAddress, _name, _details);
-        } else {
-            revert();
-        }
-        
+        require (POLY.transferFrom(_providerAddress, this, 10000));
+        providers[_providerAddress] = Provider(_name, now, _details, _fee);
+        NewProvider(_providerAddress, _name, _details);
     }
 
    /**
