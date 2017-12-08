@@ -1,5 +1,5 @@
 // An ERC20 token standard faucet
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './interfaces/IERC20.sol';

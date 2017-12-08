@@ -1,24 +1,6 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 contract ITemplate {
-  /// `createTemplate` is a simple function to create a new compliance template
-  /// @param _template A SHA256 hash of the JSON schema containing full compliance process/requirements
-  /// @param _attestor The attestation provider to be used for the issuance
-  /// @param _name The name of security being issued
-  /// @param _issuerJurisdiction The jurisdiction id of the issuer
-  /// @param _finalizes Timestamp of when the template will finalize and become non-editable
-  /// @param _expires Timestamp of when the template will expire
-  /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
-  function createTemplate(
-      address _template,
-      string _name,
-      address _attestor,
-      bytes32 _issuerJurisdiction,
-      bool _accredited,
-      uint256 _finalizes,
-      uint256 _expires,
-      uint256 _fee
-  ) public;
 
   /// @notice `addJurisdictionToTemplate`allows the adding of new
   ///  jurisdictions to a template
@@ -41,14 +23,21 @@ contract ITemplate {
 
   /// `checkTemplateRequirements` is a constant function that
   ///  checks if templates requirements are met
-  /// @param _template A SHA256 hash of the JSON schema containing full
-  ///  compliance process/requirements
   /// @param _jurisdiction The ISO-3166 code of the investors jurisdiction
   /// @param _accredited Whether the investor is accredited or not
+  /// @param _role Check that the role is permitted
   function checkTemplateRequirements(
-    bytes32 _template,
     bytes32 _jurisdiction,
     bool _accredited,
     uint8 _role
   ) public constant returns (bool allowed);
+
+  /// `getUsageDetails` is a function to get all the details on template usage fees
+  function getUsageDetails() public constant returns (
+    uint256 fee,
+    uint8 quorum,
+    uint256 vestingPeriod,
+    address owner,
+    address KYC
+  );
 }

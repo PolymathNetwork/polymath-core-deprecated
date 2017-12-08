@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 /*
   Polymath compliance protocol is intended to ensure regulatory compliance
@@ -14,13 +14,7 @@ contract ICompliance {
     /// @param _templateIndex The array index of the template being checked
     /// return Template struct
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) public returns (
-        bytes32 template,
-        address owner,
-        address KYC,
-        uint256 expires,
-        uint256 fee,
-        uint8 quorum,
-        uint256 vestingPeriod
+        address template
     );
 
     /// Get issuance smart contract details by the proposal index
@@ -39,7 +33,7 @@ contract ICompliance {
     /// history of a security token to keep track of previous uses
     /// @param _template The unique template id
     /// @param _templateIndex The array index of the template proposal
-    function updateTemplateReputation (bytes32 _template, uint8 _templateIndex) public returns (bool success);
+    function updateTemplateReputation (address _template, uint8 _templateIndex) public returns (bool success);
 
     /// `updateSmartContractReputation` is a constant function that updates the
     /// history of a security token to keep track of previous uses

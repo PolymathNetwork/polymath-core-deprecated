@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './interfaces/IERC20.sol';
@@ -12,7 +12,7 @@ contract SecurityToken is IERC20 {
 
     using SafeMath for uint256;
 
-    string public version = "0.1";
+    uint256 public version = 1;
 
     // Instance of the POLY token contract
     IERC20 public POLY;
@@ -39,7 +39,6 @@ contract SecurityToken is IERC20 {
     mapping (address => uint256) balances;
 
     // Template
-    address public template;
     address public delegate;
     bytes32 public complianceProof;
     address[] public KYC;
@@ -64,7 +63,7 @@ contract SecurityToken is IERC20 {
     struct Allocation {
       uint256 amount;
       uint256 vestingPeriod;
-      uint8 minimumQuorum;
+      uint8 quorum;
       uint256 yayVotes;
       uint256 yayPercent;
       bool frozen;
@@ -77,7 +76,7 @@ contract SecurityToken is IERC20 {
 		uint tokensIssuedBySTO = 0;
 
     // Notifications
-    event LogTemplateSet(address indexed _delegateAddress, bytes32 _template, address indexed _KYC);
+    event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
@@ -152,7 +151,9 @@ contract SecurityToken is IERC20 {
     /// @param _templateIndex Array index of the delegates proposed template
     /// @return bool success
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
-        var (_template, _delegate, _KYC, _expires, _fee, _quorum, _vestingPeriod) = PolyCompliance.getTemplateByProposal(this, _templateIndex);
+        address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
+        Template = ITemplate(_template);
+        var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
@@ -212,7 +213,7 @@ contract SecurityToken is IERC20 {
         }
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(msg.sender, _whitelistAddress);
         require(verified && expires > now);
-        require(PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role));
+        require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
         LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
         return true;
@@ -227,7 +228,6 @@ contract SecurityToken is IERC20 {
 				require(now > endSTO + allocations[msg.sender].vestingPeriod);
         require(allocations[msg.sender].frozen == false);
         require(allocations[msg.sender].amount > 0);
-        uint256 amount = allocations[msg.sender].amount;
         allocations[msg.sender].amount = 0;
 				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
         return true;
@@ -244,7 +244,7 @@ contract SecurityToken is IERC20 {
       require(allocations[_recipient].votes[msg.sender] == false);
       allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
       allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
-      if (allocations[_recipient].yayPercent > allocations[_recipient].minimumQuorum) {
+      if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
         allocations[_recipient].frozen = true;
       }
       LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].frozen);
@@ -264,6 +264,11 @@ contract SecurityToken is IERC20 {
       allocations[owner].amount = allocations[owner].amount + _polyContributed;
       return true;
 		}
+
+    /// Get token details
+    function getTokenDetails() view public returns (address, address, bytes32, address) {
+      return (Template, delegate, complianceProof, KYC[0]);
+    }
 
     /// Trasfer tokens from one address to another
     /// @param _to Ethereum public address to transfer tokens to

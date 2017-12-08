@@ -20,7 +20,7 @@ contract Template {
     bool finalized;
     uint256 expires;
     uint256 fee;
-    uint32 quorum;
+    uint8 quorum;
     uint256 vestingPeriod;
 
     function Template (
@@ -29,9 +29,10 @@ contract Template {
       bytes32 _issuerJurisdiction,
       bool _accredited,
       address _KYC,
+      bytes32 _details,
       uint256 _expires,
       uint256 _fee,
-      uint32 _quorum,
+      uint8 _quorum,
       uint256 _vestingPeriod
     ) public {
       owner = _owner;
@@ -39,6 +40,7 @@ contract Template {
       issuerJurisdiction = _issuerJurisdiction;
       accredited = _accredited;
       KYC = _KYC;
+      details = _details;
       finalized = false;
       expires = _expires;
       fee = _fee;
@@ -106,8 +108,13 @@ contract Template {
 
     /// `getTemplateDetails` is a constant function that gets template details
     /// @return bytes32 details, bool finalized
-    function getTemplateDetails() public returns (bytes32, bool) {
+    function getTemplateDetails() view public returns (bytes32, bool) {
       require(expires > now);
       return (details, finalized);
+    }
+
+    /// `getUsageFees` is a function to get all the details on template usage fees
+    function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
+      return (fee, quorum, vestingPeriod, owner, KYC);
     }
 }

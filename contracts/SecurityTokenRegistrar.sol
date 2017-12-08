@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './SecurityToken.sol';
@@ -29,7 +29,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     // Mapping of ticker name to Security Token
     mapping(bytes8 => address) tickers;
 
-    event LogNewSecurityToken(bytes8 indexed ticker, address securityTokenAddress, address owner);
+    event LogNewSecurityToken(bytes8 indexed ticker, address securityTokenAddress, uint256 _etherRaise, address owner);
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -102,7 +102,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       tickers[_ticker] = newSecurityTokenAddress;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _etherRaise, _owner);
       totalSecurityTokens++;
     }
 
