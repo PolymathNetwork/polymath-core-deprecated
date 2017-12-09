@@ -1,25 +1,27 @@
 # Polymath Smart Contracts
 
-The Ethereum smart contracts for [Polymath][polymath], the securities token platform. Currently deployed to:
+<img src="https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=add-to-gitignore">
 
-## Ropsten
+![Polymath](Polymath.png)
 
-| Contract       | Address                                    |
-| :-------------| :-----------------------------------------:|
-| [PolyToken](./contracts/PolyToken.sol)     | [0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7](https://ropsten.etherscan.io/address/0xd6f78e055bb0137d6c2ee799d59defcfe032b1a7) |
-| [SecurityTokens](./contracts/SecurityTokens.sol) | [0x2e6eb6009832a0e1f1ffe970dbe1ea44ff4b5461](https://ropsten.etherscan.io/address/0x2e6eb6009832a0e1f1ffe970dbe1ea44ff4b5461) |
-| [SecurityToken](./contracts/SecurityToken.sol)  | [0xbc2a5cc6e723a829d231b207e8ec0c0a8e573c93](https://ropsten.etherscan.io/address/0xbc2a5cc6e723a829d231b207e8ec0c0a8e573c93) |
-| [Compliance](./contracts/Compliance.sol)     | [0xcc1f38392f98443b1d25947be91c595ea4e78210](https://ropsten.etherscan.io/address/0xcc1f38392f98443b1d25947be91c595ea4e78210) |
-| [Customers](./contracts/Customers.sol)      | [0xbe40f369c413a2c7eaab9d9cc85cfc1dbe664ec6](https://ropsten.etherscan.io/address/0xbe40f369c413a2c7eaab9d9cc85cfc1dbe664ec6) |
+## Live on Ropsten
+
+| Contract                                         |                                                            Address                                                            |
+| :----------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------: |
+| [PolyToken](./contracts/PolyToken.sol)           | [0x80423da869f0121a31f73597aaa7fbddd231d8e7](https://ropsten.etherscan.io/address/0x80423da869f0121a31f73597aaa7fbddd231d8e7) |
+| [SecurityTokens](./contracts/SecurityTokens.sol) | [0x323121a1728ceaa1ac44dd57ecf519277d888244](https://ropsten.etherscan.io/address/0x323121a1728ceaa1ac44dd57ecf519277d888244) |
+| [Compliance](./contracts/Compliance.sol)         | [0x1deaf332c28bb6481ca7b2fa4b08faaa9900bcd4](https://ropsten.etherscan.io/address/0x1deaf332c28bb6481ca7b2fa4b08faaa9900bcd4) |
+| [Customers](./contracts/Customers.sol)           | [0x6266f2ee059ed8eb301b16cc845f34de2780133f](https://ropsten.etherscan.io/address/0x6266f2ee059ed8eb301b16cc845f34de2780133f) |
 
 ## Setup
 
-Contracts are written in [Solidity][solidity] and tested using [Truffle][truffle] version 4.0.0 and [testrpc][testrpc].
-The new version of Truffle doesn't require testrpc.
+The smart contracts are written in [Solidity][solidity] and tested/deployed
+using [Truffle][truffle] version 4.0.0. The new version of Truffle doesn't
+require testrpc to be installed separately so you can just do use the following:
 
 ```bash
 # Install Truffle package globally:
-$ npm install -g truffle@beta
+$ npm install -g truffle
 
 # Install local node dependencies:
 $ npm install
@@ -27,34 +29,30 @@ $ npm install
 
 ## Testing
 
-To test the codebase simply run:
+To test the code simply run:
 
 ```
 $ npm run test
 ```
 
-## Style Guide 
+## Contributing
 
-The style guide for Polymath follows the style guide laid out by the Solidity Team at: http://solidity.readthedocs.io/en/develop/style-guide.html
+We're always open for developers to join the polymath network! To do so we
+encourage developers to contribute by creating Security Token Offering contracts
+(STO) which can be used by issuers to raise funds. If your contract is used, you
+can earn POLY fees directly through the contract, and additional bonuses through
+the Polymath reserve fund.
 
-## Linting 
- 
-Solium is used as the linter for solidity code. You can see the code for solium here: https://github.com/duaraghav8/Solium
+If you would like to apply directly to our STO contract development team, please
+send your resume and/or portfolio to careers@polymath.network.
 
-Solium creates two files:
+### Styleguide
 
-| File       | Purpose                                    |
-| :-------------| :-----------------------------------------:|
-| [.soliumignore](./.soliumignore)     | contains names of files and directories to ignore while linting|
-| [.soliumrc.json](./.soliumrc.json) | contains configuration that tells solium how to lint your project. It can be  modified to configure rules, plugins and sharable configs |
-
-![Polymath](Polymath.png)
-
-Copyright © 2017 Polymath Inc.
+The polymath-core repo follows the style guide overviewed here:
+http://solidity.readthedocs.io/en/develop/style-guide.html
 
 [polymath]: https://polymath.network
 [ethereum]: https://www.ethereum.org/
-
 [solidity]: https://solidity.readthedocs.io/en/develop/
 [truffle]: http://truffleframework.com/
 [testrpc]: https://github.com/ethereumjs/testrpc
