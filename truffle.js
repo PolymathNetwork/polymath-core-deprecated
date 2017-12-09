@@ -6,7 +6,7 @@ module.exports = {
     development: {
       host: 'localhost',
       port: 8545,
-      gas: 4612388,
+      gas: 4712388,
       gasPrice: 0x01,
       network_id: '*', // Match any network id
     },
@@ -16,7 +16,6 @@ module.exports = {
       network_id: '3',
       from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
       gas: 4612388,
-      gasPrice: 0x01,
     },
     coverage: {
       host: 'localhost',
@@ -32,4 +31,10 @@ module.exports = {
     bail: true,
   },
   dependencies: {},
+  solc: {
+    optimizer: {
+      enabled: true,
+      runs: 200,
+    },
+  },
 };

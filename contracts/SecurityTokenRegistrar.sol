@@ -2,32 +2,26 @@ pragma solidity ^0.4.18;
 
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
-import './interfaces/ISTRegistrar.sol';
 
-contract SecurityTokenRegistrar is ISTRegistrar {
+contract SecurityTokenRegistrar {
 
-    uint256 public totalSecurityTokens;
     address public polyTokenAddress;
     address public polyCustomersAddress;
     address public polyComplianceAddress;
-    IERC20 public POLY;
 
     // Security Token
     struct SecurityTokenData {
-        string name;
-        uint8 decimals;
         uint256 totalSupply;
         address owner;
         bytes8 ticker;
         uint8 securityType;
-        bytes32 template;
     }
     mapping(address => SecurityTokenData) securityTokens;
 
     // Mapping of ticker name to Security Token
     mapping(bytes8 => address) tickers;
 
-    event LogNewSecurityToken(bytes8 indexed ticker, address securityTokenAddress, uint256 _etherRaise, address owner);
+    event LogNewSecurityToken(bytes8 ticker, address securityTokenAddress, address owner);
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -36,7 +30,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         address _polyComplianceAddress
     ) public
     {
-        POLY = IERC20(_polyTokenAddress);
         polyTokenAddress = _polyTokenAddress;
         polyCustomersAddress = _polyCustomersAddress;
         polyComplianceAddress = _polyComplianceAddress;
@@ -51,7 +44,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         @param _host The host of the security token wizard
         @param _fee Fee being requested by the wizard host
         @param _type Type of security being tokenized
-        @param _etherRaise Amount of ether being raised
         @param _polyRaise Amount of POLY being raised
         @param _lockupPeriod Length of time raised POLY will be locked up for dispute
         @param _quorum Percent of initial investors required to freeze POLY raise
@@ -65,7 +57,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       address _host,
       uint256 _fee,
       uint8 _type,
-      uint256 _etherRaise,
       uint256 _polyRaise,
       uint256 _lockupPeriod,
       uint8 _quorum
@@ -74,7 +65,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       require(tickers[_ticker] == address(0));
 
       // Collect creation fee
-      require(POLY.transferFrom(msg.sender, _host, _fee));
+      require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
 
       // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(
@@ -92,20 +83,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       );
 
       // Update the registry
-      SecurityTokenData memory st = securityTokens[newSecurityTokenAddress];
-      st.name = _name;
-      st.decimals = 0;
-      st.totalSupply = _totalSupply;
-      st.owner = _owner;
-      st.securityType = _type;
-      st.ticker = _ticker;
-      st.template = 0x0;
-      securityTokens[newSecurityTokenAddress] = st;
+      securityTokens[newSecurityTokenAddress] = SecurityTokenData(_totalSupply, _owner, _ticker, _type);
       tickers[_ticker] = newSecurityTokenAddress;
 
       // Log event and update total Security Token count
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _etherRaise, _owner);
-      totalSecurityTokens++;
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
     }
 
 }
