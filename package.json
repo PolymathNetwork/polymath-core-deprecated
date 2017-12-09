@@ -11,7 +11,7 @@
   },
   "main": "truffle.js",
   "scripts": {
-    "test": "testrpc& && truffle test",
+    "test": "testrpc & truffle test",
     "compile": "truffle compile",
     "migrate-local": "truffle migrate --network=local --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten",
@@ -34,8 +34,9 @@
     "yargs": "8.0.2"
   },
   "devDependencies": {
-    "sol-merger": "0.1.2",
     "should": "13.1.3",
-    "solidity-coverage": "0.3.5"
+    "sol-merger": "0.1.2",
+    "solidity-coverage": "0.3.5",
+    "testrpc": "0.0.1"
   }
 }
