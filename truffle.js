@@ -15,7 +15,7 @@ module.exports = {
       port: 1337,
       network_id: '3',
       from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
-      gas: 4612388,
+      gas: 4512388,
     },
     coverage: {
       host: 'localhost',
