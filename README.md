@@ -1,6 +1,9 @@
 ![Polymath](Polymath.png)
 
-## Polymath core smart contracts
+# Polymath core
+
+The polymath core smart contracts used launch financial securities on the
+Ethereum blockchain in a regulatory compliant way.
 
 <img src="https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=add-to-gitignore">
 
