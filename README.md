@@ -1,11 +1,11 @@
 ![Polymath](Polymath.png)
 
-<img src="https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=add-to-gitignore">
-
 ## Polymath core smart contracts
 
-| Contract                                         |                                                    Ropsten Testnet Address                                                    |
-| :----------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------: |
+<img src="https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=add-to-gitignore">
+
+| Contract                                         | Ropsten Testnet Address                                                                                                       |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | [PolyToken](./contracts/PolyToken.sol)           | [0x80423da869f0121a31f73597aaa7fbddd231d8e7](https://ropsten.etherscan.io/address/0x80423da869f0121a31f73597aaa7fbddd231d8e7) |
 | [SecurityTokens](./contracts/SecurityTokens.sol) | [0x323121a1728ceaa1ac44dd57ecf519277d888244](https://ropsten.etherscan.io/address/0x323121a1728ceaa1ac44dd57ecf519277d888244) |
 | [Compliance](./contracts/Compliance.sol)         | [0x1deaf332c28bb6481ca7b2fa4b08faaa9900bcd4](https://ropsten.etherscan.io/address/0x1deaf332c28bb6481ca7b2fa4b08faaa9900bcd4) |
