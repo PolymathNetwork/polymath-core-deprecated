@@ -237,7 +237,7 @@ contract SecurityToken is IERC20 {
     */
 
     function withdrawPoly() public returns (bool success) {
-			if (delegate == address(0) || now > endSTO + allocations[delegate].vestingPeriod + 777777) {
+			if (delegate == address(0)) {
         return POLY.transfer(owner, POLY.balanceOf(this));
       } else {
 				require(now > endSTO + allocations[msg.sender].vestingPeriod);
@@ -269,19 +269,17 @@ contract SecurityToken is IERC20 {
       return true;
     }
 
-	/**
-        @dev `issueSecurityTokens` is used by the STO to keep track of STO investors
-	    @param _contributor The address of the person whose contributing
-		@param _amount The amount of ST to pay out.
-    */
-
-    function issueSecurityTokens(address _contributor, uint256 _amount, uint256 _polyContributed) public onlySTO returns (bool success) {
+	  /** @dev `issueSecurityTokens` is used by the STO to keep track of STO investors
+	   @param _contributor The address of the person whose contributing
+		 @param _amountOfSecurityTokens The amount of ST to pay out.
+		 @param _polyContributed The amount of POLY paid for the security tokens. */
+    function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
         require(startSTO > now && endSTO < now);
-        require(tokensIssuedBySTO.add(_amount) <= balanceOf(this));
-        require(allocations[owner].amount < maxPoly + _polyContributed);
         require(POLY.transferFrom(_contributor, this, _polyContributed));
-        tokensIssuedBySTO = tokensIssuedBySTO.add(_amount);
-        contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amount);
+        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(this));
+        require(maxPoly > allocations[owner].amount + _polyContributed);
+        tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
+        contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
         allocations[owner].amount = allocations[owner].amount + _polyContributed;
         return true;
     }

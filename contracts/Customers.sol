@@ -21,7 +21,6 @@ contract Customers is ICustomers {
         uint8 role;
         bool verified;
         bool accredited;
-        bool flagged;
         bytes32 proof;
         uint256 expires;
     }
@@ -62,7 +61,6 @@ contract Customers is ICustomers {
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
         require(providers[_providerAddress].details != 0);
-        // Require 10,000 POLY fee
         require (POLY.transferFrom(_providerAddress, this, 10000));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         NewProvider(_providerAddress, _name, _details);
@@ -79,7 +77,6 @@ contract Customers is ICustomers {
         customers[_provider][msg.sender].role = _role;
         customers[_provider][msg.sender].verified = false;
         customers[_provider][msg.sender].accredited = false;
-        customers[_provider][msg.sender].flagged = false;
         customers[_provider][msg.sender].proof = _proof;
         customers[_provider][msg.sender].joined = now;
         NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
