@@ -43,14 +43,14 @@ contract Compliance {
     Customers public PolyCustomers;
 
     // Notifications
-    event TemplateCreated(address creator, address _template, string _name);
+    event TemplateCreated(address indexed creator, address _template, string _name);
     event LogNewTemplateProposal(address _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address _securityToken, address _contractAddress, address _delegate);
-    
-    /** 
+
+    /**
      @param _polyCustomersAddress The address of the Polymath Customers contract
     */
-    
+
     function Compliance(address _polyCustomersAddress) public {
       PolyCustomers = Customers(_polyCustomersAddress);
     }
@@ -64,6 +64,8 @@ contract Compliance {
         @param _details Details of the offering requirements
         @param _expires Timestamp of when the template will expire
         @param _fee Amount of POLY to use the template (held in escrow until issuance)
+        @param _quorum Minimum percent of shareholders which need to vote to freeze
+        @param _vestingPeriod Length of time to vest funds
      */
 
     function createTemplate(
@@ -190,7 +192,7 @@ contract Compliance {
         @param _contractIndex The array index of the STO contract being checked
         @return Contract struct
      */
-     
+
     function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) view public returns (
       address contractAddress,
       address auditor,

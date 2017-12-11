@@ -25,7 +25,7 @@ contract Customers is ICustomers {
         uint256 expires;
     }
 
-    // Customers
+    // Customers (kyc provider address => customer address)
     mapping (address => mapping (address => Customer)) public customers;
 
     // KYC/Accreditation Provider
@@ -74,6 +74,7 @@ contract Customers is ICustomers {
       @param _role The type of customer - investor:1, issuer:2, delegate:3
       @param _proof The SHA256 hash of the documentation provided to prove identity */
     function newCustomer(bytes32 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) public returns (bool success) {
+        require(providers[_provider].details != 0);
         customers[_provider][msg.sender].jurisdiction = _jurisdiction;
         customers[_provider][msg.sender].role = _role;
         customers[_provider][msg.sender].verified = false;
