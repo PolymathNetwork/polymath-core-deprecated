@@ -42,6 +42,7 @@ contract Customers is ICustomers {
     // Notifications
     event NewProvider(address providerAddress, string name, bytes32 details);
     event NewCustomer(address customer, address provider, bytes32 jurisdiction, uint8 role, bytes32 proof, bool verified);
+    event VerifiedCustomer(address customer, address provider, uint8 role);
 
     modifier onlyProvider() {
         require(providers[msg.sender].details != 0x0);
@@ -88,14 +89,12 @@ contract Customers is ICustomers {
       @param _jurisdiction The jurisdiction code of the customer
       @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
       @param _accredited Whether the customer is accredited or not (only applied to investors)
-      @param _proof The SHA256 hash of the documentation provided to prove identity
       @param _expires The time the verification expires */
     function verifyCustomer(
         address _customer,
         bytes32 _jurisdiction,
         uint8 _role,
         bool _accredited,
-        bytes32 _proof,
         uint256 _expires
     ) public onlyProvider returns (bool success)
     {
@@ -107,13 +106,10 @@ contract Customers is ICustomers {
         customers[msg.sender][_customer].accredited = _accredited;
         customers[msg.sender][_customer].expires = _expires;
         customers[msg.sender][_customer].verified = true;
-        NewCustomer(
+        VerifiedCustomer(
             _customer,
             msg.sender,
-            _jurisdiction,
-            _role,
-            _proof,
-            true
+            _role
         );
         return true;
     }
