@@ -44,8 +44,8 @@ contract Compliance {
 
     // Notifications
     event TemplateCreated(address indexed creator, address _template, string _name);
-    event LogNewTemplateProposal(address _securityToken, address _template, address _delegate);
-    event LogNewContractProposal(address _securityToken, address _contractAddress, address _delegate);
+    event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
+    event LogNewContractProposal(address indexed _securityToken, address _contractAddress, address _delegate);
 
     /**
      @param _polyCustomersAddress The address of the Polymath Customers contract
