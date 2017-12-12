@@ -43,7 +43,7 @@ contract Compliance {
     Customers public PolyCustomers;
 
     // Notifications
-    event TemplateCreated(address indexed creator, address _template, string _name);
+    event TemplateCreated(address indexed creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _contractAddress, address _delegate);
 
