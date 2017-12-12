@@ -39,4 +39,11 @@ contract ICustomers {
     bool,
     uint256
   );
+  
+  function getProvider(address _providerAddress) public constant returns (
+        string name,
+        uint256 joined,
+        bytes32 details,
+        uint256 fee
+    );
 }

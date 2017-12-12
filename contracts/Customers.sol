@@ -61,7 +61,8 @@ contract Customers is ICustomers {
       @param _fee The fee charged for customer verification */
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
-        require(providers[_providerAddress].details != 0);
+        require(_details != 0x0);
+        require(providers[_providerAddress].details == 0);
         require (POLY.transferFrom(_providerAddress, this, 10000));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         NewProvider(_providerAddress, _name, _details);
@@ -129,6 +130,20 @@ contract Customers is ICustomers {
           customers[_provider][_customer].role,
           customers[_provider][_customer].verified,
           customers[_provider][_customer].expires
+        );
+    }
+
+    function getProvider(address _providerAddress) public constant returns (
+        string name,
+        uint256 joined,
+        bytes32 details,
+        uint256 fee
+    ) {
+        return ( 
+            providers[_providerAddress].name,
+            providers[_providerAddress].joined, 
+            providers[_providerAddress].details,
+            providers[_providerAddress].fee
         );
     }
 

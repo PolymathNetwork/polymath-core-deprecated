@@ -34,7 +34,8 @@ contract Template {
       uint256 _fee,
       uint8 _quorum,
       uint256 _vestingPeriod
-    ) public {
+    ) public 
+    {
       owner = _owner;
       offeringType = _offeringType;
       issuerJurisdiction = _issuerJurisdiction;
