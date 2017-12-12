@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 
 /**Polymath customer registry is used to ensure regulatory compliance
