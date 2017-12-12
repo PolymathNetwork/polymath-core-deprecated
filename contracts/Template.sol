@@ -57,6 +57,7 @@ contract Template {
 
     function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public {
         require(owner == msg.sender);
+        require(_allowedJurisdictions.length == _allowed.length);
         require(!finalized);
         for (uint i = 0; i < _allowedJurisdictions.length; ++i) {
             allowedJurisdictions[_allowedJurisdictions[i]] = _allowed[i];
