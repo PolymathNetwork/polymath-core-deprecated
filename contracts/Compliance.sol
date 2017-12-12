@@ -109,7 +109,7 @@ contract Compliance {
     /**
         @dev Propose a bid for a security token issuance
         @param _securityToken The security token being bid on
-        @param _template The unique template hash
+        @param _template The unique template address
         @return bool success
      */
 
