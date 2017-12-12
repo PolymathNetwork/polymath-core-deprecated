@@ -60,13 +60,14 @@ contract SecurityTokenRegistrar {
       uint256 _polyRaise,
       uint256 _lockupPeriod,
       uint8 _quorum
-    ) external {
+    ) external 
+    {
       require(_fee > 1000);
       require(_owner != address(0));
       require(tickers[_ticker] == address(0));
 
       // Collect creation fee
-      require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
+      require(IERC20(polyTokenAddress).transferFrom(msg.sender,_host, _fee));
 
       // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(
@@ -89,6 +90,26 @@ contract SecurityTokenRegistrar {
 
       // Log event and update total Security Token count
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+    }
+
+    // getters
+
+    function getSecurityTokenAddress(bytes8 _ticker) public constant returns (address) {
+        return tickers[_ticker] ;
+    }
+
+    function getSecurityTokenData(address _STAddress) public constant returns (
+         uint256 totalSupply,
+         address owner,
+         bytes8 ticker,
+         uint8 securityType
+    ) {
+        return (
+            securityTokens[_STAddress].totalSupply,
+            securityTokens[_STAddress].owner,
+            securityTokens[_STAddress].ticker,
+            securityTokens[_STAddress].securityType
+        );
     }
 
 }
