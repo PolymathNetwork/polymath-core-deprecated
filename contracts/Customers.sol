@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
-/*
-Polymath customer registry is used to ensure regulatory compliance
+
+/**Polymath customer registry is used to ensure regulatory compliance
 of the investors, provider, and issuers. The customers registry is a central
 place where ethereum addresses can be whitelisted to purchase certain security
 tokens based on their verifications by providers.
@@ -13,7 +13,7 @@ import './interfaces/ICustomers.sol';
 contract Customers is ICustomers {
 
     PolyToken POLY;
-
+    
     // A Customer
     struct Customer {
         bytes32 jurisdiction;
@@ -59,14 +59,15 @@ contract Customers is ICustomers {
       @param _name The provider's name
       @param _details A SHA256 hash of the new providers details
       @param _fee The fee charged for customer verification */
+
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
         require(_details != 0x0);
         require(providers[_providerAddress].details == 0);
-        require (POLY.transferFrom(_providerAddress, this, 10000));
+        require(POLY.transferFrom(_providerAddress, address(this), 10000));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         NewProvider(_providerAddress, _name, _details);
-        return true;
+        return true;  
     }
 
    /** @dev Allow new investor applications
@@ -86,7 +87,7 @@ contract Customers is ICustomers {
         return true;
     }
 
-    /** @dev Verify an investor
+  /** @dev Verify an investor
       @param _customer The customer's public key address
       @param _jurisdiction The jurisdiction code of the customer
       @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
