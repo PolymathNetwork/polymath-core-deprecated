@@ -67,7 +67,7 @@ contract SecurityTokenRegistrar {
       require(tickers[_ticker] == address(0));
 
       // Collect creation fee
-      require(IERC20(polyTokenAddress).transferFrom(msg.sender,_host, _fee));
+      require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
 
       // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(
