@@ -43,7 +43,7 @@ contract Customers is ICustomers {
     event NewProvider(address providerAddress, string name, bytes32 details);
     event NewCustomer(address customer, address provider, bytes32 jurisdiction, uint8 role, bytes32 proof, bool verified);
     event VerifiedCustomer(address customer, address provider, uint8 role);
-    
+
     modifier onlyProvider() {
         require(providers[msg.sender].details != 0x0);
         _;
