@@ -78,7 +78,7 @@ contract SecurityToken is IERC20 {
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
-    event LogSetSTOContract(address _STO, address indexed _STOtemplate, uint256 _startTime, uint256 _endTime);
+    event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _developer, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
     event LogVoteToFreeze(address _recipient, uint256 _yayPercent, bool _frozen);
 
@@ -207,7 +207,7 @@ contract SecurityToken is IERC20 {
         startSTO = _startTime;
         endSTO = _endTime;
         PolyCompliance.updateContractReputation(this, _STOIndex);
-        LogSetSTOContract(STO, _STOAddress, _startTime, _endTime);
+        LogSetSTOContract(STO, _STOAddress, _developer, _startTime, _endTime);
         return true;
     }
 
