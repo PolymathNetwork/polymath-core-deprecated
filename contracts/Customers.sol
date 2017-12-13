@@ -14,6 +14,8 @@ contract Customers is ICustomers {
 
     PolyToken POLY;
 
+    uint256 public constant newProviderFee = 1000;
+
     // A Customer
     struct Customer {
       bytes32 jurisdiction;
@@ -63,7 +65,7 @@ contract Customers is ICustomers {
       require(_providerAddress != address(0));
       require(_details != 0x0);
       require(providers[_providerAddress].details == 0);
-      require(POLY.transferFrom(_providerAddress, address(this), 10000));
+      require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
       providers[_providerAddress] = Provider(_name, now, _details, _fee);
       NewProvider(_providerAddress, _name, _details);
       return true;
@@ -80,7 +82,7 @@ contract Customers is ICustomers {
     /* @dev Verify an investor
     @param _customer The customer's public key address
     @param _jurisdiction The jurisdiction code of the customer
-    @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4,
+    @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4, etc.
     @param _accredited Whether the customer is accredited or not (only applied to investors)
     @param _expires The time the verification expires */
     function verifyCustomer(

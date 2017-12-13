@@ -43,6 +43,8 @@ contract Compliance {
     // Instance of the Compliance contract
     Customers public PolyCustomers;
 
+    uint256 public constant minimumVestingPeriod = 7777777;
+
     // Notifications
     event TemplateCreated(address indexed creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
@@ -78,7 +80,7 @@ contract Compliance {
       var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
       require(role == 2 && verified && expires > now);
       require(_quorum > 0 && _quorum < 100);
-      require(_vestingPeriod >= 7777777);
+      require(_vestingPeriod >= minimumVestingPeriod);
       address _template = new Template(
         msg.sender,
         _offeringType,

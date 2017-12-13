@@ -65,7 +65,6 @@ contract SecurityTokenRegistrar {
       uint8 _quorum
     ) external
     {
-      require(_fee > 1000);
       require(_owner != address(0));
       require(tickers[_ticker] == address(0));
       require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
