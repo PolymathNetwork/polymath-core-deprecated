@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-contract ISTRegistrar {
+interface ISTRegistrar {
 
     /* @dev Creates a new Security Token and saves it to the registry
     @param _name Name of the security token

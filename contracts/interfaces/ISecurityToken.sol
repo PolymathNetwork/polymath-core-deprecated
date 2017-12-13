@@ -1,6 +1,6 @@
   pragma solidity ^0.4.18;
 
-  contract ISecurityToken {
+  interface ISecurityToken {
 
     /* @dev Set default security token parameters
     @param _name Name of the security token

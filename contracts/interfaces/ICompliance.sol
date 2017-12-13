@@ -7,7 +7,7 @@ pragma solidity ^0.4.18;
   build on top of the Polymath platform and extend it's functionality.
 */
 
-contract ICompliance {
+interface ICompliance {
 
     /* @dev `createTemplate` is a simple function to create a new compliance template
     @param _offeringType The name of the security being issued

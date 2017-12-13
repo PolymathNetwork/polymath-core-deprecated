@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-contract ICustomers {
+interface ICustomers {
 
   /* @dev Allow new provider applications
   @param _providerAddress The provider's public key address

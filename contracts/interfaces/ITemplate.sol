@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-contract ITemplate {
+interface ITemplate {
 
   /* @dev `addJurisdictionToTemplate`allows the adding of new
   jurisdictions to a template
