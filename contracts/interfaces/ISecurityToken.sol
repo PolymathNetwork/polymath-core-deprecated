@@ -71,6 +71,9 @@
   @param _polyContributed The amount of POLY paid for the security tokens. */
   function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public returns (bool success);
 
+  /// Get token details
+  function getTokenDetails() view public returns (address, address, bytes32, address, address);
+
   /** @dev Trasfer tokens from one address to another
   @param _to Ethereum public address to transfer tokens to
   @param _value Amount of tokens to send

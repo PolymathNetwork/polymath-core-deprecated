@@ -146,6 +146,7 @@ contract SecurityToken is IERC20 {
     @return bool success */
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
         address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
+        require(_template != address(0));
         Template = ITemplate(_template);
         var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
         require(POLY.balanceOf(this) >= _fee);
@@ -183,6 +184,7 @@ contract SecurityToken is IERC20 {
     ) public onlyDelegate returns (bool success)
     {
         var (_STOAddress, _developer, _vestingPeriod, _quorum, _fee) = PolyCompliance.getContractByProposal(this, _STOIndex);
+        require(_STOAddress != address(0));
         require(complianceProof != 0);
         require(delegate != address(0));
         require(_startTime > now && _endTime > _startTime);
@@ -262,8 +264,8 @@ contract SecurityToken is IERC20 {
     }
 
     /// Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address) {
-        return (Template, delegate, complianceProof, KYC[0]);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address) {
+        return (Template, delegate, complianceProof, STO, KYC[0]);
     }
 
     /* @dev Trasfer tokens from one address to another

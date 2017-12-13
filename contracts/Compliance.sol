@@ -9,7 +9,7 @@ pragma solidity ^0.4.18;
 
 import './Customers.sol';
 import './Template.sol';
-import './SecurityToken.sol';
+import './interfaces/ISecurityToken.sol';
 
 contract Compliance {
 
@@ -119,6 +119,23 @@ contract Compliance {
         return true;
     }
 
+    /* @dev Cancel a Template proposal if the bid hasn't been accepted
+    @param _securityToken The security token being bid on
+    @param _templateIndex The template proposal array index
+    @return bool success */
+    function cancelTemplateProposal(
+        address _securityToken,
+        uint256 _templateIndex
+    ) public returns (bool success)
+    {
+        address template = templateProposals[_securityToken][_templateIndex];
+        require(templates[template].owner == msg.sender);
+        var (chosenTemplate,,,,) = ISecurityToken(_securityToken).getTokenDetails();
+        require(chosenTemplate != template);
+        templateProposals[_securityToken][_templateIndex] = address(0);
+        return true;
+    }
+
     /* @dev Propose a STO contract for an issuance
     @param _securityToken The security token being bid on
     @param _contractAddress The security token offering contract address
@@ -128,13 +145,30 @@ contract Compliance {
         address _contractAddress
     ) public returns (bool success)
     {
-        var (,,,KYC) = SecurityToken(_securityToken).getTokenDetails();
+        var (,,,,KYC) = ISecurityToken(_securityToken).getTokenDetails();
         var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, contracts[_contractAddress].auditor);
         require(contracts[_contractAddress].auditor == msg.sender);
         require(verified == true);
         require(expires > now);
         contractProposals[_securityToken].push(_contractAddress);
         LogNewContractProposal(_securityToken, _contractAddress, msg.sender);
+        return true;
+    }
+
+    /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
+    @param _securityToken The security token being bid on
+    @param _contractIndex The template proposal array index
+    @return bool success */
+    function cancelContractProposal(
+        address _securityToken,
+        uint256 _STOContractIndex
+    ) public returns (bool success)
+    {
+        address STOContract = contractProposals[_securityToken][_STOContractIndex];
+        require(contracts[STOContract].auditor == msg.sender);
+        var (,,,,chosenSTOContract) = ISecurityToken(_securityToken).getTokenDetails();
+        require(chosenSTOContract != STOContract);
+        contractProposals[_securityToken][_STOContractIndex] = address(0);
         return true;
     }
 
