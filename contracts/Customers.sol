@@ -100,19 +100,13 @@ contract Customers is ICustomers {
         uint256 _expires
     ) public onlyProvider returns (bool success)
     {
-        require(customers[msg.sender][_customer].verified == false);
-        require(customers[msg.sender][_customer].role != 0);
         require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;
         customers[msg.sender][_customer].accredited = _accredited;
         customers[msg.sender][_customer].expires = _expires;
         customers[msg.sender][_customer].verified = true;
-        VerifiedCustomer(
-            _customer,
-            msg.sender,
-            _role
-        );
+        VerifiedCustomer(_customer, msg.sender, _role);
         return true;
     }
 
@@ -139,9 +133,9 @@ contract Customers is ICustomers {
         bytes32 details,
         uint256 fee
     ) {
-        return ( 
+        return (
             providers[_providerAddress].name,
-            providers[_providerAddress].joined, 
+            providers[_providerAddress].joined,
             providers[_providerAddress].details,
             providers[_providerAddress].fee
         );

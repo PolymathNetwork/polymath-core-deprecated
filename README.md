@@ -1,11 +1,11 @@
+<img src="https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=add-to-gitignore">
+
 ![Polymath](Polymath.png)
 
 # Polymath core
 
-The polymath core smart contracts used launch financial securities on the
-Ethereum blockchain in a regulatory compliant way.
-
-<img src="https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=add-to-gitignore">
+The polymath core smart contracts provide a system for launching regulatory
+compliant securities tokens on a decentralized blockchain.
 
 ## Live on Ropsten testnet
 
@@ -40,7 +40,7 @@ $ npm run test
 
 ## Contributing
 
-We're always open for developers to join the polymath network! To do so we
+We're always looking for developers to join the polymath network. To do so we
 encourage developers to contribute by creating Security Token Offering contracts
 (STO) which can be used by issuers to raise funds. If your contract is used, you
 can earn POLY fees directly through the contract, and additional bonuses through

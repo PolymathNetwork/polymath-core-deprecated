@@ -17,9 +17,6 @@ contract SecurityToken is IERC20 {
     // Instance of the POLY token contract
     IERC20 public POLY;
 
-    // Instance of the Security Token Registrar interface
-    ISTRegistrar public SecurityTokenRegistrar;
-
     // Instance of the Compliance contract
     ICompliance public PolyCompliance;
 
@@ -80,7 +77,7 @@ contract SecurityToken is IERC20 {
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _developer, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
-    event LogVoteToFreeze(address _recipient, uint256 _yayPercent, bool _frozen);
+    event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
 
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -119,7 +116,6 @@ contract SecurityToken is IERC20 {
         @param _polyTokenAddress Ethereum address of the POLY token contract
         @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
         @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
-        @param _polySecurityTokenRegistrar Security Token Registrar address
     */
     function SecurityToken(
         string _name,
@@ -131,8 +127,7 @@ contract SecurityToken is IERC20 {
         uint8 _quorum,
         address _polyTokenAddress,
         address _polyCustomersAddress,
-        address _polyComplianceAddress,
-        address _polySecurityTokenRegistrar
+        address _polyComplianceAddress
     ) public
     {
         decimals = 0;
@@ -145,7 +140,6 @@ contract SecurityToken is IERC20 {
         POLY = IERC20(_polyTokenAddress);
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
-        SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
     }
    /**
@@ -265,7 +259,7 @@ contract SecurityToken is IERC20 {
       if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
         allocations[_recipient].frozen = true;
       }
-      LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].frozen);
+      LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].quorum, allocations[_recipient].frozen);
       return true;
     }
 
@@ -347,8 +341,7 @@ contract SecurityToken is IERC20 {
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         if (shareholders[_spender].allowed) {
-            // @dev the logic on this looks screwey. Worth a look in testing
-            require ((_value != 0) && (allowed[msg.sender][_spender] != 0));
+            require(_value != 0);
             allowed[msg.sender][_spender] = _value;
             Approval(msg.sender, _spender, _value);
             return true;

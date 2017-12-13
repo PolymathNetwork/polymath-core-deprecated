@@ -79,8 +79,7 @@ contract SecurityTokenRegistrar {
         _quorum,
         polyTokenAddress,
         polyCustomersAddress,
-        polyComplianceAddress,
-        this
+        polyComplianceAddress
       );
 
       // Update the registry
