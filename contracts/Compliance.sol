@@ -7,11 +7,12 @@ pragma solidity ^0.4.18;
   build on top of the Polymath platform and extend it's functionality.
 */
 
+import './interfaces/ICompliance.sol';
 import './Customers.sol';
 import './Template.sol';
 import './interfaces/ISecurityToken.sol';
 
-contract Compliance {
+contract Compliance is ICompliance {
 
     string public VERSION = "0.1";
 
@@ -47,7 +48,7 @@ contract Compliance {
     uint256 public constant minimumVestingPeriod = 60 * 60 * 24 * 100;
 
     // Notifications
-    event TemplateCreated(address indexed creator, address _template, string _offeringType);
+    event LogTemplateCreated(address indexed creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate);
 
@@ -101,7 +102,7 @@ contract Compliance {
             expires: _expires,
             usedBy: new address[](0)
         });
-        TemplateCreated(msg.sender, _template, _offeringType);
+        LogTemplateCreated(msg.sender, _template, _offeringType);
     }
 
     /* @dev Propose a bid for a security token issuance

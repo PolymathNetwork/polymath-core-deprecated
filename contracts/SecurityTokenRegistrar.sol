@@ -7,9 +7,10 @@ pragma solidity ^0.4.18;
 */
 
 import './interfaces/IERC20.sol';
+import './interfaces/ISTRegistrar.sol';
 import './SecurityToken.sol';
 
-contract SecurityTokenRegistrar {
+contract SecurityTokenRegistrar is ISTRegistrar {
 
     address public polyTokenAddress;
     address public polyCustomersAddress;

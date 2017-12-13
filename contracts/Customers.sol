@@ -42,9 +42,8 @@ contract Customers is ICustomers {
     mapping(address => Provider) public providers;
 
     // Notifications
-    event NewProvider(address providerAddress, string name, bytes32 details);
-    event NewCustomer(address customer, address provider, bytes32 jurisdiction, uint8 role, bytes32 proof, bool verified);
-    event VerifiedCustomer(address customer, address provider, uint8 role);
+    event LogNewProvider(address providerAddress, string name, bytes32 details);
+    event LogCustomerVerified(address customer, address provider, uint8 role);
 
     modifier onlyProvider() {
         require(providers[msg.sender].details != 0x0);
@@ -67,7 +66,7 @@ contract Customers is ICustomers {
         require(providers[_providerAddress].details == 0);
         require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
-        NewProvider(_providerAddress, _name, _details);
+        LogNewProvider(_providerAddress, _name, _details);
         return true;
     }
 
@@ -99,7 +98,7 @@ contract Customers is ICustomers {
         customers[msg.sender][_customer].accredited = _accredited;
         customers[msg.sender][_customer].expires = _expires;
         customers[msg.sender][_customer].verified = true;
-        VerifiedCustomer(_customer, msg.sender, _role);
+        LogCustomerVerified(_customer, msg.sender, _role);
         return true;
     }
 

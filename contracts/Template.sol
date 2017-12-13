@@ -7,7 +7,9 @@ pragma solidity ^0.4.18;
   keep a log of documents for future auditing purposes.
 */
 
-contract Template {
+import './interfaces/ITemplate.sol';
+
+contract Template is ITemplate {
 
     address owner;
     string offeringType;
