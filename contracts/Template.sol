@@ -34,7 +34,7 @@ contract Template {
       uint256 _fee,
       uint8 _quorum,
       uint256 _vestingPeriod
-    ) public 
+    ) public
     {
       owner = _owner;
       offeringType = _offeringType;
@@ -49,13 +49,9 @@ contract Template {
       vestingPeriod = _vestingPeriod;
     }
 
-    /**
-        @dev `addJurisdiction` allows the adding of new jurisdictions to a template
-        @param _allowedJurisdictions An array of jurisdictions
-        @param _allowed An array of whether the jurisdiction is allowed to
-         purchase the security or not
-   */
-
+    /* @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+    @param _allowedJurisdictions An array of jurisdictions
+    @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not */
     function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public {
         require(owner == msg.sender);
         require(_allowedJurisdictions.length == _allowed.length);
@@ -65,11 +61,8 @@ contract Template {
         }
     }
 
-    /**
-        @dev `addRole` allows the adding of new roles to be added to whitelist
-        @param _allowedRoles User roles that can purchase the security
-    */
-
+    /* @dev `addRole` allows the adding of new roles to be added to whitelist
+    @param _allowedRoles User roles that can purchase the security */
     function addRoles(uint8[] _allowedRoles) public {
         require(owner == msg.sender);
         require(!finalized);
@@ -86,23 +79,16 @@ contract Template {
       return true;
     }
 
-    /**
-        @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements
-    */
-
+    /* @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements */
     function finalizeTemplate() public returns (bool success) {
         require(owner == msg.sender);
         finalized = true;
         return true;
     }
 
-    /**
-        @dev `checkTemplateRequirements` is a constant function that
-        checks if templates requirements are met
-        @param _jurisdiction The ISO-3166 code of the investors jurisdiction
-        @param _accredited Whether the investor is accredited or not
-     */
-
+    /* @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
+    @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+    @param _accredited Whether the investor is accredited or not */
     function checkTemplateRequirements(
         bytes32 _jurisdiction,
         bool _accredited,
@@ -118,8 +104,8 @@ contract Template {
         return true;
     }
 
-    /** getTemplateDetails is a constant function that gets template details
-      @return bytes32 details, bool finalized */
+    /* getTemplateDetails is a constant function that gets template details
+    @return bytes32 details, bool finalized */
     function getTemplateDetails() view public returns (bytes32, bool) {
       require(expires > now);
       return (details, finalized);

@@ -1,5 +1,11 @@
 pragma solidity ^0.4.18;
 
+/*
+  The Polymath Security Token Registrar provides a way to lookup security token details
+  from a single place and allows wizard creators to earn POLY fees by uploading to the
+  registrar.
+*/
+
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
 
@@ -35,20 +41,17 @@ contract SecurityTokenRegistrar {
         polyComplianceAddress = _polyComplianceAddress;
     }
 
-    /**
-        @dev Creates a new Security Token and saves it to the registry
-        @param _name Name of the security token
-        @param _ticker Ticker name of the security
-        @param _totalSupply Total amount of tokens being created
-        @param _owner Ethereum public key address of the security token owner
-        @param _host The host of the security token wizard
-        @param _fee Fee being requested by the wizard host
-        @param _type Type of security being tokenized
-        @param _maxPoly Amount of POLY being raised
-        @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-        @param _quorum Percent of initial investors required to freeze POLY raise
-     */
-
+    /* @dev Creates a new Security Token and saves it to the registry
+    @param _name Name of the security token
+    @param _ticker Ticker name of the security
+    @param _totalSupply Total amount of tokens being created
+    @param _owner Ethereum public key address of the security token owner
+    @param _host The host of the security token wizard
+    @param _fee Fee being requested by the wizard host
+    @param _type Type of security being tokenized
+    @param _maxPoly Amount of POLY being raised
+    @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+    @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
       string _name,
       bytes8 _ticker,
@@ -60,16 +63,12 @@ contract SecurityTokenRegistrar {
       uint256 _maxPoly,
       uint256 _lockupPeriod,
       uint8 _quorum
-    ) external 
+    ) external
     {
       require(_fee > 1000);
       require(_owner != address(0));
       require(tickers[_ticker] == address(0));
-
-      // Collect creation fee
       require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
-
-      // Create the new Security Token contract
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
@@ -82,21 +81,17 @@ contract SecurityTokenRegistrar {
         polyCustomersAddress,
         polyComplianceAddress
       );
-
-      // Update the registry
       securityTokens[newSecurityTokenAddress] = SecurityTokenData(_totalSupply, _owner, _ticker, _type);
       tickers[_ticker] = newSecurityTokenAddress;
-
-      // Log event and update total Security Token count
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
     }
 
-    // getters
-
+    // Get security token address by ticker name
     function getSecurityTokenAddress(bytes8 _ticker) public constant returns (address) {
         return tickers[_ticker] ;
     }
 
+    // Get Security token details by its ethereum address
     function getSecurityTokenData(address _STAddress) public constant returns (
          uint256 totalSupply,
          address owner,

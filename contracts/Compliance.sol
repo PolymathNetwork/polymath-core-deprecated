@@ -48,27 +48,21 @@ contract Compliance {
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _contractAddress, address _delegate);
 
-    /**
-     @param _polyCustomersAddress The address of the Polymath Customers contract
-    */
-
+    /* @param _polyCustomersAddress The address of the Polymath Customers contract */
     function Compliance(address _polyCustomersAddress) public {
       PolyCustomers = Customers(_polyCustomersAddress);
     }
 
-    /**
-        @dev `createTemplate` is a simple function to create a new compliance template
-        @param _offeringType The name of the security being issued
-        @param _issuerJurisdiction The jurisdiction id of the issuer
-        @param _accredited Accreditation status required for investors
-        @param _KYC KYC provider used by the template
-        @param _details Details of the offering requirements
-        @param _expires Timestamp of when the template will expire
-        @param _fee Amount of POLY to use the template (held in escrow until issuance)
-        @param _quorum Minimum percent of shareholders which need to vote to freeze
-        @param _vestingPeriod Length of time to vest funds
-     */
-
+    /* @dev `createTemplate` is a simple function to create a new compliance template
+    @param _offeringType The name of the security being issued
+    @param _issuerJurisdiction The jurisdiction id of the issuer
+    @param _accredited Accreditation status required for investors
+    @param _KYC KYC provider used by the template
+    @param _details Details of the offering requirements
+    @param _expires Timestamp of when the template will expire
+    @param _fee Amount of POLY to use the template (held in escrow until issuance)
+    @param _quorum Minimum percent of shareholders which need to vote to freeze
+    @param _vestingPeriod Length of time to vest funds */
     function createTemplate(
         string _offeringType,
         bytes32 _issuerJurisdiction,
@@ -81,119 +75,101 @@ contract Compliance {
         uint256 _vestingPeriod
     ) public
     {
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
-        require(role == 2 && verified && expires > now);
-        require(_quorum > 0 && _quorum < 100);
-        require(_vestingPeriod >= 7777777);
-        address _template = new Template(
-          msg.sender,
-          _offeringType,
-          _issuerJurisdiction,
-          _accredited,
-          _KYC,
-          _details,
-          _expires,
-          _fee,
-          _quorum,
-          _vestingPeriod
-        );
-        templates[_template] = TemplateReputation({
-          owner: msg.sender,
-          totalRaised: 0,
-          timesUsed: 0,
-          expires: _expires,
-          usedBy: new address[](0)
-        });
-        TemplateCreated(msg.sender, _template, _offeringType);
+      var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
+      require(role == 2 && verified && expires > now);
+      require(_quorum > 0 && _quorum < 100);
+      require(_vestingPeriod >= 7777777);
+      address _template = new Template(
+        msg.sender,
+        _offeringType,
+        _issuerJurisdiction,
+        _accredited,
+        _KYC,
+        _details,
+        _expires,
+        _fee,
+        _quorum,
+        _vestingPeriod
+      );
+      templates[_template] = TemplateReputation({
+        owner: msg.sender,
+        totalRaised: 0,
+        timesUsed: 0,
+        expires: _expires,
+        usedBy: new address[](0)
+      });
+      TemplateCreated(msg.sender, _template, _offeringType);
     }
 
-    /**
-        @dev Propose a bid for a security token issuance
-        @param _securityToken The security token being bid on
-        @param _template The unique template address
-        @return bool success
-     */
-
+    /* @dev Propose a bid for a security token issuance
+    @param _securityToken The security token being bid on
+    @param _template The unique template address
+    @return bool success */
     function proposeTemplate(
-        address _securityToken,
-        address _template
+      address _securityToken,
+      address _template
     ) public returns (bool success)
     {
-        require(templates[_template].expires > now);
-        require(templates[_template].owner == msg.sender);
-        templateProposals[_securityToken].push(_template);
-        LogNewTemplateProposal(_securityToken, _template, msg.sender);
-        return true;
+      require(templates[_template].expires > now);
+      require(templates[_template].owner == msg.sender);
+      templateProposals[_securityToken].push(_template);
+      LogNewTemplateProposal(_securityToken, _template, msg.sender);
+      return true;
     }
 
-    /**
-        @dev Propose a STO contract for an issuance
-        @param _securityToken The security token being bid on
-        @param _contractAddress The security token offering contract address
-        @return bool success
-    */
-
+    /* @dev Propose a STO contract for an issuance
+    @param _securityToken The security token being bid on
+    @param _contractAddress The security token offering contract address
+    @return bool success */
     function proposeContract(
-        address _securityToken,
-        address _contractAddress
+      address _securityToken,
+      address _contractAddress
     ) public returns (bool success)
     {
-        var (,,,KYC) = SecurityToken(_securityToken).getTokenDetails();
-        var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, contracts[_contractAddress].auditor);
-        require(contracts[_contractAddress].auditor == msg.sender);
-        require(verified == true);
-        require(expires > now);
-        contractProposals[_securityToken].push(_contractAddress);
-        LogNewContractProposal(_securityToken, _contractAddress, msg.sender);
-        return true;
+      var (,,,KYC) = SecurityToken(_securityToken).getTokenDetails();
+      var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, contracts[_contractAddress].auditor);
+      require(contracts[_contractAddress].auditor == msg.sender);
+      require(verified == true);
+      require(expires > now);
+      contractProposals[_securityToken].push(_contractAddress);
+      LogNewContractProposal(_securityToken, _contractAddress, msg.sender);
+      return true;
     }
 
-   /**
-        @dev `updateTemplateReputation` is a constant function that updates the
-        history of a security token to keep track of previous uses
-        @param _template The unique template id
-        @param _templateIndex The array index of the template proposal
-    */
-
+    /* @dev `updateTemplateReputation` is a constant function that updates the
+     history of a security token to keep track of previous uses
+    @param _template The unique template id
+    @param _templateIndex The array index of the template proposal */
     function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success) {
       require(templateProposals[msg.sender][_templateIndex] == _template);
       templates[_template].usedBy.push(msg.sender);
       return true;
     }
 
-  /**
-        @dev `updateSmartContractReputation` is a constant function that updates the
-         history of a security token to keep track of previous uses
-        @param _contractAddress The smart contract address
-        @param _contractIndex The array index of the contract proposal
-   */
-
+    /* @dev `updateSmartContractReputation` is a constant function that updates the
+     history of a security token to keep track of previous uses
+    @param _contractAddress The smart contract address
+    @param _contractIndex The array index of the contract proposal */
     function updateContractReputation (address _contractAddress, uint8 _contractIndex) external returns (bool success) {
       require(contractProposals[msg.sender][_contractIndex] == _contractAddress);
       contracts[_contractAddress].usedBy.push(msg.sender);
       return true;
     }
 
-  /**
-        @dev Get template details by the proposal index
-        @param _securityTokenAddress The security token ethereum address
-        @param _templateIndex The array index of the template being checked
-        @return Template struct
-   */
-
+    /* @dev Get template details by the proposal index
+    @param _securityTokenAddress The security token ethereum address
+    @param _templateIndex The array index of the template being checked
+    @return Template struct */
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
-        address template
+      address template
     ){
       return templateProposals[_securityTokenAddress][_templateIndex];
     }
 
-    /**
-        @dev Get issuance smart contract details by the proposal index
-        @param _securityTokenAddress The security token ethereum address
-        @param _contractIndex The array index of the STO contract being checked
-        @return Contract struct
-     */
-
+    /* @dev Get issuance smart contract details by the proposal index
+    @param _securityTokenAddress The security token ethereum address
+    @param _contractIndex The array index of the STO contract being checked
+    @return Contract struct */
     function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) view public returns (
       address contractAddress,
       address auditor,
