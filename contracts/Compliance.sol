@@ -28,27 +28,28 @@ contract Compliance {
     // Template proposals for a specific security token
     mapping(address => address[]) public templateProposals;
 
-    // Smart contract proposals for a specific security token
-    struct Contract {
+    // Smart contract proposals for a specific security token offering
+    struct Offering {
         address auditor;
         uint256 fee;
         uint256 vestingPeriod;
-        uint32 quorum;
+        uint8 quorum;
         address[] usedBy;
     }
-    mapping(address => Contract) contracts;
+    mapping(address => Offering) offerings;
     // Security token contract proposals for a specific security token
-    mapping(address => address[]) public contractProposals;
+    mapping(address => address[]) public offeringProposals;
 
     // Instance of the Compliance contract
     Customers public PolyCustomers;
 
-    uint256 public constant minimumVestingPeriod = 7777777;
+    // 100 Day minimum vesting period for POLY earned
+    uint256 public constant minimumVestingPeriod = 60 * 60 * 24 * 100;
 
     // Notifications
     event TemplateCreated(address indexed creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
-    event LogNewContractProposal(address indexed _securityToken, address _contractAddress, address _delegate);
+    event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate);
 
     /* @param _polyCustomersAddress The address of the Polymath Customers contract */
     function Compliance(address _polyCustomersAddress) public {
@@ -121,59 +122,59 @@ contract Compliance {
 
     /* @dev Cancel a Template proposal if the bid hasn't been accepted
     @param _securityToken The security token being bid on
-    @param _templateIndex The template proposal array index
+    @param _templateProposalIndex The template proposal array index
     @return bool success */
     function cancelTemplateProposal(
         address _securityToken,
-        uint256 _templateIndex
+        uint256 _templateProposalIndex
     ) public returns (bool success)
     {
-        address template = templateProposals[_securityToken][_templateIndex];
-        require(templates[template].owner == msg.sender);
+        address proposedTemplate = templateProposals[_securityToken][_templateProposalIndex];
+        require(templates[proposedTemplate].owner == msg.sender);
         var (chosenTemplate,,,,) = ISecurityToken(_securityToken).getTokenDetails();
-        require(chosenTemplate != template);
-        templateProposals[_securityToken][_templateIndex] = address(0);
+        require(chosenTemplate != proposedTemplate);
+        templateProposals[_securityToken][_templateProposalIndex] = address(0);
         return true;
     }
 
-    /* @dev Propose a STO contract for an issuance
+    /* @dev Propose a Security Token Offering Contract for an issuance
     @param _securityToken The security token being bid on
-    @param _contractAddress The security token offering contract address
+    @param _stoContract The security token offering contract address
     @return bool success */
-    function proposeContract(
+    function proposeOfferingContract(
         address _securityToken,
-        address _contractAddress
+        address _stoContract
     ) public returns (bool success)
     {
         var (,,,,KYC) = ISecurityToken(_securityToken).getTokenDetails();
-        var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, contracts[_contractAddress].auditor);
-        require(contracts[_contractAddress].auditor == msg.sender);
+        var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, offerings[_stoContract].auditor);
+        require(offerings[_stoContract].auditor == msg.sender);
         require(verified == true);
         require(expires > now);
-        contractProposals[_securityToken].push(_contractAddress);
-        LogNewContractProposal(_securityToken, _contractAddress, msg.sender);
+        offeringProposals[_securityToken].push(_stoContract);
+        LogNewContractProposal(_securityToken, _stoContract, msg.sender);
         return true;
     }
 
     /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
     @param _securityToken The security token being bid on
-    @param _contractIndex The template proposal array index
+    @param _offeringProposalIndex The offering proposal array index
     @return bool success */
-    function cancelContractProposal(
+    function cancelOfferingProposal(
         address _securityToken,
-        uint256 _STOContractIndex
+        uint256 _offeringProposalIndex
     ) public returns (bool success)
     {
-        address STOContract = contractProposals[_securityToken][_STOContractIndex];
-        require(contracts[STOContract].auditor == msg.sender);
-        var (,,,,chosenSTOContract) = ISecurityToken(_securityToken).getTokenDetails();
-        require(chosenSTOContract != STOContract);
-        contractProposals[_securityToken][_STOContractIndex] = address(0);
+        address proposedOffering = offeringProposals[_securityToken][_offeringProposalIndex];
+        require(offerings[proposedOffering].auditor == msg.sender);
+        var (,,,,chosenOffering) = ISecurityToken(_securityToken).getTokenDetails();
+        require(chosenOffering != proposedOffering);
+        offeringProposals[_securityToken][_offeringProposalIndex] = address(0);
         return true;
     }
 
     /* @dev `updateTemplateReputation` is a constant function that updates the
-     history of a security token to keep track of previous uses
+     history of a security token template usage to keep track of previous uses
     @param _template The unique template id
     @param _templateIndex The array index of the template proposal */
     function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success) {
@@ -182,13 +183,13 @@ contract Compliance {
         return true;
     }
 
-    /* @dev `updateSmartContractReputation` is a constant function that updates the
-     history of a security token to keep track of previous uses
-    @param _contractAddress The smart contract address
-    @param _contractIndex The array index of the contract proposal */
-    function updateContractReputation (address _contractAddress, uint8 _contractIndex) external returns (bool success) {
-        require(contractProposals[msg.sender][_contractIndex] == _contractAddress);
-        contracts[_contractAddress].usedBy.push(msg.sender);
+    /* @dev `updateOfferingReputation` is a constant function that updates the
+     history of a security token offering contract to keep track of previous uses
+    @param _contractAddress The smart contract address of the STO contract
+    @param _offeringProposalIndex The array index of the security token offering proposal */
+    function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success) {
+        require(offeringProposals[msg.sender][_offeringProposalIndex] == _stoContract);
+        offerings[_stoContract].usedBy.push(msg.sender);
         return true;
     }
 
@@ -202,24 +203,24 @@ contract Compliance {
         return templateProposals[_securityTokenAddress][_templateIndex];
     }
 
-    /* @dev Get issuance smart contract details by the proposal index
+    /* @dev Get security token offering smart contract details by the proposal index
     @param _securityTokenAddress The security token ethereum address
-    @param _contractIndex The array index of the STO contract being checked
+    @param _offeringProposalIndex The array index of the STO contract being checked
     @return Contract struct */
-    function getContractByProposal(address _securityTokenAddress, uint8 _contractIndex) view public returns (
-        address contractAddress,
+    function getOfferingByProposal(address _securityTokenAddress, uint8 _offeringProposalIndex) view public returns (
+        address stoContract,
         address auditor,
         uint256 vestingPeriod,
-        uint32 quorum,
+        uint8 quorum,
         uint256 fee
     ){
-        address _contractAddress = contractProposals[_securityTokenAddress][_contractIndex];
+        address _stoContract = offeringProposals[_securityTokenAddress][_offeringProposalIndex];
         return (
-            _contractAddress,
-            contracts[_contractAddress].auditor,
-            contracts[_contractAddress].vestingPeriod,
-            contracts[_contractAddress].quorum,
-            contracts[_contractAddress].fee
+            _stoContract,
+            offerings[_stoContract].auditor,
+            offerings[_stoContract].vestingPeriod,
+            offerings[_stoContract].quorum,
+            offerings[_stoContract].fee
         );
     }
 

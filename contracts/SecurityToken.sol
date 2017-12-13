@@ -49,7 +49,7 @@ contract SecurityToken is IERC20 {
     mapping(address => Shareholder) public shareholders;
 
     // STO address
-    ISTO public STO;
+    address public STO;
     uint256 public maxPoly;
 
     // The start and end time of the STO
@@ -75,7 +75,7 @@ contract SecurityToken is IERC20 {
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
-    event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _developer, uint256 _startTime, uint256 _endTime);
+    event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
     event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
 
@@ -172,30 +172,30 @@ contract SecurityToken is IERC20 {
         return true;
     }
 
-    /* @dev Select an STO contract for the issuance
-    @param _STOIndex Array index of the STO proposal
+    /* @dev Select an security token offering proposal for the issuance
+    @param _offeringProposalIndex Array index of the STO proposal
     @param _startTime Start of issuance period
     @param _endTime End of issuance period
     @return bool success */
-    function selectContract (
-        uint8 _STOIndex,
+    function selectOfferingProposal (
+        uint8 _offeringProposalIndex,
         uint256 _startTime,
         uint256 _endTime
     ) public onlyDelegate returns (bool success)
     {
-        var (_STOAddress, _developer, _vestingPeriod, _quorum, _fee) = PolyCompliance.getContractByProposal(this, _STOIndex);
-        require(_STOAddress != address(0));
+        var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
+        require(_stoContract != address(0));
         require(complianceProof != 0);
         require(delegate != address(0));
         require(_startTime > now && _endTime > _startTime);
         require(POLY.balanceOf(this) >= allocations[delegate].amount + _fee);
-        allocations[_developer] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
-        STO = ISTO(_STOAddress);
-        shareholders[STO] = Shareholder(this, true, 5);
+        allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        STO = ISTO(_stoContract);
+        shareholders[address(STO)] = Shareholder(this, true, 5);
         startSTO = _startTime;
         endSTO = _endTime;
-        PolyCompliance.updateContractReputation(_STOAddress, _STOIndex);
-        LogSetSTOContract(STO, _STOAddress, _developer, _startTime, _endTime);
+        PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
+        LogSetSTOContract(STO, _stoContract, _auditor, _startTime, _endTime);
         return true;
     }
 
@@ -216,7 +216,7 @@ contract SecurityToken is IERC20 {
         return true;
     }
 
-    /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO developer at appropriate times
+    /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
     @return bool success */
     function withdrawPoly() public returns (bool success) {
   			if (delegate == address(0)) {
