@@ -37,6 +37,7 @@ contract Compliance {
       address[] usedBy;
     }
     mapping(address => Contract) contracts;
+    // Security token contract proposals for a specific security token
     mapping(address => address[]) public contractProposals;
 
     // Instance of the Compliance contract
@@ -154,7 +155,7 @@ contract Compliance {
         @param _templateIndex The array index of the template proposal
     */
 
-    function updateTemplateReputation (address _template, uint8 _templateIndex) public returns (bool success) {
+    function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success) {
       require(templateProposals[msg.sender][_templateIndex] == _template);
       templates[_template].usedBy.push(msg.sender);
       return true;
@@ -167,7 +168,7 @@ contract Compliance {
         @param _contractIndex The array index of the contract proposal
    */
 
-    function updateContractReputation (address _contractAddress, uint8 _contractIndex) public returns (bool success) {
+    function updateContractReputation (address _contractAddress, uint8 _contractIndex) external returns (bool success) {
       require(contractProposals[msg.sender][_contractIndex] == _contractAddress);
       contracts[_contractAddress].usedBy.push(msg.sender);
       return true;

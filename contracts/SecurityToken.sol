@@ -200,7 +200,7 @@ contract SecurityToken is IERC20 {
         shareholders[STO] = Shareholder(this, true, 5);
         startSTO = _startTime;
         endSTO = _endTime;
-        PolyCompliance.updateContractReputation(this, _STOIndex);
+        PolyCompliance.updateContractReputation(_STOAddress, _STOIndex);
         LogSetSTOContract(STO, _STOAddress, _developer, _startTime, _endTime);
         return true;
     }
@@ -237,8 +237,8 @@ contract SecurityToken is IERC20 {
 				require(now > endSTO + allocations[msg.sender].vestingPeriod);
         require(allocations[msg.sender].frozen == false);
         require(allocations[msg.sender].amount > 0);
-        allocations[msg.sender].amount = 0;
 				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+        allocations[msg.sender].amount = 0;
         return true;
       }
     }
