@@ -13,7 +13,7 @@ import './interfaces/ICustomers.sol';
 contract Customers is ICustomers {
 
     PolyToken POLY;
-    
+
     // A Customer
     struct Customer {
         bytes32 jurisdiction;
@@ -67,23 +67,14 @@ contract Customers is ICustomers {
         require(POLY.transferFrom(_providerAddress, address(this), 10000));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         NewProvider(_providerAddress, _name, _details);
-        return true;  
+        return true;
     }
 
-   /** @dev Allow new investor applications
-      @param _jurisdiction The jurisdiction code of the customer
-      @param _provider The provider selected by the customer to do verification
-      @param _role The type of customer - investor:1, issuer:2, delegate:3
-      @param _proof The SHA256 hash of the documentation provided to prove identity */
-    function newCustomer(bytes32 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) public returns (bool success) {
-        require(providers[_provider].details != 0);
-        customers[_provider][msg.sender].jurisdiction = _jurisdiction;
-        customers[_provider][msg.sender].role = _role;
-        customers[_provider][msg.sender].verified = false;
-        customers[_provider][msg.sender].accredited = false;
-        customers[_provider][msg.sender].proof = _proof;
-        customers[_provider][msg.sender].joined = now;
-        NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
+   /** @dev Change a providers fee
+      @param _newFee The new fee of the provider */
+    function changeFee(uint256 _newFee) public returns (bool success) {
+        require(providers[msg.sender].details != 0);
+        providers[msg.sender].fee = _newFee;
         return true;
     }
 
