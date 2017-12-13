@@ -42,9 +42,9 @@ contract SecurityToken is IERC20 {
 
     // Security token shareholders
     struct Shareholder {
-      address verifier;
-      bool allowed;
-      uint8 role;
+        address verifier;
+        bool allowed;
+        uint8 role;
     }
     mapping(address => Shareholder) public shareholders;
 
@@ -58,13 +58,13 @@ contract SecurityToken is IERC20 {
 
     // POLY allocations
     struct Allocation {
-      uint256 amount;
-      uint256 vestingPeriod;
-      uint8 quorum;
-      uint256 yayVotes;
-      uint256 yayPercent;
-      bool frozen;
-      mapping (address => bool) votes;
+        uint256 amount;
+        uint256 vestingPeriod;
+        uint8 quorum;
+        uint256 yayVotes;
+        uint256 yayPercent;
+        bool frozen;
+        mapping (address => bool) votes;
     }
     mapping(address => Allocation) allocations;
 
@@ -217,33 +217,33 @@ contract SecurityToken is IERC20 {
     /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO developer at appropriate times
     @return bool success */
     function withdrawPoly() public returns (bool success) {
-			if (delegate == address(0)) {
-        return POLY.transfer(owner, POLY.balanceOf(this));
-      } else {
-				require(now > endSTO + allocations[msg.sender].vestingPeriod);
-        require(allocations[msg.sender].frozen == false);
-        require(allocations[msg.sender].amount > 0);
-				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
-        allocations[msg.sender].amount = 0;
-        return true;
-      }
+  			if (delegate == address(0)) {
+          return POLY.transfer(owner, POLY.balanceOf(this));
+        } else {
+  				require(now > endSTO + allocations[msg.sender].vestingPeriod);
+          require(allocations[msg.sender].frozen == false);
+          require(allocations[msg.sender].amount > 0);
+  				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+          allocations[msg.sender].amount = 0;
+          return true;
+        }
     }
 
     /* @dev Vote to freeze the fee of a certain network participant
     @param _recipient The fee recipient being protested
     @return bool success */
     function voteToFreeze(address _recipient) public onlyShareholder returns (bool success) {
-      require(delegate != address(0));
-      require(now > endSTO);
-      require(now < endSTO + allocations[_recipient].vestingPeriod);
-      require(allocations[_recipient].votes[msg.sender] == false);
-      allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
-      allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
-      if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
-        allocations[_recipient].frozen = true;
-      }
-      LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].quorum, allocations[_recipient].frozen);
-      return true;
+        require(delegate != address(0));
+        require(now > endSTO);
+        require(now < endSTO + allocations[_recipient].vestingPeriod);
+        require(allocations[_recipient].votes[msg.sender] == false);
+        allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
+        allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
+        if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
+          allocations[_recipient].frozen = true;
+        }
+        LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].quorum, allocations[_recipient].frozen);
+        return true;
     }
 
 	  /* @dev `issueSecurityTokens` is used by the STO to keep track of STO investors
@@ -263,7 +263,7 @@ contract SecurityToken is IERC20 {
 
     /// Get token details
     function getTokenDetails() view public returns (address, address, bytes32, address) {
-      return (Template, delegate, complianceProof, KYC[0]);
+        return (Template, delegate, complianceProof, KYC[0]);
     }
 
     /* @dev Trasfer tokens from one address to another

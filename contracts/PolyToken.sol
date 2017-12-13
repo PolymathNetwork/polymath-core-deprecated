@@ -24,8 +24,8 @@ contract PolyToken is IERC20 {
 
     /* Token faucet - Not part of the ERC20 standard */
     function getTokens (uint256 _amount) public {
-      balances[msg.sender] += _amount;
-      totalSupply += _amount;
+        balances[msg.sender] += _amount;
+        totalSupply += _amount;
     }
 
     /* @dev send `_value` token to `_to` from `msg.sender`
@@ -33,10 +33,10 @@ contract PolyToken is IERC20 {
     @param _value The amount of token to be transferred
     @return Whether the transfer was successful or not */
     function transfer(address _to, uint256 _value) public returns (bool) {
-      balances[msg.sender] = balances[msg.sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      Transfer(msg.sender, _to, _value);
-      return true;
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        Transfer(msg.sender, _to, _value);
+        return true;
     }
 
     /* @dev send `_value` token to `_to` from `_from` on the condition it is approved by `_from`

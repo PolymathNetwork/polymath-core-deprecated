@@ -17,10 +17,10 @@ contract SecurityTokenRegistrar {
 
     // Security Token
     struct SecurityTokenData {
-        uint256 totalSupply;
-        address owner;
-        bytes8 ticker;
-        uint8 securityType;
+      uint256 totalSupply;
+      address owner;
+      bytes8 ticker;
+      uint8 securityType;
     }
     mapping(address => SecurityTokenData) securityTokens;
 
@@ -31,14 +31,14 @@ contract SecurityTokenRegistrar {
 
     // Constructor
     function SecurityTokenRegistrar(
-        address _polyTokenAddress,
-        address _polyCustomersAddress,
-        address _polyComplianceAddress
+      address _polyTokenAddress,
+      address _polyCustomersAddress,
+      address _polyComplianceAddress
     ) public
     {
-        polyTokenAddress = _polyTokenAddress;
-        polyCustomersAddress = _polyCustomersAddress;
-        polyComplianceAddress = _polyComplianceAddress;
+      polyTokenAddress = _polyTokenAddress;
+      polyCustomersAddress = _polyCustomersAddress;
+      polyComplianceAddress = _polyComplianceAddress;
     }
 
     /* @dev Creates a new Security Token and saves it to the registry
@@ -87,22 +87,22 @@ contract SecurityTokenRegistrar {
 
     // Get security token address by ticker name
     function getSecurityTokenAddress(bytes8 _ticker) public constant returns (address) {
-        return tickers[_ticker] ;
+      return tickers[_ticker] ;
     }
 
     // Get Security token details by its ethereum address
     function getSecurityTokenData(address _STAddress) public constant returns (
-         uint256 totalSupply,
-         address owner,
-         bytes8 ticker,
-         uint8 securityType
+      uint256 totalSupply,
+      address owner,
+      bytes8 ticker,
+      uint8 securityType
     ) {
-        return (
-            securityTokens[_STAddress].totalSupply,
-            securityTokens[_STAddress].owner,
-            securityTokens[_STAddress].ticker,
-            securityTokens[_STAddress].securityType
-        );
+      return (
+        securityTokens[_STAddress].totalSupply,
+        securityTokens[_STAddress].owner,
+        securityTokens[_STAddress].ticker,
+        securityTokens[_STAddress].securityType
+      );
     }
 
 }

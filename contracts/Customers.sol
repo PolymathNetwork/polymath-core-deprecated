@@ -18,13 +18,13 @@ contract Customers is ICustomers {
 
     // A Customer
     struct Customer {
-      bytes32 jurisdiction;
-      uint256 joined;
-      uint8 role;
-      bool verified;
-      bool accredited;
-      bytes32 proof;
-      uint256 expires;
+        bytes32 jurisdiction;
+        uint256 joined;
+        uint8 role;
+        bool verified;
+        bool accredited;
+        bytes32 proof;
+        uint256 expires;
     }
 
     // Customers (kyc provider address => customer address)
@@ -32,10 +32,10 @@ contract Customers is ICustomers {
 
     // KYC/Accreditation Provider
     struct Provider {
-      string name;
-      uint256 joined;
-      bytes32 details;
-      uint256 fee;
+        string name;
+        uint256 joined;
+        bytes32 details;
+        uint256 fee;
     }
 
     // KYC/Accreditation Providers
@@ -47,13 +47,13 @@ contract Customers is ICustomers {
     event VerifiedCustomer(address customer, address provider, uint8 role);
 
     modifier onlyProvider() {
-      require(providers[msg.sender].details != 0x0);
-      _;
+        require(providers[msg.sender].details != 0x0);
+        _;
     }
 
     // Constructor
     function Customers(address _polyTokenAddress) public {
-      POLY = PolyToken(_polyTokenAddress);
+        POLY = PolyToken(_polyTokenAddress);
     }
 
     /* @dev Allow new provider applications
@@ -62,21 +62,21 @@ contract Customers is ICustomers {
     @param _details A SHA256 hash of the new providers details
     @param _fee The fee charged for customer verification */
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
-      require(_providerAddress != address(0));
-      require(_details != 0x0);
-      require(providers[_providerAddress].details == 0);
-      require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
-      providers[_providerAddress] = Provider(_name, now, _details, _fee);
-      NewProvider(_providerAddress, _name, _details);
-      return true;
+        require(_providerAddress != address(0));
+        require(_details != 0x0);
+        require(providers[_providerAddress].details == 0);
+        require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
+        providers[_providerAddress] = Provider(_name, now, _details, _fee);
+        NewProvider(_providerAddress, _name, _details);
+        return true;
     }
 
     /* @dev Change a providers fee
     @param _newFee The new fee of the provider */
     function changeFee(uint256 _newFee) public returns (bool success) {
-      require(providers[msg.sender].details != 0);
-      providers[msg.sender].fee = _newFee;
-      return true;
+        require(providers[msg.sender].details != 0);
+        providers[msg.sender].fee = _newFee;
+        return true;
     }
 
     /* @dev Verify an investor
@@ -86,30 +86,30 @@ contract Customers is ICustomers {
     @param _accredited Whether the customer is accredited or not (only applied to investors)
     @param _expires The time the verification expires */
     function verifyCustomer(
-      address _customer,
-      bytes32 _jurisdiction,
-      uint8 _role,
-      bool _accredited,
-      uint256 _expires
+        address _customer,
+        bytes32 _jurisdiction,
+        uint8 _role,
+        bool _accredited,
+        uint256 _expires
     ) public onlyProvider returns (bool success)
     {
-      require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
-      customers[msg.sender][_customer].jurisdiction = _jurisdiction;
-      customers[msg.sender][_customer].role = _role;
-      customers[msg.sender][_customer].accredited = _accredited;
-      customers[msg.sender][_customer].expires = _expires;
-      customers[msg.sender][_customer].verified = true;
-      VerifiedCustomer(_customer, msg.sender, _role);
-      return true;
+        require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
+        customers[msg.sender][_customer].jurisdiction = _jurisdiction;
+        customers[msg.sender][_customer].role = _role;
+        customers[msg.sender][_customer].accredited = _accredited;
+        customers[msg.sender][_customer].expires = _expires;
+        customers[msg.sender][_customer].verified = true;
+        VerifiedCustomer(_customer, msg.sender, _role);
+        return true;
     }
 
     // Get customer attestation data by KYC provider and customer ethereum address
     function getCustomer(address _provider, address _customer) public constant returns (
-      bytes32,
-      bool,
-      uint8,
-      bool,
-      uint256
+        bytes32,
+        bool,
+        uint8,
+        bool,
+        uint256
     ) {
       return (
         customers[_provider][_customer].jurisdiction,
@@ -122,10 +122,10 @@ contract Customers is ICustomers {
 
     // Get provider details and fee by ethereum address
     function getProvider(address _providerAddress) public constant returns (
-      string name,
-      uint256 joined,
-      bytes32 details,
-      uint256 fee
+        string name,
+        uint256 joined,
+        bytes32 details,
+        uint256 fee
     ) {
       return (
         providers[_providerAddress].name,
