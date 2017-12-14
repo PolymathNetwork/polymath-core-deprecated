@@ -292,8 +292,8 @@ contract SecurityToken is IERC20 {
         if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
-            balances[_to] = balances[_to].add(_value);
             allowed[_from][msg.sender] = _allowance.sub(_value);
+            balances[_to] = balances[_to].add(_value);
             Transfer(_from, _to, _value);
             return true;
         } else {
