@@ -7,7 +7,9 @@ pragma solidity ^0.4.18;
   keep a log of documents for future auditing purposes.
 */
 
-contract Template {
+import './interfaces/ITemplate.sol';
+
+contract Template is ITemplate {
 
     address owner;
     string offeringType;
@@ -24,38 +26,34 @@ contract Template {
     uint256 vestingPeriod;
 
     function Template (
-      address _owner,
-      string _offeringType,
-      bytes32 _issuerJurisdiction,
-      bool _accredited,
-      address _KYC,
-      bytes32 _details,
-      uint256 _expires,
-      uint256 _fee,
-      uint8 _quorum,
-      uint256 _vestingPeriod
-    ) public 
+        address _owner,
+        string _offeringType,
+        bytes32 _issuerJurisdiction,
+        bool _accredited,
+        address _KYC,
+        bytes32 _details,
+        uint256 _expires,
+        uint256 _fee,
+        uint8 _quorum,
+        uint256 _vestingPeriod
+    ) public
     {
-      owner = _owner;
-      offeringType = _offeringType;
-      issuerJurisdiction = _issuerJurisdiction;
-      accredited = _accredited;
-      KYC = _KYC;
-      details = _details;
-      finalized = false;
-      expires = _expires;
-      fee = _fee;
-      quorum = _quorum;
-      vestingPeriod = _vestingPeriod;
+        owner = _owner;
+        offeringType = _offeringType;
+        issuerJurisdiction = _issuerJurisdiction;
+        accredited = _accredited;
+        KYC = _KYC;
+        details = _details;
+        finalized = false;
+        expires = _expires;
+        fee = _fee;
+        quorum = _quorum;
+        vestingPeriod = _vestingPeriod;
     }
 
-    /**
-        @dev `addJurisdiction` allows the adding of new jurisdictions to a template
-        @param _allowedJurisdictions An array of jurisdictions
-        @param _allowed An array of whether the jurisdiction is allowed to
-         purchase the security or not
-   */
-
+    /* @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+    @param _allowedJurisdictions An array of jurisdictions
+    @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not */
     function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public {
         require(owner == msg.sender);
         require(_allowedJurisdictions.length == _allowed.length);
@@ -65,11 +63,8 @@ contract Template {
         }
     }
 
-    /**
-        @dev `addRole` allows the adding of new roles to be added to whitelist
-        @param _allowedRoles User roles that can purchase the security
-    */
-
+    /* @dev `addRole` allows the adding of new roles to be added to whitelist
+    @param _allowedRoles User roles that can purchase the security */
     function addRoles(uint8[] _allowedRoles) public {
         require(owner == msg.sender);
         require(!finalized);
@@ -80,29 +75,22 @@ contract Template {
 
     /// @notice `updateDetails`
     function updateDetails(bytes32 _details) public returns (bool allowed) {
-      require(_details != 0x0);
-      require(owner == msg.sender);
-      details = _details;
-      return true;
+        require(_details != 0x0);
+        require(owner == msg.sender);
+        details = _details;
+        return true;
     }
 
-    /**
-        @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements
-    */
-
+    /* @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements */
     function finalizeTemplate() public returns (bool success) {
         require(owner == msg.sender);
         finalized = true;
         return true;
     }
 
-    /**
-        @dev `checkTemplateRequirements` is a constant function that
-        checks if templates requirements are met
-        @param _jurisdiction The ISO-3166 code of the investors jurisdiction
-        @param _accredited Whether the investor is accredited or not
-     */
-
+    /* @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
+    @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+    @param _accredited Whether the investor is accredited or not */
     function checkTemplateRequirements(
         bytes32 _jurisdiction,
         bool _accredited,
@@ -118,15 +106,15 @@ contract Template {
         return true;
     }
 
-    /** getTemplateDetails is a constant function that gets template details
-      @return bytes32 details, bool finalized */
+    /* getTemplateDetails is a constant function that gets template details
+    @return bytes32 details, bool finalized */
     function getTemplateDetails() view public returns (bytes32, bool) {
-      require(expires > now);
-      return (details, finalized);
+        require(expires > now);
+        return (details, finalized);
     }
 
     /// `getUsageFees` is a function to get all the details on template usage fees
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
-      return (fee, quorum, vestingPeriod, owner, KYC);
+        return (fee, quorum, vestingPeriod, owner, KYC);
     }
 }
