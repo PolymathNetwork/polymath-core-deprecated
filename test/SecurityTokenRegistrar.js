@@ -81,13 +81,95 @@ contract('SecurityTokenRegistrar', accounts => {
 
     describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {
       it('should confirm decimals is between 0-18', async () => {});
-      it('should confirm total supply is between 0 and (2^256)-1', async () => {});
+      it('should fail when total supply is 0 or below', async () => {
+        let polyToken = await POLY.new();
+        let polyCompliance = await Compliance.new(polyCustomerAddress);
+        let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
+        let totalSupply = 0 ;
+
+        await polyToken.getTokens(1000000,{from : issuer1});
+        let issuerBalance = await polyToken.balanceOf(issuer1);
+        assert.strictEqual(issuerBalance.toNumber(),1000000);
+  
+        await polyToken.approve(STRegistrar.address,10000,{from:issuer1});
+        expectRevert(
+              await STRegistrar.createSecurityToken(
+                      name,
+                      ticker,
+                      totalSupply,
+                      owner,
+                      host,
+                      createSecurityTokenFee,
+                      numberOfSecurityTypes,
+                      polyRaise,
+                      lockupPeriod,
+                      quorum,
+                      {
+                        from : issuer1
+                      })
+        );
+      });
+
+      it('should fail when total supply is greater than (2^256)-1', async () => {
+        let polyToken = await POLY.new();
+        let polyCompliance = await Compliance.new(polyCustomerAddress);
+        let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
+        let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936 ;
+
+        await polyToken.getTokens(1000000,{from : issuer1});
+        let issuerBalance = await polyToken.balanceOf(issuer1);
+        assert.strictEqual(issuerBalance.toNumber(),1000000);
+  
+        await polyToken.approve(STRegistrar.address,10000,{from:issuer1});
+        expectRevert(
+              await STRegistrar.createSecurityToken(
+                      name,
+                      ticker,
+                      totalSupply,
+                      owner,
+                      host,
+                      createSecurityTokenFee,
+                      numberOfSecurityTypes,
+                      polyRaise,
+                      lockupPeriod,
+                      quorum,
+                      {
+                        from : issuer1
+                      })
+        );
+      });
+
       it(`should confirm security type is one of the approved numbers representing a type. it is between 0 - ${
         numberOfSecurityTypes
-      } `, async () => {});
+      } `, async () => {
+        // let polyToken = await POLY.new();
+        // let polyCompliance = await Compliance.new(polyCustomerAddress);
+        // let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
+        // let numberOfSecurityTypes = 
+        // await polyToken.getTokens(1000000,{from : issuer1});
+        // let issuerBalance = await polyToken.balanceOf(issuer1);
+        // assert.strictEqual(issuerBalance.toNumber(),1000000);
+  
+        // await polyToken.approve(STRegistrar.address,10000,{from:issuer1}); 
+        // expectRevert(
+        //   await STRegistrar.createSecurityToken(
+        //           name,
+        //           ticker,
+        //           totalSupply,
+        //           owner,
+        //           host,
+        //           createSecurityTokenFee,
+        //           numberOfSecurityTypes,
+        //           polyRaise,
+        //           lockupPeriod,
+        //           quorum,
+        //           {
+        //             from : issuer1
+        //           })
+        //);         
+
+      });
       it('should confirm developer fee is between 0 and (2^256)-1', async () => {});
-      it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {});
-      it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {});
       it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {});
     });
 

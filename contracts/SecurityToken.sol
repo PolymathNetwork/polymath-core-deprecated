@@ -208,12 +208,13 @@ contract SecurityToken is IERC20 {
     /**
         @dev Add a verified address to the Security Token whitelist
         @param _whitelistAddress Address attempting to join ST whitelist
+        @param _KYCProviderIndex Index that reference the KYC provider
         @return bool success
      */
 
-    function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success) {
+    function addToWhitelist(uint8 _KYCProviderIndex, address _whitelistAddress) public returns (bool success) {
         if (now > endSTO) {
-          require(KYC[KYCProviderIndex] == msg.sender);
+          require(KYC[_KYCProviderIndex] == msg.sender);
         } else {
           require(KYC[0] == msg.sender);
         }
@@ -231,15 +232,15 @@ contract SecurityToken is IERC20 {
     */
 
     function withdrawPoly() public returns (bool success) {
-			if (delegate == address(0)) {
-        return POLY.transfer(owner, POLY.balanceOf(this));
+		if (delegate == address(0)) {
+            return POLY.transfer(owner, POLY.balanceOf(this));
       } else {
-				require(now > endSTO + allocations[msg.sender].vestingPeriod);
-        require(allocations[msg.sender].frozen == false);
-        require(allocations[msg.sender].amount > 0);
-				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
-        allocations[msg.sender].amount = 0;
-        return true;
+			require(now > endSTO + allocations[msg.sender].vestingPeriod);
+            require(allocations[msg.sender].frozen == false);
+            require(allocations[msg.sender].amount > 0);
+			require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+            allocations[msg.sender].amount = 0;
+            return true;
       }
     }
 
