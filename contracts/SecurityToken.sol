@@ -38,7 +38,7 @@ contract SecurityToken is IERC20 {
     // Template
     address public delegate;
     bytes32 public complianceProof;
-    address[] public KYC;
+    address public KYC;
 
     // Security token shareholders
     struct Shareholder {
@@ -152,7 +152,7 @@ contract SecurityToken is IERC20 {
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
-        KYC[0] = _KYC;
+        KYC = _KYC;
         PolyCompliance.updateTemplateReputation(_template, _templateIndex);
         LogTemplateSet(_delegate, _template, _KYC);
         return true;
@@ -202,12 +202,8 @@ contract SecurityToken is IERC20 {
     /* @dev Add a verified address to the Security Token whitelist
     @param _whitelistAddress Address attempting to join ST whitelist
     @return bool success */
-    function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success) {
-        if (now > endSTO) {
-          require(KYC[KYCProviderIndex] == msg.sender);
-        } else {
-          require(KYC[0] == msg.sender);
-        }
+    function addToWhitelist(address _whitelistAddress) public returns (bool success) {
+        require(KYC == msg.sender);
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(msg.sender, _whitelistAddress);
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
@@ -265,7 +261,7 @@ contract SecurityToken is IERC20 {
 
     /// Get token details
     function getTokenDetails() view public returns (address, address, bytes32, address, address) {
-        return (Template, delegate, complianceProof, STO, KYC[0]);
+        return (Template, delegate, complianceProof, STO, KYC);
     }
 
     /* @dev Trasfer tokens from one address to another
@@ -292,8 +288,8 @@ contract SecurityToken is IERC20 {
         if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
-            balances[_to] = balances[_to].add(_value);
             allowed[_from][msg.sender] = _allowance.sub(_value);
+            balances[_to] = balances[_to].add(_value);
             Transfer(_from, _to, _value);
             return true;
         } else {

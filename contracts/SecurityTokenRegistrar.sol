@@ -68,6 +68,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     {
       require(_owner != address(0));
       require(tickers[_ticker] == address(0));
+      require(_totalSupply > 0 && _totalSupply < 2**256 - 1);
       require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
       address newSecurityTokenAddress = new SecurityToken(
         _name,
