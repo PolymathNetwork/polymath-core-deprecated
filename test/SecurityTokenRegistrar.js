@@ -1,11 +1,11 @@
 //this thing is essentially coded in full for a quick once over, not perfect but should be 80% i hope - dave nov 3
 
-import expectRevert from './helpers/expectRevert';
+const Utils = require('./helpers/Utils');
 const SecurityTokenRegistrar = artifacts.require('./SecurityTokenRegistrar.sol');
 const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
 const POLY = artifacts.require('./PolyToken.sol');
 const Compliance = artifacts.require('./Compliance.sol');
-const Utils = require('./helpers/Utils');
+
 
 contract('SecurityTokenRegistrar', accounts => {
   //createSecurityToken variables
@@ -58,6 +58,7 @@ contract('SecurityTokenRegistrar', accounts => {
       await polyToken.approve(STRegistrar.address,approvedAmount,{from:issuer1});
       let allowedToken = await polyToken.allowance(issuer1,STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(),approvedAmount);
+      
       let ST = await STRegistrar.createSecurityToken(
                                 name,
                                 ticker,
@@ -106,7 +107,7 @@ contract('SecurityTokenRegistrar', accounts => {
                         from : issuer1
                       })
           } catch(error) {
-              Utils.ensureException(error);
+            Utils.ensureException(error);
           }
       });
 
@@ -158,11 +159,11 @@ contract('SecurityTokenRegistrar', accounts => {
         await polyToken.approve(STRegistrar.address,approvedAmount,{from:issuer1});
         await polyToken.approve(STRegistrar.address,approvedAmount,{from:issuer2});
 
-        let allowedToken = await polyToken.allowance(issuer1,STRegistrar.address);
-        assert.strictEqual(allowedToken.toNumber(),approvedAmount);
+        let allowedToken1 = await polyToken.allowance(issuer1,STRegistrar.address);
+        assert.strictEqual(allowedToken1.toNumber(),approvedAmount);
 
-        let allowedToken = await polyToken.allowance(issuer2,STRegistrar.address);
-        assert.strictEqual(allowedToken.toNumber(),approvedAmount);
+        let allowedToken2 = await polyToken.allowance(issuer2,STRegistrar.address);
+        assert.strictEqual(allowedToken2.toNumber(),approvedAmount);
 
         let ST = await STRegistrar.createSecurityToken(
                                   name,
@@ -196,7 +197,7 @@ contract('SecurityTokenRegistrar', accounts => {
                                     from : issuer2
                                   });
             } catch(error){
-                Utils.ensureException(error);
+               Utils.ensureException(error);
             }    
       });
 

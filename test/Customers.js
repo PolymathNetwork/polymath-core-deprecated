@@ -4,7 +4,7 @@ const Compliance = artifacts.require('../contracts/Customers.sol');
 const POLY = artifacts.require('../contracts/PolyToken.sol');
 const Customers = artifacts.require('../contracts/Customers.sol');
 const BigNumber = require('bignumber.js');
-let Utils = require('./helpers/Utils');
+const Utils = require('./helpers/Utils');
 
 
 contract('Customers', (accounts) => {
@@ -48,21 +48,11 @@ contract('Customers', (accounts) => {
     const providerFee2 = 100;
 
     beforeEach(async () => {
-        let compliance = await Compliance.new.apply(this)
-        let poly = await POLY.new.apply(this)
-        let customers = await Customers.new.apply(this, [poly.address])
-        // Gas issues with this line
-        let customer = await customers.newCustomer(jurisdiction0, attestor1, customerInvestorRole, witnessProof1);
+        let compliance = await Compliance.new.apply(this);
+        let poly = await POLY.new.apply(this);
+        let customers = await Customers.new.apply(this, [poly.address]);
     });
 
-    describe('function newCustomer', async () => {
-        it('it should successfully add the newCustomer into the storage',async()=>{
-            let poly = await POLY.new();
-            let customers = await Customers.new(poly.address);
-            let customer = await customers.newCustomer.call(jurisdiction0,provider1,customerInvestorRole,witnessProof1);
-            assert.isTrue(customer);
-        });
-    });
 
     describe("function verifyCustomer", async () => {
 
@@ -77,20 +67,11 @@ contract('Customers', (accounts) => {
             await poly.getTokens(1000000,{from:provider1});
             await poly.approve(customers.address,100000,{from:provider1});
             await customers.newProvider(provider1,providerName1,providerApplication1,providerFee1);
-           
-            let customer = await customers.newCustomer(
-                                jurisdiction0,
-                                provider1,
-                                customerInvestorRole,
-                                witnessProof1,
-                                {
-                                    from:customer1
-                                });
 
             await poly.getTokens(10000,{from:customer1});  
             await poly.approve(customers.address,10000,{from:customer1});   
 
-            let isVerify = await customers.verifyCustomer(
+            let isVerify = await customers.verifyCustomer.call(
                                 customer1,
                                 jurisdiction0,
                                 customerInvestorRole,
@@ -99,45 +80,10 @@ contract('Customers', (accounts) => {
                                 {
                                     from:provider1
                                 });
-            assert.isTrue(isVerify.toString());
+            assert.isTrue(isVerify);
         });
 
-        it('Ensure KYC providers can only approve a customer if they were chosen to represent them by the customer', async () => {
-            let poly = await POLY.new();
-            let customers = await Customers.new(poly.address);
-            await poly.getTokens(1000000,{from:provider1});
-            await poly.approve(customers.address,100000,{from:provider1});
-            let providerTwo = await customers
-                                .newProvider(provider2,providerName2,providerApplication2,providerFee2,{
-                                from:owner,
-                            });
-            let providerOne = await customers.newProvider(provider1,providerName1,providerApplication1,providerFee1);
-            let customer = await customers.newCustomer(
-                                jurisdiction0,
-                                provider1,
-                                customerInvestorRole,
-                                witnessProof1,
-                                {
-                                    from:customer1
-                                });
-            await poly.getTokens(10000,{from:customer1});  
-            await poly.approve(customers.address,10000,{from:customer1});
-
-            try {
-                let isVerify = await customers.verifyCustomer(
-                                        customer1,
-                                        jurisdiction0,
-                                        customerInvestorRole,
-                                        true,
-                                        expcurrentTime + 172800,         // 2 days more than current time
-                                        {
-                                            from:provider2
-                                        });
-            } catch(error) {
-                Utils.ensureException(error);
-            }
         });
-     });
 
     describe("function newProvider", async () => {
         
@@ -155,7 +101,7 @@ contract('Customers', (accounts) => {
 
             await customers.newProvider(provider1,providerName1,providerApplication1,providerFee1);
             let providerDetails = await customers.getProvider.call(provider1);
-            console.log(providerDetails);
+
             assert.strictEqual(providerDetails[0].toString(),providerName1);    
         });
 
@@ -172,10 +118,10 @@ contract('Customers', (accounts) => {
             assert.strictEqual(allowedToken.toNumber(),100000);
 
             try {                
-                await customers.newProvider(0x0,providerName1,providerApplication1,100);
-            } catch(error){
-                return Utils.ensureException(error);
-            } 
+                await customers.newProvider(0x0,providerName1,providerApplication1,providerFee1);
+           } catch(error) {
+                Utils.ensureException(error);
+            }
         });
 
         it('kyc providers apply their data to chain -- fail because of less balance',async()=>{
@@ -192,22 +138,31 @@ contract('Customers', (accounts) => {
             try {                
                 await customers.newProvider(provider1,providerName1,providerApplication1,100);
             } catch(error){
-                return Utils.ensureException(error);
+                Utils.ensureException(error);
             }   
         });
     });
 
-    describe("function approveProvider", async () => {
+    describe("function changeFee", async () => {
 
-        it('should allow delete a KYC provider if unapproved', async () => {
+        it('should allow to change the fee by the provider', async () => {
+            let poly = await POLY.new();
+            let customers = await Customers.new(poly.address);
+
+            await poly.getTokens(100000,{from:provider1});
+            let providerBalance = await poly.balanceOf.call(provider1);
+            assert.strictEqual(providerBalance.toNumber(),100000);
+
+            await poly.approve(customers.address,1000,{from:provider1});
+            let allowedToken = await poly.allowance.call(provider1,customers.address);
+            assert.strictEqual(allowedToken.toNumber(),1000);
+
+            await customers.newProvider(provider1,providerName1,providerApplication1,providerFee1);
+
+            await customers.changeFee(10000,{from:provider1});
+            let providerData = await customers.getProvider(provider1);
+            assert.strictEqual(providerData[3].toNumber(),10000);
 
         });
-
-        it('should allow only owner to call approve provider', async () => {
-
-        });
-        it('owner cant delete a KYC provider if they have been approved, even if they were later unapproved or expired', async () => {
-
-        });
-    })
+    });
 });
