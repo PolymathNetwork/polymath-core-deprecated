@@ -2,43 +2,43 @@ pragma solidity ^0.4.18;
 
 /// @title Math operations with safety checks
 library SafeMath {
-    function mul(uint256 a, uint256 b) internal returns (uint256) {
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a * b;
         assert(a == 0 || c / a == b);
         return c;
     }
 
-    function div(uint256 a, uint256 b) internal returns (uint256) {
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
         // assert(b > 0); // Solidity automatically throws when dividing by 0
         uint256 c = a / b;
         // assert(a == b * c + a % b); // There is no case in which this doesn't hold
         return c;
     }
 
-    function sub(uint256 a, uint256 b) internal returns (uint256) {
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         assert(b <= a);
         return a - b;
     }
 
-    function add(uint256 a, uint256 b) internal returns (uint256) {
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
         assert(c >= a);
         return c;
     }
 
-    function max64(uint64 a, uint64 b) internal returns (uint64) {
+    function max64(uint64 a, uint64 b) internal pure returns (uint64) {
         return a >= b ? a : b;
     }
 
-    function min64(uint64 a, uint64 b) internal returns (uint64) {
+    function min64(uint64 a, uint64 b) internal pure returns (uint64) {
         return a < b ? a : b;
     }
 
-    function max256(uint256 a, uint256 b) internal returns (uint256) {
+    function max256(uint256 a, uint256 b) internal pure returns (uint256) {
         return a >= b ? a : b;
     }
 
-    function min256(uint256 a, uint256 b) internal returns (uint256) {
+    function min256(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
 }
@@ -54,217 +54,76 @@ interface IERC20 {
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
 
-// An ERC20 token standard faucet
+interface ICustomers {
 
+  /* @dev Allow new provider applications
+  @param _providerAddress The provider's public key address
+  @param _name The provider's name
+  @param _details A SHA256 hash of the new providers details
+  @param _fee The fee charged for customer verification */
+  function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success);
 
+  /* @dev Change a providers fee
+  @param _newFee The new fee of the provider */
+  function changeFee(uint256 _newFee) public returns (bool success);
 
+  /* @dev Verify an investor
+  @param _customer The customer's public key address
+  @param _jurisdiction The jurisdiction code of the customer
+  @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4, etc.
+  @param _accredited Whether the customer is accredited or not (only applied to investors)
+  @param _expires The time the verification expires */
+  function verifyCustomer(
+    address _customer,
+    bytes32 _jurisdiction,
+    uint8 _role,
+    bool _accredited,
+    uint256 _expires
+  ) public returns (bool success);
 
+  // Get customer attestation data by KYC provider and customer ethereum address
+  function getCustomer(address _provider, address _customer) public constant returns (
+    bytes32,
+    bool,
+    uint8,
+    bool,
+    uint256
+  );
 
-contract PolyToken is IERC20 {
-
-    using SafeMath for uint256;
-    uint256 public totalSupply = 1000000;
-    string public name = "Polymath Network";
-    uint8 public decimals = 18;
-    string public symbol = "POLY";
-
-    mapping (address => uint256) balances;
-    mapping (address => mapping (address => uint256)) allowed;
-
-    event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
-
-    /* Token faucet - Not part of the ERC20 standard */
-    function getTokens (uint256 _amount) public {
-        balances[msg.sender] += _amount;
-        totalSupply += _amount;
-    }
-
-    /// @notice send `_value` token to `_to` from `msg.sender`
-    /// @param _to The address of the recipient
-    /// @param _value The amount of token to be transferred
-    /// @return Whether the transfer was successful or not
-    function transfer(address _to, uint256 _value) public returns (bool) {
-        balances[msg.sender] = balances[msg.sender].sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        Transfer(msg.sender, _to, _value);
-        return true;
-    }
-
-    /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
-    /// @param _from The address of the sender
-    /// @param _to The address of the recipient
-    /// @param _value The amount of token to be transferred
-    /// @return Whether the transfer was successful or not
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-        uint256 _allowance = allowed[_from][msg.sender];
-        balances[_from] = balances[_from].sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        allowed[_from][msg.sender] = _allowance.sub(_value);
-        Transfer(_from, _to, _value);
-        return true;
-    }
-
-    /// @param _owner The address from which the balance will be retrieved
-    /// @return The balance
-    function balanceOf(address _owner) constant returns (uint256 balance) {
-        return balances[_owner];
-    }
-
-    /// @notice `msg.sender` approves `_spender` to spend `_value` tokens
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @param _value The amount of tokens to be approved for transfer
-    /// @return Whether the approval was successful or not
-    function approve(address _spender, uint256 _value) public returns (bool) {
-        // https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) {
-            revert();
-        }
-        allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
-        return true;
-    }
-
-    /// @param _owner The address of the account owning tokens
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @return Amount of remaining tokens allowed to spent
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
-        return allowed[_owner][_spender];
-    }
-
+  // Get provider details and fee by ethereum address
+  function getProvider(address _providerAddress) public constant returns (
+    string name,
+    uint256 joined,
+    bytes32 details,
+    uint256 fee
+  );
 }
 
-/*
-Polymath customer registry is used to ensure regulatory compliance
-of the investors, provider, and issuers. The customers registry is a central
-place where ethereum addresses can be whitelisted to purchase certain security
-tokens based on their verifications by providers.
-*/
+interface ISTRegistrar {
 
-contract Customers {
-
-    PolyToken POLY;
-
-    // A Customer
-    struct Customer {
-        bytes32 jurisdiction;
-        uint8 role;
-        bool verified;
-        bool accredited;
-        bool flagged;
-        bytes32 proof;
-        uint256 expires;
-    }
-
-    // Customers
-    mapping (address => mapping (address => Customer)) customers;
-
-    // KYC/Accreditation Provider
-    struct Provider {
-        string name;
-        bytes32 details;
-        uint256 fee;
-    }
-
-    // KYC/Accreditation Providers
-    mapping(address => Provider) public providers;
-
-    // Notifications
-    event NewProvider(address providerAddress, string name, bytes32 details);
-    event NewCustomer(address customer, address provider, bytes32 jurisdiction, uint8 role, bytes32 proof, bool verified);
-
-    modifier onlyProvider() {
-        require(providers[msg.sender].details != 0x0);
-        _;
-    }
-
-    // Constructor
-    function Customers(address _polyTokenAddress) public {
-        POLY = PolyToken(_polyTokenAddress);
-    }
-
-    /// Allow new provider applications
-    /// @param _providerAddress The provider's public key address
-    /// @param _name The provider's name
-    /// @param _details A SHA256 hash of the new providers details
-    /// @param _fee The fee charged for customer verification
-    function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public {
-        require(_providerAddress != address(0));
-        require(providers[_providerAddress].details != 0);
-        // Require 10,000 POLY fee
-        POLY.transferFrom(_providerAddress, this, 10000);
-        providers[_providerAddress].name = _name;
-        providers[_providerAddress].details = _details;
-        providers[_providerAddress].fee = _fee;
-        NewProvider(_providerAddress, _name, _details);
-    }
-
-    /// Allow new investor applications
-    /// @param _jurisdiction The jurisdiction code of the customer
-    /// @param _provider The provider selected by the customer
-    ///  to do verification
-    /// @param _role The type of customer - investor:1, issuer:2, delegate:3
-    /// @param _proof The SHA256 hash of the documentation provided
-    ///  to prove identity
-    function newCustomer(bytes32 _jurisdiction, address _provider, uint8 _role, bytes32 _proof) public {
-        customers[_provider][msg.sender].jurisdiction = _jurisdiction;
-        customers[_provider][msg.sender].role = _role;
-        customers[_provider][msg.sender].verified = false;
-        customers[_provider][msg.sender].accredited = false;
-        customers[_provider][msg.sender].flagged = false;
-        customers[_provider][msg.sender].proof = _proof;
-        NewCustomer(msg.sender, _provider, _jurisdiction, _role, _proof, false);
-    }
-
-    /// Verify an investor
-    /// @param _customer The customer's public key address
-    /// @param _jurisdiction The jurisdiction code of the customer
-    /// @param _role The type of customer - investor:1 or issuer:2
-    /// @param _accredited Whether the customer is accredited or
-    ///  not (only applied to investors)
-    /// @param _proof The SHA256 hash of the documentation provided
-    ///  to prove identity
-    /// @param _expires The time the verification expires
-    function verifyCustomer(
-        address _customer,
-        bytes32 _jurisdiction,
-        uint8 _role,
-        bool _accredited,
-        bytes32 _proof,
-        uint256 _expires
-    ) public onlyProvider
-    {
-        require(customers[msg.sender][_customer].verified == false);
-        require(customers[msg.sender][_customer].role != 0);
-        POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee);
-        customers[msg.sender][_customer].jurisdiction = _jurisdiction;
-        customers[msg.sender][_customer].role = _role;
-        customers[msg.sender][_customer].accredited = _accredited;
-        customers[msg.sender][_customer].expires = _expires;
-        customers[msg.sender][_customer].verified = true;
-        NewCustomer(
-            _customer,
-            msg.sender,
-            _jurisdiction,
-            _role,
-            _proof,
-            true
-        );
-    }
-
-    /// Getter function for attestations
-    function getCustomer(address _provider, address _customer) public returns (
-      bytes32 jurisdiction,
-      bool accredited,
-      uint8 role,
-      bool verified,
-      uint256 expires
-    ) {
-        Customer memory customer = customers[_provider][_customer];
-        require(customer.verified);
-        return (customer.jurisdiction, customer.accredited, customer.role, customer.verified, customer.expires);
-    }
-
+    /* @dev Creates a new Security Token and saves it to the registry
+    @param _name Name of the security token
+    @param _ticker Ticker name of the security
+    @param _totalSupply Total amount of tokens being created
+    @param _owner Ethereum public key address of the security token owner
+    @param _host The host of the security token wizard
+    @param _fee Fee being requested by the wizard host
+    @param _type Type of security being tokenized
+    @param _polyRaise Amount of POLY being raised
+    @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+    @param _quorum Percent of initial investors required to freeze POLY raise */
+    function createSecurityToken (
+        string _name,
+        bytes8 _ticker,
+        uint256 _totalSupply,
+        address _owner,
+        address _host,
+        uint256 _fee,
+        uint8 _type,
+        uint256 _polyRaise,
+        uint256 _lockupPeriod,
+        uint8 _quorum
+    ) external;
 }
 
 /*
@@ -274,214 +133,139 @@ contract Customers {
   build on top of the Polymath platform and extend it's functionality.
 */
 
+interface ICompliance {
 
-
-contract Compliance {
-
-    string public VERSION = "0.1";
-
-    // A compliance template
-    struct Template {
-        address owner;
-        string name;
-        bytes32 issuerJurisdiction;
-        mapping (bytes32 => bool) allowedJurisdictions;
-        bool[] allowedRoles;
-        bool accredited;
-        bytes32 complianceProcess;
-        uint256 finalizes;
-        uint256 expires;
-        uint256 fee;
-    }
-
-    // All compliance templates are stored in a mapping
-    mapping(bytes32 => Template) templates;
-
-    // Instance of the Compliance contract
-    Customers public PolyCustomers;
-
-    // Notifications
-    event TemplateCreated(address creator, bytes32 _template, string _name);
-
-    // Constructor
-    /// @param _polyCustomersAddress The address of the Polymath Customers contract
-    function Compliance(address _polyCustomersAddress) {
-      PolyCustomers = Customers(_polyCustomersAddress);
-    }
-
-    /// `createTemplate` is a simple function to create a new compliance template
-    /// @param _template A SHA256 hash of the JSON schema containing full compliance process/requirements
-    /// @param _attestor The attestation provider to be used for the issuance
-    /// @param _name The name of security being issued
-    /// @param _issuerJurisdiction The jurisdiction id of the issuer
-    /// @param _finalizes Timestamp of when the template will finalize and become non-editable
-    /// @param _expires Timestamp of when the template will expire
-    /// @param _fee Amount of POLY to use the template (held in escrow until issuance)
+    /* @dev `createTemplate` is a simple function to create a new compliance template
+    @param _offeringType The name of the security being issued
+    @param _issuerJurisdiction The jurisdiction id of the issuer
+    @param _accredited Accreditation status required for investors
+    @param _KYC KYC provider used by the template
+    @param _details Details of the offering requirements
+    @param _expires Timestamp of when the template will expire
+    @param _fee Amount of POLY to use the template (held in escrow until issuance)
+    @param _quorum Minimum percent of shareholders which need to vote to freeze
+    @param _vestingPeriod Length of time to vest funds */
     function createTemplate(
-        bytes32 _template,
-        string _name,
-        address _attestor,
+        string _offeringType,
         bytes32 _issuerJurisdiction,
         bool _accredited,
-        uint256 _finalizes,
+        address _KYC,
+        bytes32 _details,
         uint256 _expires,
-        uint256 _fee
-    ) public
-    {
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
-        require(verified);
-        require(role == 2);
-        require(expires > now);
-        require(templates[_template].owner == address(0));
-        require(_finalizes > now);
-        require(_expires >= _finalizes);
-        templates[_template].owner = msg.sender;
-        templates[_template].issuerJurisdiction = _issuerJurisdiction;
-        templates[_template].name = _name;
-        templates[_template].fee = _fee;
-        templates[_template].accredited = _accredited;
-        templates[_template].finalizes = _finalizes;
-        templates[_template].expires = 0;
-        TemplateCreated(msg.sender, _template, _name);
-    }
+        uint256 _fee,
+        uint8 _quorum,
+        uint256 _vestingPeriod
+    ) public;
 
-    /// @notice `addJurisdictionToTemplate`allows the adding of new
-    ///  jurisdictions to a template
-    /// @param _template A SHA256 hash of the JSON schema containing full
-    ///  compliance process/requirements
-    /// @param _allowedJurisdictions An array of jurisdictions
-    /// @param _allowed An array of whether the jurisdiction is allowed to
-    ///  purchase the security or not
-    function addJurisdictionToTemplate(bytes32 _template, bytes32[] _allowedJurisdictions, bool[] _allowed) public {
-        require(templates[_template].owner == msg.sender);
-        require(templates[_template].finalizes > now);
-        for (uint i = 0; i < _allowedJurisdictions.length; ++i) {
-            templates[_template].allowedJurisdictions[_allowedJurisdictions[i]] = _allowed[i];
-        }
-    }
+    /* @dev Propose a bid for a security token issuance
+    @param _securityToken The security token being bid on
+    @param _template The unique template address
+    @return bool success */
+    function proposeTemplate(
+        address _securityToken,
+        address _template
+    ) public returns (bool success);
 
-    /// @notice `addRoleToTemplate` allows the adding of new roles to be added to whitelist
-    /// @param _template A SHA256 hash of the JSON schema containing full compliance process/requirements
-    /// @param _allowedRoles User roles that can purchase the security
-    function addRolesToTemplate(bytes32 _template, uint8[] _allowedRoles) public {
-        require(templates[_template].owner == msg.sender);
-        require(templates[_template].finalizes > now);
-        for (uint i = 0; i < _allowedRoles.length; ++i) {
-            templates[_template].allowedRoles[_allowedRoles[i]] = true;
-        }
-    }
+    /* @dev Propose a Security Token Offering Contract for an issuance
+    @param _securityToken The security token being bid on
+    @param _stoContract The security token offering contract address
+    @return bool success */
+    function proposeOfferingContract(
+        address _securityToken,
+        address _stoContract
+    ) public returns (bool success);
 
-    /// `finalizeTemplate` is used to finalize template.
-    /// @param _template A SHA256 hash of the JSON schema containing
-    ///  full compliance process/requirements
-    function finalizeTemplate(bytes32 _template) public {
-        require(templates[_template].owner == msg.sender);
-        require(templates[_template].finalizes > now);
-        templates[_template].finalizes = now;
-    }
+    /* @dev Cancel a Template proposal if the bid hasn't been accepted
+    @param _securityToken The security token being bid on
+    @param _templateProposalIndex The template proposal array index
+    @return bool success */
+    function cancelTemplateProposal(
+        address _securityToken,
+        uint256 _templateProposalIndex
+    ) public returns (bool success);
 
-    /// `checkTemplateRequirements` is a constant function that
-    ///  checks if templates requirements are met
-    /// @param _template A SHA256 hash of the JSON schema containing full
-    ///  compliance process/requirements
-    /// @param _jurisdiction The ISO-3166 code of the investors jurisdiction
-    /// @param _accredited Whether the investor is accredited or not
-    function checkTemplateRequirements(
-        bytes32 _template,
-        bytes32 _jurisdiction,
-        bool _accredited,
-        uint8 _role
-    ) public constant returns (bool allowed)
-    {
-        require(_template != 0 && _jurisdiction != 0);
-        require(templates[_template].allowedJurisdictions[_jurisdiction] == true);
-        require(templates[_template].allowedRoles[_role] == true);
-        if (templates[_template].accredited == true) {
-            require(_accredited == true);
-        }
-        return true;
-    }
+    /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
+    @param _securityToken The security token being bid on
+    @param _offeringProposalIndex The offering proposal array index
+    @return bool success */
+    function cancelOfferingProposal(
+        address _securityToken,
+        uint256 _offeringProposalIndex
+    ) public returns (bool success);
 
+    /* @dev `updateTemplateReputation` is a constant function that updates the
+     history of a security token template usage to keep track of previous uses
+    @param _template The unique template id
+    @param _templateIndex The array index of the template proposal */
+    function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success);
+
+    /* @dev `updateOfferingReputation` is a constant function that updates the
+     history of a security token offering contract to keep track of previous uses
+    @param _contractAddress The smart contract address of the STO contract
+    @param _offeringProposalIndex The array index of the security token offering proposal */
+    function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success);
+
+    /* @dev Get template details by the proposal index
+    @param _securityTokenAddress The security token ethereum address
+    @param _templateIndex The array index of the template being checked
+    @return Template struct */
+    function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
+        address template
+    );
+
+    /* @dev Get security token offering smart contract details by the proposal index
+    @param _securityTokenAddress The security token ethereum address
+    @param _offeringProposalIndex The array index of the STO contract being checked
+    @return Contract struct */
+    function getOfferingByProposal(address _securityTokenAddress, uint8 _offeringProposalIndex) view public returns (
+        address stoContract,
+        address auditor,
+        uint256 vestingPeriod,
+        uint8 quorum,
+        uint256 fee
+    );
 }
 
-contract Ownable {
-    address public owner;
-    address public newOwnerCandidate;
+interface ITemplate {
 
-    event OwnershipRequested(address indexed _by, address indexed _to);
-    event OwnershipTransferred(address indexed _from, address indexed _to);
+  /* @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+  @param _allowedJurisdictions An array of jurisdictions
+  @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not */
+  function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public;
 
-    function Ownable() public {
-        owner = msg.sender;
-    }
+  /* @dev `addRole` allows the adding of new roles to be added to whitelist
+  @param _allowedRoles User roles that can purchase the security */
+  function addRoles(uint8[] _allowedRoles) public;
 
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
+  /// @notice `updateDetails`
+  function updateDetails(bytes32 _details) public returns (bool allowed);
 
-    modifier onlyOwnerCandidate() {
-        require(msg.sender == newOwnerCandidate);
-        _;
-    }
+  /* @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements */
+  function finalizeTemplate() public returns (bool success);
 
-    function requestOwnershipTransfer(address _newOwnerCandidate) external onlyOwner {
-        require(_newOwnerCandidate != address(0));
-        newOwnerCandidate = _newOwnerCandidate;
-        OwnershipRequested(msg.sender, newOwnerCandidate);
-    }
+  /* @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
+  @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+  @param _accredited Whether the investor is accredited or not */
+  function checkTemplateRequirements(
+      bytes32 _jurisdiction,
+      bool _accredited,
+      uint8 _role
+  ) public constant returns (bool allowed);
 
-    function acceptOwnership() external onlyOwnerCandidate {
-        address previousOwner = owner;
-        owner = newOwnerCandidate;
-        newOwnerCandidate = address(0);
-        OwnershipTransferred(previousOwner, owner);
-    }
-}
+  /* getTemplateDetails is a constant function that gets template details
+  @return bytes32 details, bool finalized */
+  function getTemplateDetails() view public returns (bytes32, bool);
 
-interface ISTRegistrar {
-
-    // Creates a new Security Token and saves it to the registry
-    /// @param _name Name of the security token
-    /// @param _ticker Ticker name of the security
-    /// @param _totalSupply Total amount of tokens being created
-    /// @param _owner Ethereum public key address of the security token owner
-    /// @param _type Type of security being tokenized
-    function createSecurityToken (
-        string _name,
-        bytes8 _ticker,
-        uint256 _totalSupply,
-        address _owner,
-        bytes32 _template,
-        uint8 _type
-    ) external;
-
-    /// Allow new security token offering contract
-    /// @param _contractAddress The security token offering contract's
-    ///  public key address
-    /// @param _fee The fee charged for the services provided in POLY
-    function newSecurityTokenOfferingContract(address _contractAddress, uint256 _fee) public;
-
-
-    /// @notice This is a basic getter function to allow access to the
-    ///  creator of a given STO contract through an interface.
-    /// @param _contractAddress An STO contract
-    /// @return address The address of the STO contracts creator
-    function getCreator(address _contractAddress) public returns(address);
-
-    /// @notice This is a basic getter function to allow access to the
-    ///  fee of a given STO contract through an interface.
-    /// @param _contractAddress An STO contract
-    /// @return address The address of the STO contracts fee
-    function getFee(address _contractAddress) public returns(uint256);
+  /// `getUsageFees` is a function to get all the details on template usage fees
+  function getUsageDetails() view public returns (uint256, uint8, uint256, address, address);
 }
 
 interface ISTO {
 
-    // Initializes the STO with certain params
-    /// @param _tokenAddress The Security Token address
-    /// @param _startTime Given in UNIX time this is the time that the offering will begin
-    /// @param _endTime Given in UNIX time this is the time that the offering will end
+    /* @dev Initializes the STO with certain params
+    @param _tokenAddress The Security Token address
+    @param _startTime Given in UNIX time this is the time that the offering will begin
+    @param _endTime Given in UNIX time this is the time that the offering will end */
     function SecurityTokenOffering(
         address _tokenAddress,
         uint256 _startTime,
@@ -490,52 +274,23 @@ interface ISTO {
 
 }
 
-contract SecurityToken is IERC20, Ownable {
+contract SecurityToken is IERC20 {
 
     using SafeMath for uint256;
 
-    string public version = "0.1";
-
-    // Legal delegate
-    address public delegate;
-
-    // Delegate Bids
-    struct Bid {
-        bytes32 template;
-        uint256 fee;
-        uint256 expires;
-        uint32 quorum;
-        uint256 vestingPeriod;
-        address attestor;
-    }
-    mapping(address => Bid) public bids;
-
-    // Template
-    bytes32 public template;
-
-    // Proof of process
-    bytes32 public complianceProof;
-
-    // STO address
-    ISTO public STO;
-
-    // Attestation provider
-    address public attestor;
-
-    // Security token shareholders
-    mapping(address => bool) public shareholders;
+    uint256 public version = 1;
 
     // Instance of the POLY token contract
-    PolyToken public POLY;
-
-    // Instance of the Security Token Registrar interface
-    ISTRegistrar public SecurityTokenRegistrar;
+    IERC20 public POLY;
 
     // Instance of the Compliance contract
-    Compliance public PolyCompliance;
+    ICompliance public PolyCompliance;
+
+    // Instance of the Template contract
+    ITemplate public Template;
 
     // Instance of the Customers contract
-    Customers PolyCustomers;
+    ICustomers public PolyCustomers;
 
     // ERC20 Fields
     string public name;
@@ -546,39 +301,49 @@ contract SecurityToken is IERC20, Ownable {
     mapping (address => mapping (address => uint256)) allowed;
     mapping (address => uint256) balances;
 
-    // Bounty allocations
-    mapping(address => uint256) allocations;
+    // Template
+    address public delegate;
+    bytes32 public complianceProof;
+    address public KYC;
 
-    // Bounty voting
-    struct Vote {
-        bool hasVoted;
-        bool vote;
+    // Security token shareholders
+    struct Shareholder {
+        address verifier;
+        bool allowed;
+        uint8 role;
     }
+    mapping(address => Shareholder) public shareholders;
 
-		// Values for the start and end time of the STO
-    uint256 public issuanceStartTime;
-    uint256 public issuanceEndTime;
+    // STO address
+    address public STO;
+    uint256 public maxPoly;
 
-    // The period which ST holders can vote to freeze the bounty
-    uint256 public bountyVestingPeriod;
+    // The start and end time of the STO
+    uint256 public startSTO;
+    uint256 public endSTO;
 
-		// Tally values for Bounty voting
-    uint256 public yay;
-    uint256 public yayPercent;
-    bool public freezeBounty;
-    mapping (address => Vote) votes;
+    // POLY allocations
+    struct Allocation {
+        uint256 amount;
+        uint256 vestingPeriod;
+        uint8 quorum;
+        uint256 yayVotes;
+        uint256 yayPercent;
+        bool frozen;
+        mapping (address => bool) votes;
+    }
+    mapping(address => Allocation) allocations;
 
-		// Variables for issuance status
-    mapping (address => uint256) issuanceEndBalances;
-		mapping (address => bool) issuancePaidOut;
-		uint securityTokensIssued = 0;
+		// Security Token Offering statistics
+    mapping (address => uint256) contributedToSTO;
+		uint tokensIssuedBySTO = 0;
 
     // Notifications
-    event LogDelegateBid(address indexed _delegateAddress, uint256 _bid);
-    event LogDelegateSet(address indexed _delegateAddress);
+    event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
-    event LogSetAttestor(address indexed _attestor);
-    event LogSetSTOContract(address indexed _STOAddress);
+    event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
+    event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
+    event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
 
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -600,193 +365,177 @@ contract SecurityToken is IERC20, Ownable {
 			_;
 		}
 
-    modifier onlyShareholder(address _shareholder) {
-        require (shareholders[_shareholder] == true);
+    modifier onlyShareholder() {
+        require (shareholders[msg.sender].allowed == true);
         _;
     }
 
-    /// Set default security token parameters
-    /// @param _name Name of the security token
-    /// @param _ticker Ticker name of the security
-    /// @param _totalSupply Total amount of tokens being created
-    /// @param _owner Ethereum address of the security token owner
-    /// @param _template Hash of the compliance template
-    /// @param _polyTokenAddress Ethereum address of the POLY token contract
-    /// @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
-    /// @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
-    /// @param _polySecurityTokenRegistrar Security Token Registrar address
+    /* @dev Set default security token parameters
+    @param _name Name of the security token
+    @param _ticker Ticker name of the security
+    @param _totalSupply Total amount of tokens being created
+    @param _owner Ethereum address of the security token owner
+    @param _maxPoly Amount of POLY being raised
+    @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+    @param _quorum Percent of initial investors required to freeze POLY raise
+    @param _polyTokenAddress Ethereum address of the POLY token contract
+    @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
+    @param _polyComplianceAddress Ethereum address of the PolyCompliance contract */
     function SecurityToken(
         string _name,
         bytes8 _ticker,
         uint256 _totalSupply,
         address _owner,
-        bytes32 _template,
+        uint256 _maxPoly,
+        uint256 _lockupPeriod,
+        uint8 _quorum,
         address _polyTokenAddress,
         address _polyCustomersAddress,
-        address _polyComplianceAddress,
-        address _polySecurityTokenRegistrar
+        address _polyComplianceAddress
     ) public
     {
-        owner = _owner;
+        decimals = 0;
         name = _name;
         symbol = _ticker;
-        decimals = 0;
-        template = _template;
+        owner = _owner;
+        maxPoly = _maxPoly;
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
-        POLY = PolyToken(_polyTokenAddress);
-        PolyCustomers = Customers(_polyCustomersAddress);
-        PolyCompliance = Compliance(_polyComplianceAddress);
-        SecurityTokenRegistrar = ISTRegistrar(_polySecurityTokenRegistrar);
+        POLY = IERC20(_polyTokenAddress);
+        PolyCustomers = ICustomers(_polyCustomersAddress);
+        PolyCompliance = ICompliance(_polyComplianceAddress);
+        allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
     }
 
-    /// Make a new bid to be the legal delegate
-    /// @param _fee The bounty fee requested to become legal delegate
-    /// @param _expires The timestamp the bid expires at
-    /// @param _quorum The percentage of initial shareholders required to freeze bounty funds
-    /// @param _vestingPeriod The period of time shareholders can freeze bounty funds
-    /// @return bool success
-    function makeBid(
-        bytes32 _template,
-        uint256 _fee,
-        uint256 _expires,
-        uint32 _quorum,
-        uint256 _vestingPeriod,
-        address _attestor
-    ) public returns (bool success)
-    {
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(_attestor, msg.sender);
-        require(verified == true);
-        require(role == 2);
-        require(expires > now);
-        require(_expires >= now);
-        require(_fee > 0);
-        require(_vestingPeriod >= 7777777);
-        bids[msg.sender] = Bid({template: _template, fee: _fee, expires: _expires, quorum: _quorum, vestingPeriod: _vestingPeriod, attestor: _attestor});
-        return true;
-    }
-
-    /// Accept a Delegate's bid
-    /// @param _delegate Legal Delegates public ethereum address
-    /// @return bool success
-    function setDelegate(address _delegate) public onlyOwner returns (bool success) {
-        require(_delegate == address(0));
-        require(bids[_delegate].expires > now);
-        require(POLY.balanceOf(this) >= bids[_delegate].fee);
+    /* @dev `selectTemplate` Select a proposed template for the issuance
+    @param _templateIndex Array index of the delegates proposed template
+    @return bool success */
+    function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
+        address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
+        require(_template != address(0));
+        Template = ITemplate(_template);
+        var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
+        require(POLY.balanceOf(this) >= _fee);
+        allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
-        allocations[_delegate] = bids[_delegate].fee;
-        LogDelegateSet(_delegate);
+        KYC = _KYC;
+        PolyCompliance.updateTemplateReputation(_template, _templateIndex);
+        LogTemplateSet(_delegate, _template, _KYC);
         return true;
     }
 
-    /// Update compliance Proof
-    /// @param _newMerkleRoot New merkle root hash of the compliance Proofs
-    /// @param _complianceProof Compliance Proof hash
-    /// @return bool success
+    /* @dev Update compliance proof hash for the issuance
+    @param _newMerkleRoot New merkle root hash of the compliance Proofs
+    @param _complianceProof Compliance Proof hash
+    @return bool success */
     function updateComplianceProof(
         bytes32 _newMerkleRoot,
         bytes32 _complianceProof
-    ) public onlyOwnerOrDelegate returns (bool success) {
-        require(msg.sender == owner || msg.sender == delegate);
+    ) public onlyOwnerOrDelegate returns (bool success)
+    {
         complianceProof = _newMerkleRoot;
         LogUpdatedComplianceProof(_newMerkleRoot, _complianceProof);
         return true;
     }
 
-    /// Set the STO contract address
-    /// @param _securityTokenOfferingAddress Ethereum address of the STO contract
-    /// @return bool success
-    function setSTOContract (
-        address _securityTokenOfferingAddress,
+    /* @dev Select an security token offering proposal for the issuance
+    @param _offeringProposalIndex Array index of the STO proposal
+    @param _startTime Start of issuance period
+    @param _endTime End of issuance period
+    @return bool success */
+    function selectOfferingProposal (
+        uint8 _offeringProposalIndex,
         uint256 _startTime,
         uint256 _endTime
-    ) public onlyDelegate returns (bool success) {
-        require(_securityTokenOfferingAddress != address(0));
+    ) public onlyDelegate returns (bool success)
+    {
+        var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
+        require(_stoContract != address(0));
         require(complianceProof != 0);
-        uint256 fee = SecurityTokenRegistrar.getFee(_securityTokenOfferingAddress);
-        address developer = SecurityTokenRegistrar.getCreator(_securityTokenOfferingAddress);
-        require(POLY.balanceOf(this) >= fee + allocations[msg.sender]);
-        allocations[developer] = fee;
-        STO = ISTO(_securityTokenOfferingAddress);
-        issuanceEndTime = _endTime;
-        LogSetSTOContract(_securityTokenOfferingAddress);
+        require(delegate != address(0));
+        require(_startTime > now && _endTime > _startTime);
+        require(POLY.balanceOf(this) >= allocations[delegate].amount + _fee);
+        allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        STO = ISTO(_stoContract);
+        shareholders[address(STO)] = Shareholder(this, true, 5);
+        startSTO = _startTime;
+        endSTO = _endTime;
+        PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
+        LogSetSTOContract(STO, _stoContract, _auditor, _startTime, _endTime);
         return true;
     }
 
-    /// Add a verified address to the Security Token whitelist
-    /// @param _shareholderAddress Address attempting to join ST whitelist
-    /// @return bool success
-    function addToWhitelist(address _shareholderAddress) public returns (bool success) {
-        require(attestor != address(0));
-        require(template != 0);
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(bids[delegate].attestor, msg.sender);
+    /* @dev Add a verified address to the Security Token whitelist
+    @param _whitelistAddress Address attempting to join ST whitelist
+    @return bool success */
+    function addToWhitelist(address _whitelistAddress) public returns (bool success) {
+        require(KYC == msg.sender);
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(msg.sender, _whitelistAddress);
         require(verified && expires > now);
-        bool requirementsMet = PolyCompliance.checkTemplateRequirements(template, jurisdiction, accredited, role);
-        require(requirementsMet);
-        shareholders[_shareholderAddress] = true;
+        require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
+        shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
+        LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
         return true;
     }
 
-    /// Allow the bounty to be withdrawn by owner, delegate, and the STO developer at appropriate times
-    /// @param _amount Amount of POLY being withdrawn from the bounty
-    /// @return bool success
-    function withdrawBounty(uint256 _amount) public returns (bool success) {
-			if (delegate == address(0)) {
-        return POLY.transfer(owner, _amount);
-      } else {
-				require(now > issuanceEndTime + bids[delegate].vestingPeriod);
-        require(freezeBounty == false);
-        require(allocations[msg.sender] >= _amount);
-				require(POLY.transfer(msg.sender, _amount));
-        allocations[msg.sender] = allocations[msg.sender].sub(_amount);
-        return true;
-      }
-    }
-
-    /// Vote to freeze the compliance bounty fund
-    /// @param _freezeVote `true` will vote to freeze, `false` will do nothing.
-    /// @return bool success
-    function voteToFreeze(bool _freezeVote) public returns (bool success) {
-      require(delegate != address(0));
-      require(now > issuanceEndTime);
-      require(now < issuanceEndTime + bountyVestingPeriod);
-      require(votes[msg.sender].hasVoted == false);
-      if (_freezeVote) {
-        yay = yay + issuanceEndBalances[msg.sender];
-        yayPercent = yay.mul(100).div(totalSupply);
-        if (yayPercent > bids[delegate].quorum) {
-          freezeBounty = true;
+    /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
+    @return bool success */
+    function withdrawPoly() public returns (bool success) {
+  			if (delegate == address(0)) {
+          return POLY.transfer(owner, POLY.balanceOf(this));
+        } else {
+  				require(now > endSTO + allocations[msg.sender].vestingPeriod);
+          require(allocations[msg.sender].frozen == false);
+          require(allocations[msg.sender].amount > 0);
+  				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+          allocations[msg.sender].amount = 0;
+          return true;
         }
-      }
-      votes[msg.sender] = Vote({ hasVoted: true, vote: _freezeVote });
-      return true;
     }
 
-		/// @notice `issueSecurityTokens` is used by the STO to issue ST's to shareholders
-		///  at the end of the issuance.
-		/// @param _contributor The address of the person whose contributing
-		/// @param _amount The amount of ST to pay out.
-		function issueSecurityTokens(address _contributor, uint256 _amount) public onlySTO {
-			require(issuanceEndTime > now);
-			require(securityTokensIssued.add(_amount) <= balanceOf(this));
-			securityTokensIssued = securityTokensIssued.add(_amount);
-			issuanceEndBalances[_contributor] = issuanceEndBalances[_contributor].add(_amount);
-		}
+    /* @dev Vote to freeze the fee of a certain network participant
+    @param _recipient The fee recipient being protested
+    @return bool success */
+    function voteToFreeze(address _recipient) public onlyShareholder returns (bool success) {
+        require(delegate != address(0));
+        require(now > endSTO);
+        require(now < endSTO + allocations[_recipient].vestingPeriod);
+        require(allocations[_recipient].votes[msg.sender] == false);
+        allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
+        allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
+        if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
+          allocations[_recipient].frozen = true;
+        }
+        LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].quorum, allocations[_recipient].frozen);
+        return true;
+    }
 
-		/// @notice `collectIssuance` is used to collect ST tokens
-		///  after the issuance period has passed.
-		function collectIssuance() public {
-			require(now > issuanceEndTime);
-			require(issuanceEndBalances[msg.sender] != 0);
-			require(transfer(msg.sender, issuanceEndBalances[msg.sender]));
-		}
+	  /* @dev `issueSecurityTokens` is used by the STO to keep track of STO investors
+    @param _contributor The address of the person whose contributing
+    @param _amountOfSecurityTokens The amount of ST to pay out.
+    @param _polyContributed The amount of POLY paid for the security tokens. */
+    function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
+        require(startSTO > now && endSTO < now);
+        require(POLY.transferFrom(_contributor, this, _polyContributed));
+        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(this));
+        require(maxPoly > allocations[owner].amount + _polyContributed);
+        tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
+        contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
+        allocations[owner].amount = allocations[owner].amount + _polyContributed;
+        return true;
+    }
 
-    /// Trasfer tokens from one address to another
-    /// @param _to Ethereum public address to transfer tokens to
-    /// @param _value Amount of tokens to send
-    /// @return bool success
+    /// Get token details
+    function getTokenDetails() view public returns (address, address, bytes32, address, address) {
+        return (Template, delegate, complianceProof, STO, KYC);
+    }
+
+    /* @dev Trasfer tokens from one address to another
+    @param _to Ethereum public address to transfer tokens to
+    @param _value Amount of tokens to send
+    @return bool success */
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to] && balances[msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = balances[msg.sender].sub(_value);
             balances[_to] = balances[_to].add(_value);
             Transfer(msg.sender, _to, _value);
@@ -796,18 +545,17 @@ contract SecurityToken is IERC20, Ownable {
         }
     }
 
-    /// Allows contracts to transfer tokens on behalf of token holders
-    /// @param _from Address to transfer tokens from
-    /// @param _to Address to send tokens to
-    /// @param _value Number of tokens to transfer
-    /// @return bool success
-    /// TODO: eliminate msg.sender for 0x
+    /* @dev Allows contracts to transfer tokens on behalf of token holders
+    @param _from Address to transfer tokens from
+    @param _to Address to send tokens to
+    @param _value Number of tokens to transfer
+    @return bool success */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to] && shareholders[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
-            balances[_to] = balances[_to].add(_value);
             allowed[_from][msg.sender] = _allowance.sub(_value);
+            balances[_to] = balances[_to].add(_value);
             Transfer(_from, _to, _value);
             return true;
         } else {
@@ -815,20 +563,19 @@ contract SecurityToken is IERC20, Ownable {
         }
     }
 
-    /// @param _owner The address from which the balance will be retrieved
-    /// @return The balance
+    /* @param _owner The address from which the balance will be retrieved
+    @return The balance */
     function balanceOf(address _owner) public constant returns (uint256 balance) {
         return balances[_owner];
     }
 
-    /// Approve transfer of tokens manually
-    /// @param _spender Address to approve transfer to
-    /// @param _value Amount of tokens to approve for transfer
-    /// @return bool success
+    /* @dev Approve transfer of tokens manually
+    @param _spender Address to approve transfer to
+    @param _value Amount of tokens to approve for transfer
+    @return bool success */
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        if (shareholders[_spender]) {
-            // @dev the logic on this looks screwey. Worth a look in testing
-            require ((_value != 0) && (allowed[msg.sender][_spender] != 0));
+        if (shareholders[_spender].allowed) {
+            require(_value != 0);
             allowed[msg.sender][_spender] = _value;
             Approval(msg.sender, _spender, _value);
             return true;
@@ -837,9 +584,9 @@ contract SecurityToken is IERC20, Ownable {
         }
     }
 
-    /// @param _owner The address of the account owning tokens
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @return Amount of remaining tokens allowed to spent
+    /* @param _owner The address of the account owning tokens
+    @param _spender The address of the account able to transfer the tokens
+    @return Amount of remaining tokens allowed to spent */
     function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }

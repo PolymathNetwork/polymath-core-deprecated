@@ -7,6 +7,8 @@
 The polymath core smart contracts provide a system for launching regulatory
 compliant securities tokens on a decentralized blockchain.
 
+[Read the whitepaper](whitepaper.pdf)
+
 ## Live on Ropsten testnet
 
 | Contract                                         | Address                                                                                                                       |
