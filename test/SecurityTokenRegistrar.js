@@ -5,6 +5,7 @@ const SecurityTokenRegistrar = artifacts.require('./SecurityTokenRegistrar.sol')
 const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
 const POLY = artifacts.require('./PolyToken.sol');
 const Compliance = artifacts.require('./Compliance.sol');
+const Utils = require('./helpers/Utils');
 
 contract('SecurityTokenRegistrar', accounts => {
   //createSecurityToken variables
@@ -14,21 +15,17 @@ contract('SecurityTokenRegistrar', accounts => {
   const totalSupply = 1234567890;
   const securityType = 5;
   const numberOfSecurityTypes = 8; //8 is chosen for testing, we don't have all security types spec'd out yet
-  const createSecurityTokenFee = 100000;
+  const createSecurityTokenFee = 10000;
   const polyRaise = 1000000;
   const quorum = 3;
   const lockupPeriod = 1513296000;  //Friday, 15-Dec-17 00:00:00 UTC  for testing only  
-
-  //polyTokenAddress - hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
-  //ropsten address for polyToken is "0x43b9066bbe465523fb84ed2b832e4aaedb337b65"
-  //const polyTokenAddress = '0x377bbcae5327695b32a1784e0e13bedc8e078c9c';
   
 
   //account
   let owner = accounts[0];
   let acct1 = accounts[1];
   let acct2 = accounts[2];
-  let acct3 = accounts[3];
+  let issuer2 = accounts[3];
   let issuer1 = accounts[4];
   let polyCustomerAddress = accounts[5];
   let host = accounts[6];
@@ -58,7 +55,8 @@ contract('SecurityTokenRegistrar', accounts => {
       assert.strictEqual(issuerBalance.toNumber(),1000000);
 
       await polyToken.approve(STRegistrar.address,10000,{from:issuer1});
-
+      let allowedToken = await polyToken.allowance(issuer1,STRegistrar.address);
+      assert.strictEqual(allowedToken.toNumber(),10000);
       let ST = await STRegistrar.createSecurityToken(
                                 name,
                                 ticker,
@@ -80,19 +78,18 @@ contract('SecurityTokenRegistrar', accounts => {
     });
 
     describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {
-      it('should confirm decimals is between 0-18', async () => {});
-      it('should fail when total supply is 0 or below', async () => {
+      it('createSecurityToken:should fail when total supply is zero or below than 0', async () => {
         let polyToken = await POLY.new();
         let polyCompliance = await Compliance.new(polyCustomerAddress);
         let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
-        let totalSupply = 0 ;
+        let totalSupply = 0;
 
         await polyToken.getTokens(1000000,{from : issuer1});
         let issuerBalance = await polyToken.balanceOf(issuer1);
         assert.strictEqual(issuerBalance.toNumber(),1000000);
   
         await polyToken.approve(STRegistrar.address,10000,{from:issuer1});
-        expectRevert(
+        try{
               await STRegistrar.createSecurityToken(
                       name,
                       ticker,
@@ -107,21 +104,23 @@ contract('SecurityTokenRegistrar', accounts => {
                       {
                         from : issuer1
                       })
-        );
+          } catch(error) {
+              Utils.ensureException(error);
+          }
       });
 
-      it('should fail when total supply is greater than (2^256)-1', async () => {
+      it('createSecurityToken:should fail when total supply is grater than (2^256)-1', async () => {
         let polyToken = await POLY.new();
         let polyCompliance = await Compliance.new(polyCustomerAddress);
         let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
-        let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936 ;
+        let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936;
 
         await polyToken.getTokens(1000000,{from : issuer1});
         let issuerBalance = await polyToken.balanceOf(issuer1);
         assert.strictEqual(issuerBalance.toNumber(),1000000);
   
         await polyToken.approve(STRegistrar.address,10000,{from:issuer1});
-        expectRevert(
+        try{
               await STRegistrar.createSecurityToken(
                       name,
                       ticker,
@@ -136,75 +135,123 @@ contract('SecurityTokenRegistrar', accounts => {
                       {
                         from : issuer1
                       })
-        );
+          } catch(error) {
+              Utils.ensureException(error);
+          }
       });
 
-      it(`should confirm security type is one of the approved numbers representing a type. it is between 0 - ${
-        numberOfSecurityTypes
-      } `, async () => {
-        // let polyToken = await POLY.new();
-        // let polyCompliance = await Compliance.new(polyCustomerAddress);
-        // let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
-        // let numberOfSecurityTypes = 
-        // await polyToken.getTokens(1000000,{from : issuer1});
-        // let issuerBalance = await polyToken.balanceOf(issuer1);
-        // assert.strictEqual(issuerBalance.toNumber(),1000000);
-  
-        // await polyToken.approve(STRegistrar.address,10000,{from:issuer1}); 
-        // expectRevert(
-        //   await STRegistrar.createSecurityToken(
-        //           name,
-        //           ticker,
-        //           totalSupply,
-        //           owner,
-        //           host,
-        //           createSecurityTokenFee,
-        //           numberOfSecurityTypes,
-        //           polyRaise,
-        //           lockupPeriod,
-        //           quorum,
-        //           {
-        //             from : issuer1
-        //           })
-        //);         
+      it("createSecurityToken:should fail when ticker name is already exist", async () => {
+        let polyToken = await POLY.new();
+        let polyCompliance = await Compliance.new(polyCustomerAddress);
+        let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
+        
+        await polyToken.getTokens(1000000,{from : issuer1});
+        await polyToken.getTokens(1000000,{from : issuer2});
 
+        let issuerBalance1 = await polyToken.balanceOf(issuer1);
+        let issuerBalance2 = await polyToken.balanceOf(issuer2);
+        
+        assert.strictEqual(issuerBalance1.toNumber(),1000000);
+        assert.strictEqual(issuerBalance2.toNumber(),1000000);
+
+        await polyToken.approve(STRegistrar.address,10000,{from:issuer1});
+        await polyToken.approve(STRegistrar.address,10000,{from:issuer2});
+
+        let allowedToken = await polyToken.allowance(issuer1,STRegistrar.address);
+        assert.strictEqual(allowedToken.toNumber(),10000);
+
+        let ST = await STRegistrar.createSecurityToken(
+                                  name,
+                                  ticker,
+                                  totalSupply,
+                                  owner,
+                                  host,
+                                  createSecurityTokenFee,
+                                  numberOfSecurityTypes,
+                                  polyRaise,
+                                  lockupPeriod,
+                                  quorum,
+                                  {
+                                    from : issuer1
+                                  });
+        let STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
+        assert.notEqual(STAddress,0);
+        try{
+            let ST = await STRegistrar.createSecurityToken(
+                                  name,
+                                  ticker,
+                                  totalSupply,
+                                  owner,
+                                  host,
+                                  createSecurityTokenFee,
+                                  numberOfSecurityTypes,
+                                  polyRaise,
+                                  lockupPeriod,
+                                  quorum,
+                                  {
+                                    from : issuer2
+                                  });
+            } catch(error){
+                Utils.ensureException(error);
+            }    
       });
-      it('should confirm developer fee is between 0 and (2^256)-1', async () => {});
-      it('should limit ticker to being 3 or 4 characters, only A-Z', async () => {});
-    });
 
-    it('should increment totalSecurityTokens by 1 every time a new SecurityToken is made', async () => {});
-    it('should log the event', async () => {});
-    it('should properly update registry of security tokens (securityTokens mapping)', async () => {});
-    it('should allow Developer bounty to be transferedFrom the issuers POLY balance into the SecurityTokens contract', async () => {
-      //this is not coded in yet. this will be a long test
-    });
-  });
+      it('createSecurityToken:should fail when the approved quantity is less than the fee', async () => {
+        let polyToken = await POLY.new();
+        let polyCompliance = await Compliance.new(polyCustomerAddress);
+        let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
+        
+        await polyToken.getTokens(1000000,{from : issuer1});
+        let issuerBalance1 = await polyToken.balanceOf(issuer1);
 
-  //this is developer workflow. it needs to be updated in the https://github.com/PolymathNetwork/Solidity/blob/master/docs/SecurityToken.md file - dk nov 1
-  describe('function newSecurityTokenOfferingContract ', async () => {
-    it('should allow for the creation of a new STO contract.', async () => {});
-    it('should allow only approved Developers to call this function.', async () => {
-      //needs to be added into the code - dk nov 1
-    });
-    describe('Creation of SecurityTokenOfferingContract Struct is within its proper limitations', async () => {
-      it('should confirm address is not 0', async () => {});
-      it('should confirm the token address has never been used before, no overwriting the struct', async () => {
-        //i belive right now the contract address and creator address are mixed up in the real code - dk nov 1
-        //also, will need to be added into the code - dk nov 1
+        await polyToken.approve(STRegistrar.address,1000,{from:issuer1});
+        try {
+                    let ST = await STRegistrar.createSecurityToken(
+                                        name,
+                                        ticker,
+                                        totalSupply,
+                                        owner,
+                                        host,
+                                        createSecurityTokenFee,
+                                        numberOfSecurityTypes,
+                                        polyRaise,
+                                        lockupPeriod,
+                                        quorum,
+                                        {
+                                          from : issuer1
+                                  });
+        } catch(error) {
+            Utils.ensureException(error);
+        }
       });
-      it('should confirm fee submitted is between 0 and (2^256)-1', async () => {});
-    });
-    it('should log the event', async () => {});
-    it('should properly update registry of STO contracts (securityTokenOfferingContracts mapping)', async () => {});
-  });
 
-  // function approveSecurityTokenOfferingContract(address _contractAddress, bool _approved, uint256 _fee) onlyOwner {
-  describe('function approveSecurityTokenOfferingContract', async () => {
-    it('should confirm this function is only callable by owner.', async () => {});
-    it('Fee should be 0 and (2^256)-1.', async () => {});
-    it('should prevent address 0 or any other address in use to be used as _contractAddress.', async () => {});
-    it('If _approved is true, it should update .approved and .fee with _approved and _fee, and Log _contractAddress and true', async () => {});
-    it('If _approved is false, delete the STO from mapping securityTokenOfferingContracts and confirm it is removed ', async () => {});
-  });
+      it("createSecurityToken:should fail when the security registrar haven't approved to spent the poly" , async () => {
+        let polyToken = await POLY.new();
+        let polyCompliance = await Compliance.new(polyCustomerAddress);
+        let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
+        
+        await polyToken.getTokens(1000000,{from : issuer1});
+        let issuerBalance1 = await polyToken.balanceOf(issuer1);
+
+        try {
+                    let ST = await STRegistrar.createSecurityToken(
+                                        name,
+                                        ticker,
+                                        totalSupply,
+                                        owner,
+                                        host,
+                                        createSecurityTokenFee,
+                                        numberOfSecurityTypes,
+                                        polyRaise,
+                                        lockupPeriod,
+                                        quorum,
+                                        {
+                                          from : issuer1
+                                  });
+        } catch(error) {
+            Utils.ensureException(error);
+        }
+      });
+     });
+    });
 });
