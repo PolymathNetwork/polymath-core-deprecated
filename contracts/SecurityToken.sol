@@ -32,8 +32,8 @@ contract SecurityToken is IERC20 {
     string public symbol;
     address public owner;
     uint256 public totalSupply;
-    mapping (address => mapping (address => uint256)) allowed;
-    mapping (address => uint256) balances;
+    mapping(address => mapping(address => uint256)) allowed;
+    mapping(address => uint256) balances;
 
     // Template
     address public delegate;
@@ -65,11 +65,11 @@ contract SecurityToken is IERC20 {
         uint256 yayPercent;
         bool frozen;
     }
-    mapping(address => mapping (address => bool)) voted;
+    mapping(address => mapping(address => bool)) voted;
     mapping(address => Allocation) allocations;
 
 		// Security Token Offering statistics
-    mapping (address => uint256) contributedToSTO;
+    mapping(address => uint256) contributedToSTO;
 		uint tokensIssuedBySTO = 0;
 
     // Notifications

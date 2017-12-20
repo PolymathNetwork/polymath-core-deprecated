@@ -28,7 +28,7 @@ contract Customers is ICustomers {
     }
 
     // Customers (kyc provider address => customer address)
-    mapping (address => mapping (address => Customer)) public customers;
+    mapping(address => mapping(address => Customer)) public customers;
 
     // KYC/Accreditation Provider
     struct Provider {
