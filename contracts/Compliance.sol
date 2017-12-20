@@ -51,7 +51,7 @@ contract Compliance is ICompliance {
     event LogTemplateCreated(address indexed creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate);
-
+    
     /* @param _polyCustomersAddress The address of the Polymath Customers contract */
     function Compliance(address _polyCustomersAddress) public {
         PolyCustomers = Customers(_polyCustomersAddress);
@@ -136,6 +136,28 @@ contract Compliance is ICompliance {
         require(chosenTemplate != proposedTemplate);
         templateProposals[_securityToken][_templateProposalIndex] = address(0);
         return true;
+    }
+
+    /* @dev Set the STO contract by the issuer.
+       @param _STOAddress address of the STO contract deployed over the network.
+       @param _fee fee to be paid in poly to use that contract
+       @param _vestingPeriod no. of days investor binded to hold the Security token
+       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    function setSTO (
+        address _STOAddress,
+        uint256 _fee,
+        uint256 _vestingPeriod,
+        uint8 _quorum
+        ) public returns (bool success)
+    {
+            require(_STOAddress != address(0));
+            require(_quorum > 0 && _quorum < 100);
+            require(_vestingPeriod >= minimumVestingPeriod);
+            offerings[_STOAddress].auditor = msg.sender;
+            offerings[_STOAddress].fee = _fee;
+            offerings[_STOAddress].vestingPeriod = _vestingPeriod;
+            offerings[_STOAddress].quorum = _quorum;
+            return true;
     }
 
     /* @dev Propose a Security Token Offering Contract for an issuance

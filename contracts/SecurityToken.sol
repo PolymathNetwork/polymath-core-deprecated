@@ -215,15 +215,15 @@ contract SecurityToken is IERC20 {
     /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
     @return bool success */
     function withdrawPoly() public returns (bool success) {
-  			if (delegate == address(0)) {
+  	   if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         } else {
   				require(now > endSTO + allocations[msg.sender].vestingPeriod);
-          require(allocations[msg.sender].frozen == false);
-          require(allocations[msg.sender].amount > 0);
+                require(allocations[msg.sender].frozen == false);
+                require(allocations[msg.sender].amount > 0);
   				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
-          allocations[msg.sender].amount = 0;
-          return true;
+                allocations[msg.sender].amount = 0;
+                return true;
         }
     }
 

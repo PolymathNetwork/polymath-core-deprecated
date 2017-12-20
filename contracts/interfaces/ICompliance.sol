@@ -58,6 +58,18 @@ interface ICompliance {
         uint256 _templateProposalIndex
     ) public returns (bool success);
 
+    /* @dev Set the STO contract by the issuer.
+       @param _STOAddress address of the STO contract deployed over the network.
+       @param _fee fee to be paid in poly to use that contract
+       @param _vestingPeriod no. of days investor binded to hold the Security token
+       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    function setSTO (
+        address _STOAddress,
+        uint256 _fee,
+        uint256 _vestingPeriod,
+        uint8 _quorum
+    ) public returns (bool success);
+
     /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
     @param _securityToken The security token being bid on
     @param _offeringProposalIndex The offering proposal array index

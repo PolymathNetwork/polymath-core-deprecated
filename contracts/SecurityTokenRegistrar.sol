@@ -80,6 +80,13 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         polyCustomersAddress,
         polyComplianceAddress
       );
+      tickers[_ticker] = newSecurityTokenAddress;
+      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
+        _totalSupply,
+        _owner,
+        _ticker,
+        _type
+      );
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
     }
 

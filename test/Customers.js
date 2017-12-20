@@ -1,11 +1,10 @@
-/*
 import expectRevert from './helpers/expectRevert';
 
 const Compliance = artifacts.require('../contracts/Customers.sol');
 const POLY = artifacts.require('../contracts/PolyToken.sol');
 const Customers = artifacts.require('../contracts/Customers.sol');
 const BigNumber = require('bignumber.js');
-let Utils = require('./helpers/Utils');
+const Utils = require('./helpers/Utils');
 
 contract('Customers', accounts => {
   const customersAddress = '0xbe40f369c413a2c7eaab9d9cc85cfc1dbe664ec6'; //hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
@@ -61,10 +60,10 @@ contract('Customers', accounts => {
         providerFee1,
       );
 
-      await poly.getTokens(10000, provider1, { from: customer1 });
+      await poly.getTokens(10000, customer1, { from: customer1 });
       await poly.approve(customers.address, 10000, { from: customer1 });
 
-      let isVerify = await customers.verifyCustomer(
+      let isVerify = await customers.verifyCustomer.call(
         customer1,
         jurisdiction0,
         customerInvestorRole,
@@ -74,30 +73,21 @@ contract('Customers', accounts => {
           from: provider1,
         },
       );
-      assert.isTrue(isVerify.toString());
+      assert.isTrue(isVerify);
     });
 
-    it('Ensure KYC providers can only approve a customer if they were chosen to represent them by the customer', async () => {
+    it('VerifyCustomer: Should fail due to the msg.sender is not provider', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
       await poly.getTokens(1000000, provider1, { from: provider1 });
       await poly.approve(customers.address, 100000, { from: provider1 });
-      let providerTwo = await customers.newProvider(
-        provider2,
-        providerName2,
-        providerApplication2,
-        providerFee2,
-        {
-          from: owner,
-        },
-      );
       let providerOne = await customers.newProvider(
         provider1,
         providerName1,
         providerApplication1,
         providerFee1,
       );
-      await poly.getTokens(10000, provider1, { from: customer1 });
+      await poly.getTokens(10000, customer1, { from: customer1 });
       await poly.approve(customers.address, 10000, { from: customer1 });
 
       try {
@@ -108,7 +98,7 @@ contract('Customers', accounts => {
           true,
           expcurrentTime + 172800, // 2 days more than current time
           {
-            from: provider2,
+            from: customer2,
           },
         );
       } catch (error) {
@@ -140,7 +130,6 @@ contract('Customers', accounts => {
         providerFee1,
       );
       let providerDetails = await customers.getProvider.call(provider1);
-      console.log(providerDetails);
       assert.strictEqual(providerDetails[0].toString(), providerName1);
     });
 
@@ -164,6 +153,33 @@ contract('Customers', accounts => {
           0x0,
           providerName1,
           providerApplication1,
+          100,
+        );
+      } catch (error) {
+            Utils.ensureException(error);
+      }
+    });
+
+    it('kyc providers apply their data to chain -- fail because of zero details', async () => {
+      let poly = await POLY.new();
+      let customers = await Customers.new(poly.address);
+
+      await poly.getTokens(1000000, provider1, { from: provider1 });
+      let providerBalance = await poly.balanceOf.call(provider1);
+      assert.strictEqual(providerBalance.toNumber(), 1000000);
+
+      await poly.approve(customers.address, 100000, { from: provider1 });
+      let allowedToken = await poly.allowance.call(
+        provider1,
+        customers.address,
+      );
+      assert.strictEqual(allowedToken.toNumber(), 100000);
+
+      try {
+        await customers.newProvider(
+          provider1,
+          providerName1,
+          0,
           100,
         );
       } catch (error) {
@@ -198,10 +214,33 @@ contract('Customers', accounts => {
     });
   });
 
-  describe('function approveProvider', async () => {
-    it('should allow delete a KYC provider if unapproved', async () => {});
+    describe("function changeFee", async () => {
+
+        it('should allow to change the fee by the provider', async () => {
+            let poly = await POLY.new();
+            let customers = await Customers.new(poly.address);
+
+            await poly.getTokens(100000, provider1, { from : provider1 });
+            let providerBalance = await poly.balanceOf.call(provider1);
+            assert.strictEqual(providerBalance.toNumber(), 100000);
+
+            await poly.approve(customers.address, 1000, { from : provider1 });
+            let allowedToken = await poly.allowance.call(provider1, customers.address);
+            assert.strictEqual(allowedToken.toNumber(),1000);
+
+            await customers.newProvider(
+              provider1,
+              providerName1,
+              providerApplication1,
+              providerFee1
+            );
+
+            await customers.changeFee(10000,{ from : provider1 });
+            let providerData = await customers.getProvider(provider1);
+            assert.strictEqual(providerData[3].toNumber(),10000);
 
     it('should allow only owner to call approve provider', async () => {});
     it('owner cant delete a KYC provider if they have been approved, even if they were later unapproved or expired', async () => {});
   });
-});*/
+});
+});
