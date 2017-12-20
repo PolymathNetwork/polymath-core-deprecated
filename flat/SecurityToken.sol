@@ -114,7 +114,7 @@ interface ISTRegistrar {
     @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
         string _name,
-        bytes8 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         address _host,
@@ -182,6 +182,18 @@ interface ICompliance {
     function cancelTemplateProposal(
         address _securityToken,
         uint256 _templateProposalIndex
+    ) public returns (bool success);
+
+    /* @dev Set the STO contract by the issuer.
+       @param _STOAddress address of the STO contract deployed over the network.
+       @param _fee fee to be paid in poly to use that contract
+       @param _vestingPeriod no. of days investor binded to hold the Security token
+       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    function setSTO (
+        address _STOAddress,
+        uint256 _fee,
+        uint256 _vestingPeriod,
+        uint8 _quorum
     ) public returns (bool success);
 
     /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
@@ -295,7 +307,7 @@ contract SecurityToken is IERC20 {
     // ERC20 Fields
     string public name;
     uint8 public decimals;
-    bytes8 public symbol;
+    string public symbol;
     address public owner;
     uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
@@ -330,8 +342,8 @@ contract SecurityToken is IERC20 {
         uint256 yayVotes;
         uint256 yayPercent;
         bool frozen;
-        mapping (address => bool) votes;
     }
+    mapping(address => mapping (address => bool)) voted;
     mapping(address => Allocation) allocations;
 
 		// Security Token Offering statistics
@@ -383,7 +395,7 @@ contract SecurityToken is IERC20 {
     @param _polyComplianceAddress Ethereum address of the PolyCompliance contract */
     function SecurityToken(
         string _name,
-        bytes8 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         uint256 _maxPoly,
@@ -481,7 +493,7 @@ contract SecurityToken is IERC20 {
     /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
     @return bool success */
     function withdrawPoly() public returns (bool success) {
-  			if (delegate == address(0)) {
+  	   if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         } else {
   				require(now > endSTO + allocations[msg.sender].vestingPeriod);
@@ -500,7 +512,8 @@ contract SecurityToken is IERC20 {
         require(delegate != address(0));
         require(now > endSTO);
         require(now < endSTO + allocations[_recipient].vestingPeriod);
-        require(allocations[_recipient].votes[msg.sender] == false);
+        require(voted[msg.sender][_recipient] == false);
+        voted[msg.sender][_recipient] == true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
         if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {

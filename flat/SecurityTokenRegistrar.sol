@@ -1,16 +1,5 @@
 pragma solidity ^0.4.18;
 
-/// ERC Token Standard #20 Interface (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md)
-interface IERC20 {
-    function balanceOf(address _owner) public constant returns (uint256 balance);
-    function transfer(address _to, uint256 _value) public returns (bool success);
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
-    function approve(address _spender, uint256 _value) public returns (bool success);
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining);
-    event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
-}
-
 interface ISTRegistrar {
 
     /* @dev Creates a new Security Token and saves it to the registry
@@ -26,7 +15,7 @@ interface ISTRegistrar {
     @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
         string _name,
-        bytes8 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         address _host,
@@ -79,6 +68,97 @@ library SafeMath {
     function min256(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
+}
+
+/// ERC Token Standard #20 Interface (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md)
+interface IERC20 {
+    function balanceOf(address _owner) public constant returns (uint256 balance);
+    function transfer(address _to, uint256 _value) public returns (bool success);
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
+    function approve(address _spender, uint256 _value) public returns (bool success);
+    function allowance(address _owner, address _spender) public constant returns (uint256 remaining);
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+}
+
+/*
+ POLY token faucet is only used on testnet for testing purposes
+ !!!! NOT INTENDED TO BE USED ON MAINNET !!!
+*/
+
+
+
+
+contract PolyToken is IERC20 {
+
+    using SafeMath for uint256;
+    uint256 public totalSupply = 1000000;
+    string public name = "Polymath Network";
+    uint8 public decimals = 18;
+    string public symbol = "POLY";
+
+    mapping (address => uint256) balances;
+    mapping (address => mapping (address => uint256)) allowed;
+
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+
+    /* Token faucet - Not part of the ERC20 standard */
+    function getTokens(uint256 _amount, address _recipient) public returns (bool) {
+        balances[_recipient] += _amount;
+        totalSupply += _amount;
+        return true;
+    }
+
+    /* @dev send `_value` token to `_to` from `msg.sender`
+    @param _to The address of the recipient
+    @param _value The amount of token to be transferred
+    @return Whether the transfer was successful or not */
+    function transfer(address _to, uint256 _value) public returns (bool) {
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        Transfer(msg.sender, _to, _value);
+        return true;
+    }
+
+    /* @dev send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
+      @param _from The address of the sender
+      @param _to The address of the recipient
+      @param _value The amount of token to be transferred
+      @return Whether the transfer was successful or not */
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+        uint256 _allowance = allowed[_from][msg.sender];
+        require(_allowance >= _value);
+        balances[_from] = balances[_from].sub(_value);
+        allowed[_from][msg.sender] = _allowance.sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        Transfer(_from, _to, _value);
+        return true;
+    }
+
+    /* @param _owner The address from which the balance will be retrieved
+    @return The balance */
+    function balanceOf(address _owner) public constant returns (uint256 balance) {
+        return balances[_owner];
+    }
+
+    /* @dev `msg.sender` approves `_spender` to spend `_value` tokens
+    @param _spender The address of the account able to transfer the tokens
+    @param _value The amount of tokens to be approved for transfer
+    @return Whether the approval was successful or not */
+    function approve(address _spender, uint256 _value) public returns (bool) {
+        allowed[msg.sender][_spender] = _value;
+        Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    /* @param _owner The address of the account owning tokens
+    @param _spender The address of the account able to transfer the tokens
+    @return Amount of remaining tokens allowed to spent */
+    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
+        return allowed[_owner][_spender];
+    }
+
 }
 
 interface ICustomers {
@@ -182,6 +262,18 @@ interface ICompliance {
     function cancelTemplateProposal(
         address _securityToken,
         uint256 _templateProposalIndex
+    ) public returns (bool success);
+
+    /* @dev Set the STO contract by the issuer.
+       @param _STOAddress address of the STO contract deployed over the network.
+       @param _fee fee to be paid in poly to use that contract
+       @param _vestingPeriod no. of days investor binded to hold the Security token
+       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    function setSTO (
+        address _STOAddress,
+        uint256 _fee,
+        uint256 _vestingPeriod,
+        uint8 _quorum
     ) public returns (bool success);
 
     /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
@@ -295,7 +387,7 @@ contract SecurityToken is IERC20 {
     // ERC20 Fields
     string public name;
     uint8 public decimals;
-    bytes8 public symbol;
+    string public symbol;
     address public owner;
     uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
@@ -330,8 +422,8 @@ contract SecurityToken is IERC20 {
         uint256 yayVotes;
         uint256 yayPercent;
         bool frozen;
-        mapping (address => bool) votes;
     }
+    mapping(address => mapping (address => bool)) voted;
     mapping(address => Allocation) allocations;
 
 		// Security Token Offering statistics
@@ -383,7 +475,7 @@ contract SecurityToken is IERC20 {
     @param _polyComplianceAddress Ethereum address of the PolyCompliance contract */
     function SecurityToken(
         string _name,
-        bytes8 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         uint256 _maxPoly,
@@ -481,7 +573,7 @@ contract SecurityToken is IERC20 {
     /* @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
     @return bool success */
     function withdrawPoly() public returns (bool success) {
-  			if (delegate == address(0)) {
+  	   if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         } else {
   				require(now > endSTO + allocations[msg.sender].vestingPeriod);
@@ -500,7 +592,8 @@ contract SecurityToken is IERC20 {
         require(delegate != address(0));
         require(now > endSTO);
         require(now < endSTO + allocations[_recipient].vestingPeriod);
-        require(allocations[_recipient].votes[msg.sender] == false);
+        require(voted[msg.sender][_recipient] == false);
+        voted[msg.sender][_recipient] == true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
         if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
@@ -612,15 +705,15 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     struct SecurityTokenData {
       uint256 totalSupply;
       address owner;
-      bytes8 ticker;
+      string ticker;
       uint8 securityType;
     }
     mapping(address => SecurityTokenData) securityTokens;
 
     // Mapping of ticker name to Security Token
-    mapping(bytes8 => address) tickers;
+    mapping(string => address) tickers;
 
-    event LogNewSecurityToken(bytes8 ticker, address securityTokenAddress, address owner);
+    event LogNewSecurityToken(string ticker, address securityTokenAddress, address owner, address host, uint256 fee, uint8 _type);
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -647,7 +740,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
       string _name,
-      bytes8 _ticker,
+      string _ticker,
       uint256 _totalSupply,
       address _owner,
       address _host,
@@ -658,10 +751,8 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint8 _quorum
     ) external
     {
-      require(_owner != address(0));
-      require(tickers[_ticker] == address(0));
-      require(_totalSupply > 0 && _totalSupply < 2**256 - 1);
-      require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
+      PolyToken POLY = PolyToken(polyTokenAddress);
+      require(POLY.transferFrom(msg.sender, _host, _fee));
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
@@ -674,13 +765,18 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         polyCustomersAddress,
         polyComplianceAddress
       );
-      securityTokens[newSecurityTokenAddress] = SecurityTokenData(_totalSupply, _owner, _ticker, _type);
       tickers[_ticker] = newSecurityTokenAddress;
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
+        _totalSupply,
+        _owner,
+        _ticker,
+        _type
+      );
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
     }
 
     // Get security token address by ticker name
-    function getSecurityTokenAddress(bytes8 _ticker) public constant returns (address) {
+    function getSecurityTokenAddress(string _ticker) public constant returns (address) {
       return tickers[_ticker] ;
     }
 
@@ -688,7 +784,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     function getSecurityTokenData(address _STAddress) public constant returns (
       uint256 totalSupply,
       address owner,
-      bytes8 ticker,
+      string ticker,
       uint8 securityType
     ) {
       return (

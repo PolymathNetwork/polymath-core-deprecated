@@ -67,7 +67,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     ) external
     {
       PolyToken POLY = PolyToken(polyTokenAddress);
-      require(POLY.transferFrom(msg.sender, _host, _fee));
+      require(POLY.transferFrom(_owner, _host, _fee));
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,

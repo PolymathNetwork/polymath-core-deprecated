@@ -58,6 +58,18 @@ interface ICompliance {
         uint256 _templateProposalIndex
     ) public returns (bool success);
 
+    /* @dev Set the STO contract by the issuer.
+       @param _STOAddress address of the STO contract deployed over the network.
+       @param _fee fee to be paid in poly to use that contract
+       @param _vestingPeriod no. of days investor binded to hold the Security token
+       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    function setSTO (
+        address _STOAddress,
+        uint256 _fee,
+        uint256 _vestingPeriod,
+        uint8 _quorum
+    ) public returns (bool success);
+
     /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
     @param _securityToken The security token being bid on
     @param _offeringProposalIndex The offering proposal array index
@@ -177,9 +189,10 @@ contract PolyToken is IERC20 {
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
     /* Token faucet - Not part of the ERC20 standard */
-    function getTokens (uint256 _amount) public {
-        balances[msg.sender] += _amount;
+    function getTokens(uint256 _amount, address _recipient) public returns (bool) {
+        balances[_recipient] += _amount;
         totalSupply += _amount;
+        return true;
     }
 
     /* @dev send `_value` token to `_to` from `msg.sender`
@@ -202,8 +215,8 @@ contract PolyToken is IERC20 {
         uint256 _allowance = allowed[_from][msg.sender];
         require(_allowance >= _value);
         balances[_from] = balances[_from].sub(_value);
-        balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = _allowance.sub(_value);
+        balances[_to] = balances[_to].add(_value);
         Transfer(_from, _to, _value);
         return true;
     }
@@ -219,10 +232,6 @@ contract PolyToken is IERC20 {
     @param _value The amount of tokens to be approved for transfer
     @return Whether the approval was successful or not */
     function approve(address _spender, uint256 _value) public returns (bool) {
-        // https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) {
-            revert();
-        }
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
@@ -586,7 +595,7 @@ interface ISecurityToken {
     @param _polyComplianceAddress Ethereum address of the PolyCompliance contract */
     function SecurityToken(
         string _name,
-        bytes8 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         uint256 _maxPoly,
@@ -725,7 +734,7 @@ contract Compliance is ICompliance {
     event LogTemplateCreated(address indexed creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate);
-
+    
     /* @param _polyCustomersAddress The address of the Polymath Customers contract */
     function Compliance(address _polyCustomersAddress) public {
         PolyCustomers = Customers(_polyCustomersAddress);
@@ -810,6 +819,28 @@ contract Compliance is ICompliance {
         require(chosenTemplate != proposedTemplate);
         templateProposals[_securityToken][_templateProposalIndex] = address(0);
         return true;
+    }
+
+    /* @dev Set the STO contract by the issuer.
+       @param _STOAddress address of the STO contract deployed over the network.
+       @param _fee fee to be paid in poly to use that contract
+       @param _vestingPeriod no. of days investor binded to hold the Security token
+       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    function setSTO (
+        address _STOAddress,
+        uint256 _fee,
+        uint256 _vestingPeriod,
+        uint8 _quorum
+        ) public returns (bool success)
+    {
+            require(_STOAddress != address(0));
+            require(_quorum > 0 && _quorum < 100);
+            require(_vestingPeriod >= minimumVestingPeriod);
+            offerings[_STOAddress].auditor = msg.sender;
+            offerings[_STOAddress].fee = _fee;
+            offerings[_STOAddress].vestingPeriod = _vestingPeriod;
+            offerings[_STOAddress].quorum = _quorum;
+            return true;
     }
 
     /* @dev Propose a Security Token Offering Contract for an issuance
