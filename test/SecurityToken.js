@@ -243,75 +243,75 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       assert.strictEqual(data[0], templateAddress);
     });
 
-    it("selectOfferingProposal: select the offering proposal for the template",async()=>{
-      let isSTOAdded = await compliance.setSTO(stoContract, stoFee, vestingPeriod, quorum, { from : customer0 });
-      let response = await compliance.proposeOfferingContract(STAddress , stoContract, { from : customer0 });
-      let delegateOfTemp = await securityToken.delegate.call();
-      let success = await securityToken.selectOfferingProposal(0, startTime, endTime,{ from: delegateOfTemp });
-      assert.isTrue(success.toString());                                                      
-    });
+//     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
+//       let isSTOAdded = await compliance.setSTO(stoContract, stoFee, vestingPeriod, quorum, { from : customer0 });
+//       let response = await compliance.proposeOfferingContract(STAddress , stoContract, { from : customer0 });
+//       let delegateOfTemp = await securityToken.delegate.call();
+//       let success = await securityToken.selectOfferingProposal(0, startTime, endTime,{ from: delegateOfTemp });
+//       assert.isTrue(success.toString());                                                      
+//     });
 
-    it('addToWhitelist: should add the customer address into the whitelist',async()=>{
-      let template = await Template.at(templateAddress);
-      await template.addJurisdiction(['canada-ca'],[true],{from:attestor0});
-      await template.addRoles([2],{from:attestor0}); 
-      let status = await securityToken.addToWhitelist(customer1,{from: provider0});
-      assert.isTrue(status.toString());
-    });
+//     it('addToWhitelist: should add the customer address into the whitelist',async()=>{
+//       let template = await Template.at(templateAddress);
+//       await template.addJurisdiction(['canada-ca'],[true],{from:attestor0});
+//       await template.addRoles([2],{from:attestor0}); 
+//       let status = await securityToken.addToWhitelist(customer1,{from: provider0});
+//       assert.isTrue(status.toString());
+//     });
 
-    it("addToWhitelist: should fail because kyc is not the msg.sender",async()=>{
-      try{
-      let status = await securityToken.addToWhitelist(customer1,{from: provider1});
-      } catch(error) {
-            Utils.ensureException(error);
-      }
-    });
+//     it("addToWhitelist: should fail because kyc is not the msg.sender",async()=>{
+//       try{
+//       let status = await securityToken.addToWhitelist(customer1,{from: provider1});
+//       } catch(error) {
+//             Utils.ensureException(error);
+//       }
+//     });
 
-    it('withdrawPoly: should fail to withdraw because of the current time is less than the endSTO + vesting periond',async()=>{
-      let delegateOfTemp = await securityToken.delegate.call();
-      try {
-          await securityToken.withdrawPoly({from:delegateOfTemp})
-      } catch(error) {
-          Utils.ensureException(error);
-      }
-    });
+//     it('withdrawPoly: should fail to withdraw because of the current time is less than the endSTO + vesting periond',async()=>{
+//       let delegateOfTemp = await securityToken.delegate.call();
+//       try {
+//           await securityToken.withdrawPoly({from:delegateOfTemp})
+//       } catch(error) {
+//           Utils.ensureException(error);
+//       }
+//     });
 
-    it('withdrawPoly: should successfully withdraw the poly',async()=>{
-      let delegateOfTemp = await st.delegate.call();
+//     it('withdrawPoly: should successfully withdraw the poly',async()=>{
+//       let delegateOfTemp = await st.delegate.call();
 
-      await increaseTime(2592000+vestingPeriod+3000);   // endDate-startdate = 2592000 , more 3000 sec to meet the block.timestamp 
+//       await increaseTime(2592000+vestingPeriod+3000);   // endDate-startdate = 2592000 , more 3000 sec to meet the block.timestamp 
 
-      let success = await securityToken.withdrawPoly({from:delegateOfTemp});
-      assert.isTrue(success.toString());
-      let delegateBalance = POLY.balanceOf.call(delegateOfTemp);
-      assert.strictEqual(delegateBalance.toNumber(),10000);
-    });
+//       let success = await securityToken.withdrawPoly({from:delegateOfTemp});
+//       assert.isTrue(success.toString());
+//       let delegateBalance = POLY.balanceOf.call(delegateOfTemp);
+//       assert.strictEqual(delegateBalance.toNumber(),10000);
+//     });
 
-    it('withdrawPoly: should successfully withdraw the poly',async()=>{
-      await increaseTime(2592000+vestingPeriod+3000);   // endDate-startdate = 2592000 , more 3000 sec to meet the block.timestamp 
-      try {
-        let success = await securityToken.withdrawPoly({from:customer1});
-      } catch(error) {
-        Ytils.ensureException(error);
-      }
-    });
+//     it('withdrawPoly: should successfully withdraw the poly',async()=>{
+//       await increaseTime(2592000+vestingPeriod+3000);   // endDate-startdate = 2592000 , more 3000 sec to meet the block.timestamp 
+//       try {
+//         let success = await securityToken.withdrawPoly({from:customer1});
+//       } catch(error) {
+//         Ytils.ensureException(error);
+//       }
+//     });
 
-  //////////////////////////// Test Suite SecurityToken ERC20 functions //////////////////////////////  
-  describe("all the transfers and other ERC20 protocol functions",async()=>{
-    it('transfer: ether directly to the token contract -- it will throw', async() => {
-      try {
-        await web3
-            .eth
-            .sendTransaction({
-                from: customer1,
-                to: securityToken.address,
-                value: web3.toWei('10', 'Ether')
-            });
-    } catch (error) {
-        return Utils.ensureException(error);
-    }
-});
-});
+//   //////////////////////////// Test Suite SecurityToken ERC20 functions //////////////////////////////  
+//   describe("all the transfers and other ERC20 protocol functions",async()=>{
+//     it('transfer: ether directly to the token contract -- it will throw', async() => {
+//       try {
+//         await web3
+//             .eth
+//             .sendTransaction({
+//                 from: customer1,
+//                 to: securityToken.address,
+//                 value: web3.toWei('10', 'Ether')
+//             });
+//     } catch (error) {
+//         return Utils.ensureException(error);
+//     }
+// });
+// });
 
 
 
