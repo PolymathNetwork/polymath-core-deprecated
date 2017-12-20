@@ -64,8 +64,8 @@ contract SecurityToken is IERC20 {
         uint256 yayVotes;
         uint256 yayPercent;
         bool frozen;
-        mapping (address => bool) votes;
     }
+    mapping(address => mapping (address => bool)) voted;
     mapping(address => Allocation) allocations;
 
 		// Security Token Offering statistics
@@ -234,7 +234,8 @@ contract SecurityToken is IERC20 {
         require(delegate != address(0));
         require(now > endSTO);
         require(now < endSTO + allocations[_recipient].vestingPeriod);
-        require(allocations[_recipient].votes[msg.sender] == false);
+        require(voted[msg.sender][_recipient] == false);
+        voted[msg.sender][_recipient] == true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
         if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
