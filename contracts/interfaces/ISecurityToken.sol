@@ -15,7 +15,7 @@
     @param _polyComplianceAddress Ethereum address of the PolyCompliance contract */
     function SecurityToken(
         string _name,
-        bytes32 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         uint256 _maxPoly,

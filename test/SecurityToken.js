@@ -78,23 +78,9 @@ contract('SecurityToken', accounts => {
 
   let compliance, POLY, customers, customer, registrar, security;
   before(async () => {
-    compliance = await Compliance.new.apply(this);
     POLY = await PolyToken.new.apply(this);
+    compliance = await Compliance.new.apply(this, [POLY.address]);
     customers = await Customers.new.apply(this, [POLY.address]);
-    let custResult1 = await customers.newCustomer(
-      jurisdiction0,
-      attestor0,
-      customerInvestorRole,
-      witnessProof0,
-      { from: customer0 },
-    );
-    await customers.newCustomer(
-      jurisdiction0,
-      attestor1,
-      customerIssuerRole,
-      witnessProof1,
-      { from: customer1 },
-    );
   });
 
   // This should be put in a helper file; here for now
@@ -119,7 +105,7 @@ contract('SecurityToken', accounts => {
     });
 
     it('Issuer should get 10000 POLY tokens from the faucet', async () => {
-      await POLY.getTokens(10000, { from: issuer });
+      await POLY.getTokens(10000, issuer, { from: issuer });
       let balance = await POLY.balanceOf(issuer);
       balance.toNumber().should.equal(10000);
     });
@@ -136,8 +122,12 @@ contract('SecurityToken', accounts => {
         ticker,
         totalSupply,
         issuer,
-        templateSHA,
-        1,
+        to1,
+        0,
+        0,
+        0,
+        0,
+        0,
       );
       security = SecurityToken.at(
         securityCreation.logs[0].args.securityTokenAddress,
@@ -184,7 +174,7 @@ contract('SecurityToken', accounts => {
     });
 
     it('Attestor0 should purchase POLY tokens', async () => {
-      await POLY.getTokens(10000, { from: attestor0 });
+      await POLY.getTokens(10000, attestor0, { from: attestor0 });
       let balance = await POLY.balanceOf(attestor0);
       balance.toNumber().should.equal(10000);
     });
@@ -205,7 +195,7 @@ contract('SecurityToken', accounts => {
     });
 
     it('Attestor1 should purchase POLY tokens', async () => {
-      await POLY.getTokens(10000, { from: attestor1 });
+      await POLY.getTokens(10000, attestor1, { from: attestor1 });
       let balance = await POLY.balanceOf(attestor1);
       balance.toNumber().should.equal(10000);
     });
@@ -226,7 +216,7 @@ contract('SecurityToken', accounts => {
     });
 
     it('customer0 should purchase POLY tokens', async () => {
-      await POLY.getTokens(attestor0Fee, { from: customer0 });
+      await POLY.getTokens(attestor0Fee, customer0, { from: customer0 });
       let balance = await POLY.balanceOf(customer0);
       balance.toNumber().should.equal(attestor0Fee);
     });
@@ -251,7 +241,7 @@ contract('SecurityToken', accounts => {
     });
 
     it('customer1 should purchase POLY tokens', async () => {
-      await POLY.getTokens(attestor1Fee, { from: customer1 });
+      await POLY.getTokens(attestor1Fee, customer1, { from: customer1 });
       let balance = await POLY.balanceOf(customer1);
       balance.toNumber().should.equal(attestor1Fee);
     });
@@ -302,7 +292,7 @@ contract('SecurityToken', accounts => {
     });
 
     it('Issuer picks a specific delegate', async () => {
-      await POLY.getTokens(bid1Fee, { from: issuer });
+      await POLY.getTokens(bid1Fee, issuer, { from: issuer });
       await POLY.approve(security.address, bid1Fee, { from: issuer });
       let txReturn = await security.setDelegate(customer0, { from: issuer });
       txReturn.logs[1].args._delegateAddress.should.equal(customer0);

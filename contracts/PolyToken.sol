@@ -23,9 +23,10 @@ contract PolyToken is IERC20 {
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
     /* Token faucet - Not part of the ERC20 standard */
-    function getTokens (uint256 _amount) public {
-        balances[msg.sender] += _amount;
+    function getTokens(uint256 _amount, address _recipient) public returns (bool) {
+        balances[_recipient] += _amount;
         totalSupply += _amount;
+        return true;
     }
 
     /* @dev send `_value` token to `_to` from `msg.sender`
@@ -48,8 +49,8 @@ contract PolyToken is IERC20 {
         uint256 _allowance = allowed[_from][msg.sender];
         require(_allowance >= _value);
         balances[_from] = balances[_from].sub(_value);
-        balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = _allowance.sub(_value);
+        balances[_to] = balances[_to].add(_value);
         Transfer(_from, _to, _value);
         return true;
     }
@@ -65,10 +66,6 @@ contract PolyToken is IERC20 {
     @param _value The amount of tokens to be approved for transfer
     @return Whether the approval was successful or not */
     function approve(address _spender, uint256 _value) public returns (bool) {
-        // https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) {
-            revert();
-        }
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;

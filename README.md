@@ -16,10 +16,10 @@ compliant securities tokens on a decentralized blockchain.
 
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)                           | [0x3f96ecda042ea751723055c61386b74c5761788a](https://ropsten.etherscan.io/address/0x3f96ecda042ea751723055c61386b74c5761788a) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0xf4628db23d1c10d430711e0e87e6c2c9fc36ca1d](https://ropsten.etherscan.io/address/0xf4628db23d1c10d430711e0e87e6c2c9fc36ca1d) |
-| [Compliance](./contracts/Compliance.sol)                         | [0xc674589e8ce96d387e3e723230770c5cff70855a](https://ropsten.etherscan.io/address/0xc674589e8ce96d387e3e723230770c5cff70855a) |
-| [Customers](./contracts/Customers.sol)                           | [0x7acb323507baa7f41d2fe4632bd0b429deb810a0](https://ropsten.etherscan.io/address/0x7acb323507baa7f41d2fe4632bd0b429deb810a0) |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0xe0568e7158dd961b63b4d733df3db5749fa73bb8](https://ropsten.etherscan.io/address/0xe0568e7158dd961b63b4d733df3db5749fa73bb8) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x6ebecdeddac4698a1fa8c7164b967a600cee1b49](https://ropsten.etherscan.io/address/0x6ebecdeddac4698a1fa8c7164b967a600cee1b49) |
+| [Customers](./contracts/Customers.sol)                           | [0x5a918a1689bb80c1c11220958dd8a98f25394e76](https://ropsten.etherscan.io/address/0x5a918a1689bb80c1c11220958dd8a98f25394e76) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x941e9d669db4bfc61d290760fcf571da077555b5](https://ropsten.etherscan.io/address/0x941e9d669db4bfc61d290760fcf571da077555b5) |
 
 ## Setup
 
