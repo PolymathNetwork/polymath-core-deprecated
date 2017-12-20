@@ -66,7 +66,7 @@ contract SecurityToken is IERC20 {
         bool frozen;
     }
     mapping(address => Allocation) allocations;
-    mapping(address => mapping(address => bool)) votes;
+    mapping(address => mapping (address => bool)) votes;
 
 		// Security Token Offering statistics
     mapping (address => uint256) contributedToSTO;
