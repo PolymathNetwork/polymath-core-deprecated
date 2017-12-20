@@ -221,7 +221,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
     describe('SecurityToken: Should create the security token successfully',async()=>{
       it("Constructor verify the parameters",async()=>{
         let symbol = await securityToken.symbol.call();
-        assert.strictEqual(convertHex(symbol),ticker);
+        assert.strictEqual(symbol.toString(),ticker);
         
         let securityOwner = await securityToken.owner();
         assert.equal(securityOwner,owner);
