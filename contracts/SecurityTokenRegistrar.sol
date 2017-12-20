@@ -20,7 +20,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     struct SecurityTokenData {
       uint256 totalSupply;
       address owner;
-      bytes8 ticker;
       string ticker;
       uint8 securityType;
     }
@@ -80,6 +79,13 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         polyTokenAddress,
         polyCustomersAddress,
         polyComplianceAddress
+      );
+      tickers[_ticker] = newSecurityTokenAddress;
+      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
+        _totalSupply,
+        _owner,
+        _ticker,
+        _type
       );
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
     }

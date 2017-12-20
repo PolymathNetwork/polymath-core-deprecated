@@ -111,94 +111,109 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       POLY = await PolyToken.new();
       customers = await Customers.new(POLY.address);
       compliance = await Compliance.new(customers.address);  
-      STRegistrar = await Registrar.new(POLY.address,customers.address,compliance.address);
+      STRegistrar = await Registrar.new(
+        POLY.address,
+        customers.address,
+        compliance.address
+      );
       
-      await POLY.getTokens(1000000,{from:provider0});
-      await POLY.approve(customers.address,100000,{from:provider0});
+      await POLY.getTokens(1000000, provider0, { from : provider0 });
+      await POLY.approve(customers.address,100000, { from : provider0 });
 
-      await customers.newProvider(provider0,providerName0,providerApplication0,providerFee0); 
+      await customers.newProvider(
+        provider0,
+        providerName0,
+        providerApplication0,
+        providerFee0
+      ); 
       
-      await POLY.getTokens(100000,{from:customer0});  
-      await POLY.approve(customers.address,10000,{from:customer0});
+      await POLY.getTokens(100000, customer0, { from : customer0 });  
+      await POLY.approve(customers.address, 10000, { from : customer0 });
 
       await customers.verifyCustomer(
-                                    customer0,
-                                    jurisdiction0,
-                                    customerIssuerRole,
-                                    true,
-                                    expcurrentTime + 172800,         // 2 days more than current time
-                                    {
-                                        from:provider0
-                                    });
+          customer0,
+          jurisdiction0,
+          customerIssuerRole,
+          true,
+          expcurrentTime + 172800,         // 2 days more than current time
+          {
+              from:provider0
+      });
 
-      await POLY.getTokens(1000000,{from:provider1});
-      await POLY.approve(customers.address,100000,{from:provider1});
+      await POLY.getTokens(1000000, provider1, { from : provider1 });
+      await POLY.approve(customers.address, 100000, { from : provider1 });
 
-      await customers.newProvider(provider1,providerName1,providerApplication1,providerFee1); 
+      await customers.newProvider(
+        provider1,
+        providerName1,
+        providerApplication1,
+        providerFee1
+      ); 
       
-      await POLY.getTokens(10000,{from:customer1});  
-      await POLY.approve(customers.address,10000,{from:customer1});
+      await POLY.getTokens(10000, customer1, { from : customer1 });  
+      await POLY.approve(customers.address, 10000, { from : customer1 });
       
       await customers.verifyCustomer(
-                                            customer1,
-                                            jurisdiction1,
-                                            customerInvestorRole,
-                                            true,
-                                            expcurrentTime + 172800,         // 2 days more than current time
-                                            {
-                                                from:provider0
-                                          });
+          customer1,
+          jurisdiction1,
+          customerInvestorRole,
+          true,
+          expcurrentTime + 172800,         // 2 days more than current time
+          {
+              from:provider0
+      });
 
       let data = await customers.getCustomer(provider0,customer1);
 
-      await POLY.getTokens(10000,{from:attestor0});  
-      await POLY.approve(customers.address,10000,{from:attestor0});
+      await POLY.getTokens(10000, attestor0, { from : attestor0 });  
+      await POLY.approve(customers.address, 10000, { from : attestor0 });
 
       await customers.verifyCustomer(
-                                          attestor0,
-                                          jurisdiction1,
-                                          delegateRole,
-                                          true,
-                                          expcurrentTime + 172800,         // 2 days more than current time
-                                          {
-                                              from:provider0
-                                        });
+          attestor0,
+          jurisdiction1,
+          delegateRole,
+          true,
+          expcurrentTime + 172800,         // 2 days more than current time
+          {
+              from:provider0
+      });
 
-      await POLY.approve(STRegistrar.address,1000,{from:customer0});
-      let allowedToken = await POLY.allowance(customer0,STRegistrar.address);
-      assert.strictEqual(allowedToken.toNumber(),1000);
+      await POLY.approve(STRegistrar.address, 1000, { from : customer0 });
+      let allowedToken = await POLY.allowance(customer0, STRegistrar.address);
+      assert.strictEqual(allowedToken.toNumber(), 1000);
 
       let st = await STRegistrar.createSecurityToken(
-                                        name,
-                                        ticker,
-                                        totalSupply,
-                                        owner,
-                                        host,
-                                        fee,
-                                        type,
-                                        maxPoly,
-                                        lockupPeriod,
-                                        quorum,
-                                        {
-                                          from : customer0
-                                        }
-                                      );  
+          name,
+          ticker,
+          totalSupply,
+          owner,
+          host,
+          fee,
+          type,
+          maxPoly,
+          lockupPeriod,
+          quorum,
+          {
+            from : customer0
+          }
+      );  
+
       STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
       securityToken = await SecurityToken.at(STAddress);
 
       let templateCreated = await compliance.createTemplate(
-                                        offeringType,
-                                        issuerJurisdiction,
-                                        accredited,
-                                        provider0,
-                                        details,
-                                        expires,
-                                        fee,
-                                        quorum,
-                                        vestingPeriod,
-                                        {
-                                          from:attestor0
-                                        });
+          offeringType,
+          issuerJurisdiction,
+          accredited,
+          provider0,
+          details,
+          expires,
+          fee,
+          quorum,
+          vestingPeriod,
+          {
+            from:attestor0
+      });
         templateAddress = templateCreated.logs[0].args._template
       
     });
@@ -221,18 +236,18 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
 
     it("selectTemplate: should owner of token can select the template",async()=>{
       let proposeTemplate = await compliance.proposeTemplate(STAddress,templateAddress,{from:attestor0});
-      await POLY.getTokens(100000,{from:owner});
-      await POLY.transfer(STAddress,10000,{from:owner}); 
-      let template = await securityToken.selectTemplate(tempIndex,{from:owner}); 
+      await POLY.getTokens(100000, owner, { from : owner });
+      await POLY.transfer(STAddress, 10000, { from : owner }); 
+      let template = await securityToken.selectTemplate(tempIndex, { from : owner }); 
       let data = await securityToken.getTokenDetails();
-      assert.strictEqual(data[0],templateAddress);
+      assert.strictEqual(data[0], templateAddress);
     });
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
-      let isSTOAdded = await compliance.setSTO(stoContract,stoFee,vestingPeriod,quorum,{from:customer0});
-      let response = await compliance.proposeOfferingContract(STAddress , stoContract,{from:customer0});
+      let isSTOAdded = await compliance.setSTO(stoContract, stoFee, vestingPeriod, quorum, { from : customer0 });
+      let response = await compliance.proposeOfferingContract(STAddress , stoContract, { from : customer0 });
       let delegateOfTemp = await securityToken.delegate.call();
-      let success = await securityToken.selectOfferingProposal(0,startTime,endTime,{from: delegateOfTemp});
+      let success = await securityToken.selectOfferingProposal(0, startTime, endTime,{ from: delegateOfTemp });
       assert.isTrue(success.toString());                                                      
     });
 
@@ -296,15 +311,15 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
         return Utils.ensureException(error);
     }
 });
-
-// it('transfer: should transfer 10000 to customer1 from issuer', async() => {
-//     let = await st.addToWhitelist() 
-//     await st.transfer(accounts[8], new BigNumber(10000).times(new BigNumber(10).pow(18)), {from: crowdfundAddress});
-//     let balance = await token
-//         .balanceOf
-//         .call(accounts[8]);
-//     assert.strictEqual(balance.dividedBy(new BigNumber(10).pow(18)).toNumber(), 10000);
-// });
+});
+it('transfer: should transfer 10000 to customer1 from issuer', async() => {
+    let = await securityToken.addToWhitelist() 
+    await securityToken.transfer(accounts[8], new BigNumber(10000).times(new BigNumber(10).pow(18)), {from: issuer});
+    let balance = await token
+        .balanceOf
+        .call(accounts[8]);
+    assert.strictEqual(balance.dividedBy(new BigNumber(10).pow(18)).toNumber(), 10000);
+});
 
 
 
