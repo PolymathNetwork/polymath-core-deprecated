@@ -24,5 +24,5 @@ interface ISTRegistrar {
         uint256 _polyRaise,
         uint256 _lockupPeriod,
         uint8 _quorum
-    ) external;
+    ) public;
 }

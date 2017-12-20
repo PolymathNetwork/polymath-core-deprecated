@@ -7,7 +7,7 @@ pragma solidity ^0.4.18;
 */
 
 import './interfaces/ISTRegistrar.sol';
-import './PolyToken.sol';
+import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
 
 contract SecurityTokenRegistrar is ISTRegistrar {
@@ -64,10 +64,10 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint256 _maxPoly,
       uint256 _lockupPeriod,
       uint8 _quorum
-    ) external
+    ) public
     {
-      PolyToken POLY = PolyToken(polyTokenAddress);
-      require(POLY.transferFrom(msg.sender, _host, _fee));
+      IERC20 POLY = IERC20(polyTokenAddress);
+      POLY.transferFrom(msg.sender, _host, _fee);
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
