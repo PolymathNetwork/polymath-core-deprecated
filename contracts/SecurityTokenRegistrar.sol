@@ -6,8 +6,8 @@ pragma solidity ^0.4.18;
   registrar.
 */
 
-import './interfaces/IERC20.sol';
 import './interfaces/ISTRegistrar.sol';
+import './PolyToken.sol';
 import './SecurityToken.sol';
 
 contract SecurityTokenRegistrar is ISTRegistrar {
@@ -20,25 +20,16 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     struct SecurityTokenData {
       uint256 totalSupply;
       address owner;
-<<<<<<< HEAD
       bytes8 ticker;
-=======
-      bytes32 ticker;
->>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
+      string ticker;
       uint8 securityType;
     }
     mapping(address => SecurityTokenData) securityTokens;
 
     // Mapping of ticker name to Security Token
-<<<<<<< HEAD
-    mapping(bytes8 => address) tickers;
+    mapping(string => address) tickers;
 
-    event LogNewSecurityToken(bytes8 ticker, address securityTokenAddress, address owner);
-=======
-    mapping(bytes32 => address) tickers;
-
-    event LogNewSecurityToken(bytes32 ticker, address securityTokenAddress, address owner);
->>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
+    event LogNewSecurityToken(string ticker, address securityTokenAddress, address owner, address host, uint256 fee, uint8 _type);
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -65,7 +56,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
       string _name,
-      bytes32 _ticker,
+      string _ticker,
       uint256 _totalSupply,
       address _owner,
       address _host,
@@ -76,10 +67,8 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint8 _quorum
     ) external
     {
-      require(_owner != address(0));
-      require(tickers[_ticker] == address(0));
-      require(_totalSupply > 0 && _totalSupply < 2**256 - 1);
-      require(IERC20(polyTokenAddress).transferFrom(msg.sender, _host, _fee));
+      PolyToken POLY = PolyToken(polyTokenAddress);
+      require(POLY.transferFrom(msg.sender, _host, _fee));
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
@@ -92,17 +81,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         polyCustomersAddress,
         polyComplianceAddress
       );
-      securityTokens[newSecurityTokenAddress] = SecurityTokenData(_totalSupply, _owner, _ticker, _type);
-      tickers[_ticker] = newSecurityTokenAddress;
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner);
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
     }
 
     // Get security token address by ticker name
-<<<<<<< HEAD
-    function getSecurityTokenAddress(bytes8 _ticker) public constant returns (address) {
-=======
-    function getSecurityTokenAddress(bytes32 _ticker) public constant returns (address) {
->>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
+    function getSecurityTokenAddress(string _ticker) public constant returns (address) {
       return tickers[_ticker] ;
     }
 
@@ -110,11 +93,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     function getSecurityTokenData(address _STAddress) public constant returns (
       uint256 totalSupply,
       address owner,
-<<<<<<< HEAD
-      bytes8 ticker,
-=======
-      bytes32 ticker,
->>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
+      string ticker,
       uint8 securityType
     ) {
       return (

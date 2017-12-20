@@ -1,7 +1,9 @@
 //this thing is essentially coded in full for a quick once over, not perfect but should be 80% i hope - dave nov 3
 
-const Utils = require('./helpers/Utils');
-const SecurityTokenRegistrar = artifacts.require('./SecurityTokenRegistrar.sol');
+import expectRevert from './helpers/expectRevert';
+const SecurityTokenRegistrar = artifacts.require(
+  './SecurityTokenRegistrar.sol',
+);
 const SecurityToken = artifacts.require('../contracts/SecurityToken.sol');
 const POLY = artifacts.require('./PolyToken.sol');
 const Compliance = artifacts.require('./Compliance.sol');
@@ -37,11 +39,15 @@ contract('SecurityTokenRegistrar', accounts => {
 
   describe('Constructor', async () => {
     it('should have polyTokenAddress updated to contract storage', async () => {
-        let polyToken = await POLY.new();
-        let polyCompliance = await Compliance.new(polyCustomerAddress);
-        let STRegistrar = await SecurityTokenRegistrar.new(polyToken.address,polyCustomerAddress,polyCompliance.address);
-        let PTAddress = await STRegistrar.polyTokenAddress.call();
-        assert.strictEqual(PTAddress,polyToken.address);
+      let polyToken = await POLY.new();
+      let polyCompliance = await Compliance.new(polyCustomerAddress);
+      let STRegistrar = await SecurityTokenRegistrar.new(
+        polyToken.address,
+        polyCustomerAddress,
+        polyCompliance.address,
+      );
+      let PTAddress = await STRegistrar.polyTokenAddress.call();
+      assert.strictEqual(PTAddress, polyToken.address);
     });
   });
 
@@ -60,23 +66,24 @@ contract('SecurityTokenRegistrar', accounts => {
       assert.strictEqual(allowedToken.toNumber(),approvedAmount);
       
       let ST = await STRegistrar.createSecurityToken(
-                                name,
-                                ticker,
-                                totalSupply,
-                                owner,
-                                host,
-                                createSecurityTokenFee,
-                                numberOfSecurityTypes,
-                                polyRaise,
-                                lockupPeriod,
-                                quorum,
-                                {
-                                  from : issuer1
-                                });
+        name,
+        ticker,
+        totalSupply,
+        owner,
+        host,
+        createSecurityTokenFee,
+        numberOfSecurityTypes,
+        polyRaise,
+        lockupPeriod,
+        quorum,
+        {
+          from: issuer1,
+        },
+      );
       let STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
-      assert.notEqual(STAddress,0);
+      assert.notEqual(STAddress, 0);
       let STData = await STRegistrar.getSecurityTokenData.call(STAddress);
-      assert.strictEqual(STData[0].toNumber(),totalSupply);
+      assert.strictEqual(STData[0].toNumber(), totalSupply);
     });
 
     describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {

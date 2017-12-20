@@ -15,7 +15,7 @@ interface ISTRegistrar {
     @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
         string _name,
-        bytes32 _ticker,
+        string _ticker,
         uint256 _totalSupply,
         address _owner,
         address _host,
