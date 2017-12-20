@@ -14,12 +14,12 @@ compliant securities tokens on a decentralized blockchain.
 
 ## Live on Ropsten testnet
 
-| Contract                                         | Address                                                                                                                       |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)           | [0x80423da869f0121a31f73597aaa7fbddd231d8e7](https://ropsten.etherscan.io/address/0x80423da869f0121a31f73597aaa7fbddd231d8e7) |
-| [SecurityTokens](./contracts/SecurityTokens.sol) | [0x323121a1728ceaa1ac44dd57ecf519277d888244](https://ropsten.etherscan.io/address/0x323121a1728ceaa1ac44dd57ecf519277d888244) |
-| [Compliance](./contracts/Compliance.sol)         | [0x1deaf332c28bb6481ca7b2fa4b08faaa9900bcd4](https://ropsten.etherscan.io/address/0x1deaf332c28bb6481ca7b2fa4b08faaa9900bcd4) |
-| [Customers](./contracts/Customers.sol)           | [0x6266f2ee059ed8eb301b16cc845f34de2780133f](https://ropsten.etherscan.io/address/0x6266f2ee059ed8eb301b16cc845f34de2780133f) |
+| Contract                                                         | Address                                                                                                                       |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0x3f96ecda042ea751723055c61386b74c5761788a](https://ropsten.etherscan.io/address/0x3f96ecda042ea751723055c61386b74c5761788a) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0xf4628db23d1c10d430711e0e87e6c2c9fc36ca1d](https://ropsten.etherscan.io/address/0xf4628db23d1c10d430711e0e87e6c2c9fc36ca1d) |
+| [Compliance](./contracts/Compliance.sol)                         | [0xc674589e8ce96d387e3e723230770c5cff70855a](https://ropsten.etherscan.io/address/0xc674589e8ce96d387e3e723230770c5cff70855a) |
+| [Customers](./contracts/Customers.sol)                           | [0x7acb323507baa7f41d2fe4632bd0b429deb810a0](https://ropsten.etherscan.io/address/0x7acb323507baa7f41d2fe4632bd0b429deb810a0) |
 
 ## Setup
 

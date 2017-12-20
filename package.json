@@ -2,7 +2,7 @@
   "name": "polymath-core",
   "author": "Polymath Inc.",
   "license": "MIT",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Polymath Network Core Smart Contracts",
   "repository": "git@github.com:PolymathNetwork/polymath-core.git",
   "homepage": "https://github.com/polymathnetwork/polymath-core",
@@ -11,8 +11,8 @@
   },
   "main": "truffle.js",
   "scripts": {
-    "test": "testrpc & truffle test",
-    "compile": "truffle compile",
+    "test": "testrpc -l 15000000 & truffle test",
+    "compile": "truffle compile --optimize-runs 200",
     "migrate-local": "truffle migrate --network=local --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten",
     "flatten": "sol-merger './contracts/*.sol' ./flat"
