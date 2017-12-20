@@ -124,6 +124,25 @@ contract('Customers', (accounts) => {
             }
         });
 
+        it('kyc providers apply their data to chain -- fail because of zero details',async()=>{
+            let poly = await POLY.new();
+            let customers = await Customers.new(poly.address);
+
+            await poly.getTokens(1000000,{from:provider1});
+            let providerBalance = await poly.balanceOf.call(provider1);
+            assert.strictEqual(providerBalance.toNumber(),1000000);
+
+            await poly.approve(customers.address,100000,{from:provider1});
+            let allowedToken = await poly.allowance.call(provider1,customers.address);
+            assert.strictEqual(allowedToken.toNumber(),100000);
+
+            try {                
+                await customers.newProvider(provider1,providerName1,0,providerFee1);
+           } catch(error) {
+                Utils.ensureException(error);
+            }
+        });
+
         it('kyc providers apply their data to chain -- fail because of less balance',async()=>{
             let poly = await POLY.new();
             let customers = await Customers.new(poly.address);
