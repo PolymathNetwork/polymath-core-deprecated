@@ -6,7 +6,7 @@ module.exports = {
     development: {
       host: 'localhost',
       port: 8545,
-      gas: 6700000,
+      gas: 15e6,
       gasPrice: 0x01,
       network_id: '*',
     },
@@ -15,7 +15,7 @@ module.exports = {
       port: 1337,
       network_id: '3',
       from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
-      gas: 4512388,
+      gas: 4.612e6,
     },
     coverage: {
       host: 'localhost',
