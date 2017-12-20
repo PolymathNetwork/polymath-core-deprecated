@@ -312,14 +312,6 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
     }
 });
 });
-it('transfer: should transfer 10000 to customer1 from issuer', async() => {
-    let = await securityToken.addToWhitelist() 
-    await securityToken.transfer(accounts[8], new BigNumber(10000).times(new BigNumber(10).pow(18)), {from: issuer});
-    let balance = await token
-        .balanceOf
-        .call(accounts[8]);
-    assert.strictEqual(balance.dividedBy(new BigNumber(10).pow(18)).toNumber(), 10000);
-});
 
 
 
