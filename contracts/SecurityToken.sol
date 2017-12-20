@@ -185,7 +185,7 @@ contract SecurityToken is IERC20 {
     {
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
-        require(complianceProof != 0);
+        require(complianceProof != 0x0);
         require(delegate != address(0));
         require(_startTime > now && _endTime > _startTime);
         require(POLY.balanceOf(this) >= allocations[delegate].amount + _fee);

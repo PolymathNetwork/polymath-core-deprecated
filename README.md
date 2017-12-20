@@ -16,10 +16,10 @@ compliant securities tokens on a decentralized blockchain.
 
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)                           | [0xea32405c6200760dc968cdf5dcda0c3133f1306c](https://ropsten.etherscan.io/address/0xea32405c6200760dc968cdf5dcda0c3133f1306c) |
-| [Compliance](./contracts/Compliance.sol)                         | [0xd3cd840ad79eae8a06dccbe4bff99761a2973f61](https://ropsten.etherscan.io/address/0xd3cd840ad79eae8a06dccbe4bff99761a2973f61) |
-| [Customers](./contracts/Customers.sol)                           | [0x34f8732d296e110eb0938b2e712673216571a64f](https://ropsten.etherscan.io/address/0x34f8732d296e110eb0938b2e712673216571a64f) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0xd126acbdc2ae4aa5b58ae5c9d9fe8289300bf613](https://ropsten.etherscan.io/address/0xd126acbdc2ae4aa5b58ae5c9d9fe8289300bf613) |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0xb5173fdf0b21169b33788390465522a0ca184c84](https://ropsten.etherscan.io/address/0xb5173fdf0b21169b33788390465522a0ca184c84) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x23f2358b374ee529a3726a5e6186be66805f9cce](https://ropsten.etherscan.io/address/0x23f2358b374ee529a3726a5e6186be66805f9cce) |
+| [Customers](./contracts/Customers.sol)                           | [0xfd4bd5029a21e2749e07c877e62e0f49c3e9e01b](https://ropsten.etherscan.io/address/0xfd4bd5029a21e2749e07c877e62e0f49c3e9e01b) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x33c706a015fc3a4b92dc4462cd51dfe208a50187](https://ropsten.etherscan.io/address/0x33c706a015fc3a4b92dc4462cd51dfe208a50187) |
 
 ## Setup
 

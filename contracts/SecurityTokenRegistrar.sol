@@ -23,10 +23,10 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       string ticker;
       uint8 securityType;
     }
-    mapping(address => SecurityTokenData) securityTokens;
+    mapping (address => SecurityTokenData) securityTokens;
 
     // Mapping of ticker name to Security Token
-    mapping(string => address) tickers;
+    mapping (string => address) tickers;
 
     event LogNewSecurityToken(string ticker, address securityTokenAddress, address owner, address host, uint256 fee, uint8 _type);
 
@@ -67,7 +67,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     ) external
     {
       PolyToken POLY = PolyToken(polyTokenAddress);
-      require(POLY.transferFrom(_owner, _host, _fee));
+      POLY.transferFrom(_owner, _host, _fee);
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
@@ -92,7 +92,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
 
     // Get security token address by ticker name
     function getSecurityTokenAddress(string _ticker) public constant returns (address) {
-      return tickers[_ticker] ;
+      return tickers[_ticker];
     }
 
     // Get Security token details by its ethereum address
