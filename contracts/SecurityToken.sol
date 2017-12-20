@@ -29,7 +29,11 @@ contract SecurityToken is IERC20 {
     // ERC20 Fields
     string public name;
     uint8 public decimals;
+<<<<<<< HEAD
     bytes8 public symbol;
+=======
+    bytes32 public symbol;
+>>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
     address public owner;
     uint256 public totalSupply;
     mapping (address => mapping (address => uint256)) allowed;
@@ -117,7 +121,7 @@ contract SecurityToken is IERC20 {
     @param _polyComplianceAddress Ethereum address of the PolyCompliance contract */
     function SecurityToken(
         string _name,
-        bytes8 _ticker,
+        bytes32 _ticker,
         uint256 _totalSupply,
         address _owner,
         uint256 _maxPoly,

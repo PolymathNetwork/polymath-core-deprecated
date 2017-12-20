@@ -20,15 +20,25 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     struct SecurityTokenData {
       uint256 totalSupply;
       address owner;
+<<<<<<< HEAD
       bytes8 ticker;
+=======
+      bytes32 ticker;
+>>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
       uint8 securityType;
     }
     mapping(address => SecurityTokenData) securityTokens;
 
     // Mapping of ticker name to Security Token
+<<<<<<< HEAD
     mapping(bytes8 => address) tickers;
 
     event LogNewSecurityToken(bytes8 ticker, address securityTokenAddress, address owner);
+=======
+    mapping(bytes32 => address) tickers;
+
+    event LogNewSecurityToken(bytes32 ticker, address securityTokenAddress, address owner);
+>>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -55,7 +65,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     @param _quorum Percent of initial investors required to freeze POLY raise */
     function createSecurityToken (
       string _name,
-      bytes8 _ticker,
+      bytes32 _ticker,
       uint256 _totalSupply,
       address _owner,
       address _host,
@@ -88,7 +98,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     }
 
     // Get security token address by ticker name
+<<<<<<< HEAD
     function getSecurityTokenAddress(bytes8 _ticker) public constant returns (address) {
+=======
+    function getSecurityTokenAddress(bytes32 _ticker) public constant returns (address) {
+>>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
       return tickers[_ticker] ;
     }
 
@@ -96,7 +110,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     function getSecurityTokenData(address _STAddress) public constant returns (
       uint256 totalSupply,
       address owner,
+<<<<<<< HEAD
       bytes8 ticker,
+=======
+      bytes32 ticker,
+>>>>>>> 245d86ba954fd4fdf701e9eb26daf3299576acb4
       uint8 securityType
     ) {
       return (
