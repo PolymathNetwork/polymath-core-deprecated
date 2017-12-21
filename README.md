@@ -16,10 +16,10 @@ compliant securities tokens on a decentralized blockchain.
 
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)                           | [0xb5173fdf0b21169b33788390465522a0ca184c84](https://ropsten.etherscan.io/address/0xb5173fdf0b21169b33788390465522a0ca184c84) |
-| [Compliance](./contracts/Compliance.sol)                         | [0x23f2358b374ee529a3726a5e6186be66805f9cce](https://ropsten.etherscan.io/address/0x23f2358b374ee529a3726a5e6186be66805f9cce) |
-| [Customers](./contracts/Customers.sol)                           | [0xfd4bd5029a21e2749e07c877e62e0f49c3e9e01b](https://ropsten.etherscan.io/address/0xfd4bd5029a21e2749e07c877e62e0f49c3e9e01b) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x33c706a015fc3a4b92dc4462cd51dfe208a50187](https://ropsten.etherscan.io/address/0x33c706a015fc3a4b92dc4462cd51dfe208a50187) |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0x92b95e0b0ff21e9398785e9df2265e4137c930f2](https://ropsten.etherscan.io/address/0x92b95e0b0ff21e9398785e9df2265e4137c930f2) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x0205f8c4f4ca1c7c1b092185862c0e54a8dc416e](https://ropsten.etherscan.io/address/0x0205f8c4f4ca1c7c1b092185862c0e54a8dc416e) |
+| [Customers](./contracts/Customers.sol)                           | [0x63be77433197d191e64b92981a444fe5fc157097](https://ropsten.etherscan.io/address/0x63be77433197d191e64b92981a444fe5fc157097) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x22e73631cbcf68150fdd8b62065499f96acb9aaa](https://ropsten.etherscan.io/address/0x22e73631cbcf68150fdd8b62065499f96acb9aaa) |
 
 ## Setup
 

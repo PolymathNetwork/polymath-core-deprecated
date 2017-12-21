@@ -48,7 +48,7 @@ contract Template is ITemplate {
     address owner;
     string offeringType;
     bytes32 issuerJurisdiction;
-    mapping (bytes32 => bool) allowedJurisdictions;
+    mapping(bytes32 => bool) allowedJurisdictions;
     bool[] allowedRoles;
     bool accredited;
     address KYC;
