@@ -73,7 +73,7 @@ contract('SecurityTokenRegistrar', accounts => {
         name,
         ticker,
         totalSupply,
-        owner,
+        issuer1,
         host,
         createSecurityTokenFee,
         numberOfSecurityTypes,
@@ -111,7 +111,7 @@ contract('SecurityTokenRegistrar', accounts => {
                       name,
                       ticker,
                       totalSupply,
-                      owner,
+                      issuer1,
                       host,
                       createSecurityTokenFee,
                       numberOfSecurityTypes,
@@ -146,7 +146,7 @@ contract('SecurityTokenRegistrar', accounts => {
                       name,
                       ticker,
                       totalSupply,
-                      owner,
+                      issuer1,
                       host,
                       createSecurityTokenFee,
                       numberOfSecurityTypes,
@@ -192,7 +192,7 @@ contract('SecurityTokenRegistrar', accounts => {
                                   name,
                                   ticker,
                                   totalSupply,
-                                  owner,
+                                  issuer1,
                                   host,
                                   createSecurityTokenFee,
                                   numberOfSecurityTypes,
@@ -209,7 +209,7 @@ contract('SecurityTokenRegistrar', accounts => {
                                   name,
                                   ticker,
                                   totalSupply,
-                                  owner,
+                                  issuer2,
                                   host,
                                   createSecurityTokenFee,
                                   numberOfSecurityTypes,
@@ -241,16 +241,14 @@ contract('SecurityTokenRegistrar', accounts => {
                                         name,
                                         ticker,
                                         totalSupply,
-                                        owner,
+                                        issuer1,
                                         host,
                                         createSecurityTokenFee,
                                         numberOfSecurityTypes,
                                         polyRaise,
                                         lockupPeriod,
                                         quorum,
-                                        {
-                                          from : issuer1
-                                  });
+                                       );
         } catch(error) {
             Utils.ensureException(error);
         }
@@ -272,16 +270,14 @@ contract('SecurityTokenRegistrar', accounts => {
                                         name,
                                         ticker,
                                         totalSupply,
-                                        owner,
+                                        issuer1,
                                         host,
                                         createSecurityTokenFee,
                                         numberOfSecurityTypes,
                                         polyRaise,
                                         lockupPeriod,
                                         quorum,
-                                        {
-                                          from : issuer1
-                                  });
+                                        );
         } catch(error) {
             Utils.ensureException(error);
         }

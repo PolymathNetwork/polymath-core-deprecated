@@ -118,7 +118,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       );
       
       await POLY.getTokens(1000000, provider0, { from : provider0 });
-      await POLY.approve(customers.address,100000, { from : provider0 });
+      await POLY.approve(customers.address, 100000, { from : provider0 });
 
       await customers.newProvider(
         provider0,
@@ -178,8 +178,9 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
               from:provider0
       });
 
-      await POLY.approve(STRegistrar.address, 1000, { from : customer0 });
-      let allowedToken = await POLY.allowance(customer0, STRegistrar.address);
+      await POLY.getTokens(100000, owner, { from : owner });
+      await POLY.approve(STRegistrar.address, 1000, { from : owner });
+      let allowedToken = await POLY.allowance(owner, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(), 1000);
 
       let st = await STRegistrar.createSecurityToken(
@@ -193,9 +194,6 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
           maxPoly,
           lockupPeriod,
           quorum,
-          {
-            from : customer0
-          }
       );  
 
       STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
