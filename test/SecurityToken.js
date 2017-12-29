@@ -95,16 +95,6 @@ contract('SecurityToken', accounts => {
   let stoContract = 0x81399dd18c7985a016eb2bb0a1f6aabf0745d557;
   let stoFee = 150;
  
-  // This should be put in a helper file; here for now
-  function convertHex(hexx) {
-    var hex = hexx.toString(); //force conversion
-    var str = '';
-    for (var i = 0; i < hex.length; i += 2) {
-      let char = String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-      if (char != '\u0000') str += char;
-    }
-    return str;
-  }
 let POLY, customers, compliance, STRegistrar, securityToken, STAddress, templateAddress;
 
     before(async()=>{
@@ -241,13 +231,13 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       assert.strictEqual(data[0], templateAddress);
     });
 
-//     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
-//       let isSTOAdded = await compliance.setSTO(stoContract, stoFee, vestingPeriod, quorum, { from : customer0 });
-//       let response = await compliance.proposeOfferingContract(STAddress , stoContract, { from : customer0 });
-//       let delegateOfTemp = await securityToken.delegate.call();
-//       let success = await securityToken.selectOfferingProposal(0, startTime, endTime,{ from: delegateOfTemp });
-//       assert.isTrue(success.toString());                                                      
-//     });
+    // it("selectOfferingProposal: select the offering proposal for the template",async()=>{
+    //   let isSTOAdded = await compliance.setSTO(stoContract, stoFee, vestingPeriod, quorum, { from : customer0 });
+    //   let response = await compliance.proposeOfferingContract(STAddress , stoContract, { from : customer0 });
+    //   let delegateOfTemp = await securityToken.delegate.call();
+    //   let success = await securityToken.selectOfferingProposal(0, startTime, endTime,{ from: delegateOfTemp });
+    //   assert.isTrue(success.toString());                                                      
+    // });
 
 //     it('addToWhitelist: should add the customer address into the whitelist',async()=>{
 //       let template = await Template.at(templateAddress);
