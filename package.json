@@ -15,7 +15,8 @@
     "compile": "truffle compile --optimize-runs 200",
     "migrate-local": "truffle migrate --network=local --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten",
-    "flatten": "sol-merger './contracts/*.sol' ./flat"
+    "flatten": "sol-merger './contracts/*.sol' ./flat",
+    "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "dependencies": {
     "babel-polyfill": "6.26.0",
