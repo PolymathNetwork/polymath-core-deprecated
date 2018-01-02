@@ -111,6 +111,7 @@ contract('SecurityToken', accounts => {
 
   // STO
   let stoContract = 0x81399dd18c7985a016eb2bb0a1f6aabf0745d557;
+  let mockStoContract = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
   let stoFee = 150;
  
 let POLY, customers, compliance, STRegistrar, securityToken, STAddress, templateAddress;
@@ -236,7 +237,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
         templateAddress = templateCreated.logs[0].args._template
       
     });
-
+    describe("Functions of securityToken", async() =>{
       it("Constructor verify the parameters",async()=>{
         let symbol = await securityToken.symbol.call();
         assert.strictEqual(symbol.toString(),ticker);
@@ -390,32 +391,217 @@ it('Approve max (2^256 - 1)', async() => {
     assert.isTrue(result);
 });
 
-it('issueSecurityTokens: should issue the security tokens',
-  async() => {
+it('updateComplianceProof:should update the new merkle root',async()=>{
+    let txReturn = await securityToken.updateComplianceProof(
+      witnessProof0,
+      witnessProof1,
+      {
+        from : owner
+      }
+    );
+    Utils.convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
+});
 
+it('updateComplianceProof:should not update the new merkle root -- called by unauthorized msg.sender',async()=>{
+  try {
+  await securityToken.updateComplianceProof(
+    witnessProof0,
+    witnessProof1,
+    {
+      from : customer1
+    });
+  } catch(error) {
+    Utils.ensureException(error);
+}
+});
+});
+
+describe("Compliance contracts functions",async()=>{
+  it("proposeTemplate: should successfully propose template", async()=>{
+    let template2 = await compliance.createTemplate(
+            offeringType,
+            issuerJurisdiction,
+            accredited,
+            provider0,
+            details,
+            expires,
+            1000,
+            quorum,
+            vestingPeriod,
+            {
+              from:attestor1
+            });
+    let templateAdd = template2.logs[0].args._template
+    let txReturn = await compliance.proposeTemplate(
+      securityToken.address,
+      templateAdd,
+      {
+        from : attestor1
+      });
+      txReturn.logs[0].args._template.should.equal(templateAdd);
   });
 
-it('withdrawPoly: should successfully withdraw the poly',async()=>{
-    let delegateOfTemp = await securityToken.delegate.call();
-    let timeToIncrease = 2592000 + vestingPeriod + 36000 + 50000;
+  it("cancelTemplateProposal: Should fails in canceling template proposal -- msg.sender unauthorized", async() =>{
+    try {
+      let txReturn = await compliance.cancelTemplateProposal(
+        securityToken.address,
+        1,
+        {
+          from : attestor0
+        });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+ });
 
-    await timeJump(timeToIncrease);   // endDate-startdate = 2592000 , more 36000 + 50000 sec to meet the block.timestamp 
-    let balance = await POLY.balanceOf(securityToken.address);
-
-    let success = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
-    assert.strictEqual(success.logs[0].args._value.toNumber(),1000);
-    let delegateBalance = await POLY.balanceOf(delegateOfTemp);
-
-    assert.strictEqual(delegateBalance.toNumber(),10000);
+  it("cancelTemplateProposal: Should successfully cancel template proposal", async() =>{
+     let txReturn = await compliance.cancelTemplateProposal(
+      securityToken.address,
+      1,
+      {
+        from : attestor1
+      });
   });
 
-it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
+  it("setSTO:Should fail in adding the new STO contract-- failed because of 0 address", async() =>{
+    try {
+      let txReturn = await compliance.setSTO(
+        0x0,
+        fee,
+        vestingPeriod,
+        quorum,
+        {
+          from : customer0
+        });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+
+  it("setSTO:Should fail in adding the new STO contract-- failed because of quorum is greator than 100", async() =>{
+    try {
+      let txReturn = await compliance.setSTO(
+        mockStoContract,
+        fee,
+        vestingPeriod,
+        101,
+        {
+          from : customer0
+        });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+
+  it("setSTO:Should fail in adding the new STO contract-- failed because of vesting period is less than minimum vesting period", async() =>{
+    try {
+      let txReturn = await compliance.setSTO(
+        mockStoContract,
+        fee,
+        5555555,
+        quorum,
+        {
+          from : customer0
+        });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+
+  it("setSTO:Should successfully add the new sto contract", async() =>{
+      let txReturn = await compliance.setSTO(
+        mockStoContract,
+        fee,
+        vestingPeriod,
+        quorum,
+        {
+          from : customer0
+        });
+  });
+
+  it("proposeOfferingContract: Should fail in proposing the contract -- msg.sender is unauthorized", async() =>{
+    try {
+      let txReturn = await compliance.proposeOfferingContract(
+        securityToken.address,
+        mockStoContract,
+        {
+          from : customer1
+        });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+
+  it("proposeOfferingContract: Should successfully propose the contract", async() =>{
+    let txReturn = await compliance.proposeOfferingContract(
+      securityToken.address,
+      mockStoContract,
+      {
+        from : customer0
+      });
+      txReturn.logs[0].args._offeringContract.should.equal(mockStoContract);
+  });
+
+  it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender unauthorized",async() =>{
+    try {
+    let txReturn = await compliance.cancelOfferingProposal(
+      securityToken.address,
+      1,
+      {
+        from : customer1
+      });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+
+  it("cancelOfferingProposal: Should successfully cancel the proposal",async() =>{
+    let txReturn = await compliance.cancelOfferingProposal(
+      securityToken.address,
+      1,
+      {
+        from : customer0
+      });
+  });
+
+  it("updateTemplateReputation: should fail to update the template -- msg.sender should be securityToken address",async()=>{
+    try {
+    let txReturn = await compliance.updateTemplateReputation.call(
+      templateAddress,
+      0,
+      {
+        from : attestor0
+      });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+});
+
+  describe("functions have timejump", async() =>{
+    it('withdrawPoly: should successfully withdraw the poly',async()=>{
+      let delegateOfTemp = await securityToken.delegate.call();
+      let timeToIncrease = 2592000 + vestingPeriod + 36000 + 50000;
+
+      await timeJump(timeToIncrease);   // endDate-startdate = 2592000 , more 36000 + 50000 sec to meet the block.timestamp 
+      let balance = await POLY.balanceOf(securityToken.address);
+
+      let success = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
+      assert.strictEqual(success.logs[0].args._value.toNumber(),1000);
+      let delegateBalance = await POLY.balanceOf(delegateOfTemp);
+
+      assert.strictEqual(delegateBalance.toNumber(),10000);
+  });
+
+  it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
     try {
       let success = await securityToken.withdrawPoly({from:customer1});
     } catch(error) {
       Utils.ensureException(error);
     }
   });
+});
+
 
 
   // describe('SecurityTokenRegistrar flow', async () => {
