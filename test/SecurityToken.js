@@ -1,6 +1,6 @@
-import increaseTime from './helpers/time';
+//import increaseTime from './helpers/time';
 import should from 'should';
-
+const time = require('./helpers/time');
 const SecurityToken = artifacts.require('SecurityToken.sol');
 const Template = artifacts.require('Template.sol');
 const PolyToken = artifacts.require('PolyToken.sol');
@@ -8,6 +8,24 @@ const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const Utils = require('./helpers/Utils');
+
+// use this function in the time.js -- TODO
+async function timeJump(timeToInc) {
+  return new Promise((resolve, reject) => {
+      web3
+          .currentProvider
+          .sendAsync({
+              jsonrpc: '2.0',
+              method: 'evm_increaseTime',
+              params: [(timeToInc)] // timeToInc is the time in seconds to increase
+          }, function (err, result) {
+              if (err) {
+                  reject(err);
+              }
+              resolve(result);
+          });
+  });
+}
 
 contract('SecurityToken', accounts => {
   const templateSHA = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -54,7 +72,7 @@ contract('SecurityToken', accounts => {
   const expcurrentTime = new Date().getTime() / 1000; //should get time currently
   const willNotExpire = 1577836800; //Jan 1st 2020, to represent a time that won't fail for testing
   const willExpire = 1500000000; //July 14 2017 will expire
-  const startTime = Math.floor(Date.now() / 1000) + 50000 ;
+  const startTime = Math.floor(Date.now() / 1000) + 50000;
   const endTime = startTime + 2592000;  // add 30 days more 
 
   //newProvider() constants
@@ -168,6 +186,19 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
               from:provider0
       });
 
+      await POLY.getTokens(10000, attestor1, { from : attestor1 });  
+      await POLY.approve(customers.address, 10000, { from : attestor1 });
+
+      await customers.verifyCustomer(
+          attestor1,
+          jurisdiction1,
+          delegateRole,
+          true,
+          expcurrentTime + 172800,         // 2 days more than current time
+          {
+              from:provider0
+      });
+
       await POLY.getTokens(100000, owner, { from : owner });
       await POLY.approve(STRegistrar.address, 1000, { from : owner });
       let allowedToken = await POLY.allowance(owner, STRegistrar.address);
@@ -196,7 +227,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
           provider0,
           details,
           expires,
-          fee,
+          1000,
           quorum,
           vestingPeriod,
           {
@@ -206,7 +237,6 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       
     });
 
-    describe('SecurityToken: Should create the security token successfully',async()=>{
       it("Constructor verify the parameters",async()=>{
         let symbol = await securityToken.symbol.call();
         assert.strictEqual(symbol.toString(),ticker);
@@ -220,7 +250,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
         assert.equal((await securityToken.totalSupply()).toNumber(), totalSupply);
         assert.equal((await securityToken.balanceOf(owner)).toNumber(), totalSupply);
       });
-    });
+ 
 
     it("selectTemplate: should owner of token can select the template",async()=>{
       let proposeTemplate = await compliance.proposeTemplate(STAddress,templateAddress,{from:attestor0});
@@ -267,7 +297,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
     it('addToWhitelist: should add the customer address into the whitelist',async()=>{
       let template = await Template.at(templateAddress);
       await template.addJurisdiction(['1','0'],[true,true],{from:attestor0});
-      await template.addRoles([1],{from:attestor0}); 
+      await template.addRoles([1,2],{from:attestor0}); 
       let status = await securityToken.addToWhitelist(customer1,{from: provider0});
       status.logs[0].args._shareholder.should.equal(customer1);
     });
@@ -289,87 +319,103 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       }
     });
 
-    // it('withdrawPoly: should successfully withdraw the poly',async()=>{
-    //   let delegateOfTemp = await securityToken.delegate.call();
-
-    //   await increaseTime(2592000+vestingPeriod+3000);   // endDate-startdate = 2592000 , more 3000 sec to meet the block.timestamp 
-
-    //   let success = await securityToken.withdrawPoly({from:delegateOfTemp});
-    //   assert.isTrue(success.toString());
-    //   let delegateBalance = POLY.balanceOf.call(delegateOfTemp);
-    //   assert.strictEqual(delegateBalance.toNumber(),10000);
-    // });
-
-//     it('withdrawPoly: should successfully withdraw the poly',async()=>{
-//       await increaseTime(2592000+vestingPeriod+3000);   // endDate-startdate = 2592000 , more 3000 sec to meet the block.timestamp 
-//       try {
-//         let success = await securityToken.withdrawPoly({from:customer1});
-//       } catch(error) {
-//         Ytils.ensureException(error);
-//       }
-//     });
-
 //   //////////////////////////// Test Suite SecurityToken ERC20 functions //////////////////////////////  
-//   describe("all the transfers and other ERC20 protocol functions",async()=>{
-//     it('transfer: ether directly to the token contract -- it will throw', async() => {
-//       try {
-//         await web3
-//             .eth
-//             .sendTransaction({
-//                 from: customer1,
-//                 to: securityToken.address,
-//                 value: web3.toWei('10', 'Ether')
-//             });
-//     } catch (error) {
-//         return Utils.ensureException(error);
-//     }
-// });
-// });
+    it('transfer: ether directly to the token contract -- it will throw', async() => {
+      try {
+        await web3
+            .eth
+            .sendTransaction({
+                from: customer1,
+                to: securityToken.address,
+                value: web3.toWei('10', 'Ether')
+            });
+    } catch (error) {
+         Utils.ensureException(error);
+    }
+});
+
+
+it('approve: msg.sender should approve 1000 to accounts[7] & withdraws 200 twice fail in 3 tx when trasferring more than allowance', 
+async() => {
+    await securityToken.transfer(customer1, 1000, {from: owner});
+    let status0 = await securityToken.addToWhitelist(attestor0,{from: provider0});
+    status0.logs[0].args._shareholder.should.equal(attestor0);
+
+    let status1 = await securityToken.addToWhitelist(attestor1,{from: provider0});
+    status1.logs[0].args._shareholder.should.equal(attestor1);
+
+    await securityToken.approve(attestor0, 1000, {from: customer1});
+    let _allowance1 = await securityToken
+        .allowance
+        .call(customer1, attestor0);
+    assert.strictEqual(_allowance1.toNumber(), 1000);
+    await securityToken.transferFrom(customer1, attestor1, 200, {from: attestor0});
+    let _balance1 = await securityToken
+        .balanceOf
+        .call(attestor1);
+    assert.strictEqual(_balance1.toNumber(), 200);
+    let _allowance2 = await securityToken
+        .allowance
+        .call(customer1,attestor0);
+    assert.strictEqual(_allowance2.toNumber(), 800);
+    let _balance2 = await securityToken
+        .balanceOf
+        .call(customer1);
+    assert.strictEqual(_balance2.toNumber(), 800);
+    await securityToken.transferFrom(customer1, attestor1, 200, {from: attestor0});
+    let _balance3 = await securityToken
+        .balanceOf
+        .call(attestor1);
+    assert.strictEqual(_balance3.toNumber(), 400);
+    let _allowance3 = await securityToken
+        .allowance
+        .call(customer1, attestor0);
+    assert.strictEqual(_allowance3.toNumber(), 600);
+    let _balance4 = await securityToken
+        .balanceOf
+        .call(customer1);
+    assert.strictEqual(_balance4.toNumber(), 600);
+   
+    let txReturn = await securityToken.transferFrom.call(customer1, attestor1, 800, {from: attestor0});
+    assert.isFalse(txReturn);
+  });
 
 
 
-// it('approve: msg.sender should approve 1000 to accounts[7] & withdraws 200 twice', async() => {
-//     await securityToken.transfer(customer1, new BigNumber(1000).times(new BigNumber(10).pow(18)), {from: owner});
-//     await securityToken.approve(attestor0, new BigNumber(1000).times(new BigNumber(10).pow(18)), {from: customer1});
-//     let _allowance1 = await securityToken
-//         .allowance
-//         .call(customer1, attestor0);
-//     assert.strictEqual(_allowance1.dividedBy(new BigNumber(10).pow(18)).toNumber(), 1000);
-//     await securityToken.transferFrom(customer1, attestor1, new BigNumber(200).times(new BigNumber(10).pow(18)), {from: attestor0});
-//     let _balance1 = await securityToken
-//         .balanceOf
-//         .call(attestor1);
-//     assert.strictEqual(_balance1.dividedBy(new BigNumber(10).pow(18)).toNumber(), 200);
-//     let _allowance2 = await securityToken
-//         .allowance
-//         .call(customer1,attestor0);
-//     assert.strictEqual(_allowance2.dividedBy(new BigNumber(10).pow(18)).toNumber(), 800);
-//     let _balance2 = await securityToken
-//         .balanceOf
-//         .call(customer1);
-//     assert.strictEqual(_balance2.dividedBy(new BigNumber(10).pow(18)).toNumber(), 800);
-//     await token.transferFrom(customer1, host, new BigNumber(200).times(new BigNumber(10).pow(18)), {from: attestor0});
-//     let _balance3 = await securityToken
-//         .balanceOf
-//         .call(host);
-//     assert.strictEqual(_balance3.dividedBy(new BigNumber(10).pow(18)).toNumber(), 200);
-//     let _allowance3 = await securityToken
-//         .allowance
-//         .call(customer1, attestor0);
-//     assert.strictEqual(_allowance3.dividedBy(new BigNumber(10).pow(18)).toNumber(), 600);
-//     let _balance4 = await securityToken
-//         .balanceOf
-//         .call(customer1);
-//     assert.strictEqual(_balance4.dividedBy(new BigNumber(10).pow(18)).toNumber(), 600);
-// });
+it('Approve max (2^256 - 1)', async() => {
+    await securityToken.approve(customer1, '115792089237316195423570985008687907853269984665640564039457584007913129639935', {from: customer0});
+    let _allowance = await securityToken.allowance(customer0, customer1);
+    let result = _allowance.equals('1.15792089237316195423570985008687907853269984665640564039457584007913129639935e' +
+            '+77');
+    assert.isTrue(result);
+});
 
-// it('Approve max (2^256 - 1)', async() => {
-//     await securityToken.approve(customer1, '115792089237316195423570985008687907853269984665640564039457584007913129639935', {from: customer0});
-//     let _allowance = await securityToken.allowance(customer0, customer1);
-//     let result = _allowance.equals('1.15792089237316195423570985008687907853269984665640564039457584007913129639935e' +
-//             '+77');
-//     assert.isTrue(result);
-// });
+it('issueSecurityTokens: should issue the security tokens',
+  async() => {
+
+  });
+
+it('withdrawPoly: should successfully withdraw the poly',async()=>{
+    let delegateOfTemp = await securityToken.delegate.call();
+    let timeToIncrease = 2592000 + vestingPeriod + 36000 + 50000;
+
+    await timeJump(timeToIncrease);   // endDate-startdate = 2592000 , more 36000 + 50000 sec to meet the block.timestamp 
+    let balance = await POLY.balanceOf(securityToken.address);
+
+    let success = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
+    assert.strictEqual(success.logs[0].args._value.toNumber(),1000);
+    let delegateBalance = await POLY.balanceOf(delegateOfTemp);
+
+    assert.strictEqual(delegateBalance.toNumber(),10000);
+  });
+
+it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
+    try {
+      let success = await securityToken.withdrawPoly({from:customer1});
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
 
 
   // describe('SecurityTokenRegistrar flow', async () => {

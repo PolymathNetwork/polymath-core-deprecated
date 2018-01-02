@@ -219,11 +219,11 @@ contract SecurityToken is IERC20 {
           return POLY.transfer(owner, POLY.balanceOf(this));
         } else {
   				require(now > endSTO + allocations[msg.sender].vestingPeriod);
-          require(allocations[msg.sender].frozen == false);
-          require(allocations[msg.sender].amount > 0);
+                require(allocations[msg.sender].frozen == false);
+                require(allocations[msg.sender].amount > 0);
   				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
-          allocations[msg.sender].amount = 0;
-          return true;
+                allocations[msg.sender].amount = 0;
+                return true;
         }
     }
 
