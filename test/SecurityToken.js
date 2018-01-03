@@ -1,6 +1,5 @@
-//import increaseTime from './helpers/time';
 import should from 'should';
-const time = require('./helpers/time');
+
 const SecurityToken = artifacts.require('SecurityToken.sol');
 const Template = artifacts.require('Template.sol');
 const PolyToken = artifacts.require('PolyToken.sol');
@@ -70,11 +69,11 @@ contract('SecurityToken', accounts => {
   const witnessProof1 = 'asfretgtredfgsdfd';
 
   //verifyCustomer() and approveProvider constants
-  const expcurrentTime = new Date().getTime() / 1000; //should get time currently
-  const willNotExpire = 1577836800; //Jan 1st 2020, to represent a time that won't fail for testing
-  const willExpire = 1500000000; //July 14 2017 will expire
+  const expcurrentTime = new Date().getTime() / 1000;       //should get time currently
+  const willNotExpire = 1577836800;                         //Jan 1st 2020, to represent a time that won't fail for testing
+  const willExpire = 1500000000;                            //July 14 2017 will expire
   const startTime = Math.floor(Date.now() / 1000) + 50000;
-  const endTime = startTime + 2592000;  // add 30 days more 
+  const endTime = startTime + 2592000;                      // add 30 days more 
 
   //newProvider() constants
   const providerName0 = 'KYC-Chain';
