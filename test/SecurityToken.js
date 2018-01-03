@@ -7,6 +7,7 @@ const PolyToken = artifacts.require('PolyToken.sol');
 const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
+const STO = artifacts.require('STOContract.sol'); 
 const Utils = require('./helpers/Utils');
 
 // use this function in the time.js -- TODO
@@ -41,7 +42,7 @@ contract('SecurityToken', accounts => {
 
   //accounts
   let issuer = accounts[1];
-  let templateCreater = accounts[2];
+  let stoCreater = accounts[2];
   let host = accounts[3];
   let owner = accounts[4];
   let attestor0 = accounts[5];
@@ -110,11 +111,10 @@ contract('SecurityToken', accounts => {
   const fee = 1000;
 
   // STO
-  let stoContract = 0x81399dd18c7985a016eb2bb0a1f6aabf0745d557;
   let mockStoContract = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
   let stoFee = 150;
  
-let POLY, customers, compliance, STRegistrar, securityToken, STAddress, templateAddress;
+let POLY, customers, compliance, STRegistrar, securityToken, STAddress, templateAddress, stoContract;
 
     before(async()=>{
       POLY = await PolyToken.new();
@@ -251,7 +251,6 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
         assert.equal((await securityToken.totalSupply()).toNumber(), totalSupply);
         assert.equal((await securityToken.balanceOf(owner)).toNumber(), totalSupply);
       });
- 
 
     it("selectTemplate: should owner of token can select the template",async()=>{
       let proposeTemplate = await compliance.proposeTemplate(STAddress,templateAddress,{from:attestor0});
@@ -263,8 +262,10 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
     });
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
+      stoContract = await STO.new(POLY.address,{ from : stoCreater, gas : 5000000 });
+      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime); 
       let isSTOAdded = await compliance.setSTO(
-        stoContract, 
+        stoContract.address, 
         stoFee, 
         vestingPeriod, 
         quorum, 
@@ -273,7 +274,7 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
         });
       let response = await compliance.proposeOfferingContract(
         securityToken.address, 
-        stoContract, 
+        stoContract.address, 
         { 
           from : customer0 
         });
@@ -414,6 +415,14 @@ it('updateComplianceProof:should not update the new merkle root -- called by una
     Utils.ensureException(error);
 }
 });
+
+it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
+    await POLY.approve(securityToken.address, 900, { from : customer1 });
+    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+     txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
+     txReturn.logs[0].args._contributor.should.equal(customer1);
+});
+
 });
 
 describe("Compliance contracts functions",async()=>{
@@ -579,7 +588,7 @@ describe("Compliance contracts functions",async()=>{
 });
 
   describe("functions have timejump", async() =>{
-    it('withdrawPoly: should successfully withdraw the poly',async()=>{
+    it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
       let timeToIncrease = 2592000 + vestingPeriod + 36000 + 50000;
 
@@ -592,6 +601,18 @@ describe("Compliance contracts functions",async()=>{
 
       assert.strictEqual(delegateBalance.toNumber(),10000);
   });
+
+  it('withdrawPoly: should successfully withdraw poly by Auditor (STO creator)',async()=>{
+    let balance = await POLY.balanceOf(securityToken.address);
+    let success = await securityToken.withdrawPoly({ 
+              from : customer0,
+              gas : 3000000 
+    });
+    assert.strictEqual(success.logs[0].args._value.toNumber(),150);
+    let customerBalance = await POLY.balanceOf(customer0);
+    assert.strictEqual(customerBalance.toNumber(),99150);  // 9900 remianing balance
+});
+
 
   it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
     try {
