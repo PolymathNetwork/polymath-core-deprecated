@@ -250,13 +250,13 @@ contract SecurityToken is IERC20 {
     @param _amountOfSecurityTokens The amount of ST to pay out.
     @param _polyContributed The amount of POLY paid for the security tokens. */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
-        require(startSTO > now && endSTO < now);
+        require(startSTO > now && endSTO > now);
         require(POLY.transferFrom(_contributor, this, _polyContributed));
-        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(this));
-        require(maxPoly > allocations[owner].amount + _polyContributed);
+        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(owner));
+        require(maxPoly > allocations[owner].amount.add(_polyContributed));
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
-        allocations[owner].amount = allocations[owner].amount + _polyContributed;
+        allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
         return true;
     }
 
