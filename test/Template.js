@@ -366,5 +366,46 @@ contract("Template",(accounts)=>{
          } 
     });
 
+    it('checkTemplateRequirements: Should fail in meeting the requirements of template -- accredited true', async()=>{
+        let template = await Template.new(
+            owner,
+            offeringType,
+            issuerJurisdiction,
+            true,
+            KYCAddress,
+            details,
+            expires,
+            fee,
+            quorum,
+            vestingPeriod
+        );
+        await template.addJurisdiction(jurisdiction, [true, true, true, true], { from : owner });
+        await template.addRoles([1,2], { from : owner });
+        try {
+            await template.checkTemplateRequirements(issuerJurisdiction, accredited, 1);
+         } catch(error) {
+             Utils.ensureException(error);
+         } 
+    });
+
+    it('checkTemplateRequirements: Should pass in meeting the requirements of template ', async()=>{
+        let template = await Template.new(
+            owner,
+            offeringType,
+            issuerJurisdiction,
+            true,
+            KYCAddress,
+            details,
+            expires,
+            fee,
+            quorum,
+            vestingPeriod
+        );
+        await template.addJurisdiction(jurisdiction, [true, true, true, true], { from : owner });
+        await template.addRoles([1,2], { from : owner });
+        await template.checkTemplateRequirements(issuerJurisdiction, true, 1);
+    });
+
+
 
 });
