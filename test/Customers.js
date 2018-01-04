@@ -238,9 +238,6 @@ contract('Customers', accounts => {
             await customers.changeFee(10000,{ from : provider1 });
             let providerData = await customers.getProvider(provider1);
             assert.strictEqual(providerData[3].toNumber(),10000);
-
-    it('should allow only owner to call approve provider', async () => {});
-    it('owner cant delete a KYC provider if they have been approved, even if they were later unapproved or expired', async () => {});
+    });
   });
-});
 });

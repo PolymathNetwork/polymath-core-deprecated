@@ -94,10 +94,10 @@ contract SecurityToken is IERC20 {
         _;
     }
 
-		modifier onlySTO() {
-			require (msg.sender == address(STO));
-			_;
-		}
+    modifier onlySTO() {
+        require (msg.sender == address(STO));
+        _;
+    }
 
     modifier onlyShareholder() {
         require (shareholders[msg.sender].allowed == true);
@@ -253,7 +253,7 @@ contract SecurityToken is IERC20 {
         require(startSTO > now && endSTO > now);
         require(POLY.transferFrom(_contributor, this, _polyContributed));
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(owner));
-        require(maxPoly > allocations[owner].amount.add(_polyContributed));
+        require(maxPoly >= allocations[owner].amount.add(_polyContributed));
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
