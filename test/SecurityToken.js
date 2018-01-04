@@ -430,6 +430,16 @@ it('issueSecurityTokens: Should successfully allocate the security token to cont
      txReturn.logs[0].args._contributor.should.equal(customer1);
 });
 
+it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
+  await POLY.getTokens(1000, issuer, { from : issuer});
+  await POLY.approve(securityToken.address, 900, { from : issuer });
+  try {
+    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+  } catch(error) {
+    Utils.ensureException(error);
+  }
+});
+
 it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
 async()=>{
   try {
