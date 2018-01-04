@@ -28,7 +28,6 @@ async function timeJump(timeToInc) {
 }
 
 contract('SecurityToken', accounts => {
-  const templateSHA = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
   let allowedAmount = 100; // Spender allowance
   let transferredFunds = 1200; // Funds to be transferred around in tests
@@ -93,10 +92,6 @@ contract('SecurityToken', accounts => {
   const type = 1;
 
   //Bid variables
-  const bid1Temp = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-  const bid2Temp = 'cccccccccccccccccccccccccccccccc';
-  const bid1Fee = 100;
-  const bid2Fee = 200;
   const expires = 1602288000;
   const quorum = 10;
   const vestingPeriod = 8888888;
@@ -113,7 +108,8 @@ contract('SecurityToken', accounts => {
   let mockStoContract = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
   let stoFee = 150;
  
-let POLY, customers, compliance, STRegistrar, securityToken, STAddress, templateAddress, stoContract;
+  let POLY, customers, compliance, STRegistrar, securityToken;
+  let STAddress, templateAddress, stoContract;
 
     before(async()=>{
       POLY = await PolyToken.new();
@@ -200,9 +196,9 @@ let POLY, customers, compliance, STRegistrar, securityToken, STAddress, template
       });
 
       await POLY.getTokens(100000, owner, { from : owner });
-      await POLY.approve(STRegistrar.address, 1000, { from : owner });
+      await POLY.approve(STRegistrar.address, 100000, { from : owner });
       let allowedToken = await POLY.allowance(owner, STRegistrar.address);
-      assert.strictEqual(allowedToken.toNumber(), 1000);
+      assert.strictEqual(allowedToken.toNumber(), 100000);
 
       let st = await STRegistrar.createSecurityToken(
           name,
@@ -391,6 +387,18 @@ it('Approve max (2^256 - 1)', async() => {
     assert.isTrue(result);
 });
 
+it('approve: should not approve the spnder because it is not whitelisted',async()=>{
+     await securityToken.approve(stoCreater, 1000, { from : customer1 });
+     let txReturn = await securityToken.allowance(customer1,stoCreater);
+     assert.strictEqual(txReturn.toNumber(),0);
+});
+
+it('transferFrom: should not transfer because address are not whitelisted',async()=>{
+  await securityToken.transferFrom(customer1, stoCreater, 1000,{ from : customer0});
+  let txReturn = await securityToken.balanceOf(stoCreater);
+  assert.strictEqual(txReturn.toNumber(),0);
+});
+
 it('updateComplianceProof:should update the new merkle root',async()=>{
     let txReturn = await securityToken.updateComplianceProof(
       witnessProof0,
@@ -420,6 +428,29 @@ it('issueSecurityTokens: Should successfully allocate the security token to cont
     let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
      txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
      txReturn.logs[0].args._contributor.should.equal(customer1);
+});
+
+it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
+async()=>{
+  try {
+    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+  } catch(error) {
+    Utils.ensureException(error);
+  } 
+});
+
+it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to maxpoly limit is reached',
+async()=>{
+  await POLY.getTokens(100000, customer1, { from : customer1 });
+  await POLY.approve(securityToken.address, 100900, { from : customer1 });
+  let txReturn = await stoContract.buySecurityToken(99100, { from : customer1 , gas : 400000 });
+  txReturn.logs[0].args._ployContribution.toNumber().should.equal(99100);
+  txReturn.logs[0].args._contributor.should.equal(customer1);
+  try {
+    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+  } catch(error) {
+    Utils.ensureException(error);
+  } 
 });
 
 });
@@ -587,11 +618,17 @@ describe("Compliance contracts functions",async()=>{
 });
 
   describe("functions have timejump", async() =>{
+    it('voteToFreeze: Should successfully freeze the fee of network participant',async()=>{
+      await timeJump(2592000 + 50000);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      let txRetrun = await securityToken.voteToFreeze(customer0, { from : customer1 });;
+      txRetrun.logs[0].args._recipient.should.equal(customer0);
+      assert.isTrue(txRetrun.logs[0].args._frozen);
+    });
+
     it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
-      let timeToIncrease = 2592000 + vestingPeriod + 36000 + 50000;
 
-      await timeJump(timeToIncrease);   // endDate-startdate = 2592000 , more 36000 + 50000 sec to meet the block.timestamp 
+      await timeJump(vestingPeriod);  
       let balance = await POLY.balanceOf(securityToken.address);
 
       let success = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
@@ -601,15 +638,16 @@ describe("Compliance contracts functions",async()=>{
       assert.strictEqual(delegateBalance.toNumber(),10000);
   });
 
-  it('withdrawPoly: should successfully withdraw poly by Auditor (STO creator)',async()=>{
+  it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
     let balance = await POLY.balanceOf(securityToken.address);
+    try {
     let success = await securityToken.withdrawPoly({ 
               from : customer0,
               gas : 3000000 
     });
-    assert.strictEqual(success.logs[0].args._value.toNumber(),150);
-    let customerBalance = await POLY.balanceOf(customer0);
-    assert.strictEqual(customerBalance.toNumber(),99150);  // 9900 remianing balance
+    } catch(error) {
+      Utils.ensureException(error);
+    }
 });
 
 
@@ -619,6 +657,31 @@ describe("Compliance contracts functions",async()=>{
     } catch(error) {
       Utils.ensureException(error);
     }
+  });
+
+  it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
+    let balanceBefore = await POLY.balanceOf(owner);
+    let tempST = await STRegistrar.createSecurityToken(
+      "Poly Temp",
+      "TPOLY",
+      totalSupply,
+      owner,
+      host,
+      fee,
+      type,
+      maxPoly,
+      lockupPeriod,
+      quorum,
+  );  
+
+  let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
+  let TempSecurityToken = await SecurityToken.at(tempSTAddress);
+  let balanceAfter = await POLY.balanceOf(owner);
+  assert.strictEqual( (balanceBefore - balanceAfter), fee);
+
+  let txReturn = await TempSecurityToken.withdrawPoly();
+  let ballast = await POLY.balanceOf(tempSTAddress);
+  assert.strictEqual(ballast.toNumber(),0);
   });
 });
 
