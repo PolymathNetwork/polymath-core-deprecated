@@ -253,8 +253,10 @@ contract SecurityToken is IERC20 {
         require(shareholders[_contributor].allowed);
         require(startSTO > now && endSTO > now);
         require(POLY.transferFrom(_contributor, this, _polyContributed));
-        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(owner));
+        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         require(maxPoly >= allocations[owner].amount.add(_polyContributed));
+        balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
+        balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
