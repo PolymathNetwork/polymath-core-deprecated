@@ -28,7 +28,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     // Mapping of ticker name to Security Token
     mapping(string => address) tickers;
 
-    event LogNewSecurityToken(string ticker, address securityTokenAddress, address owner, address host, uint256 fee, uint8 _type);
+    event LogNewSecurityToken(string indexed ticker, address securityTokenAddress, address owner, address host, uint256 fee, uint8 _type);
 
     // Constructor
     function SecurityTokenRegistrar(
@@ -67,7 +67,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     ) external
     {
       PolyToken POLY = PolyToken(polyTokenAddress);
-      POLY.transferFrom(_owner, _host, _fee);
+      POLY.transferFrom(msg.sender, _host, _fee);
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,

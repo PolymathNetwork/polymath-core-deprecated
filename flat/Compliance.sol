@@ -182,8 +182,8 @@ contract PolyToken is IERC20 {
     uint8 public decimals = 18;
     string public symbol = "POLY";
 
-    mapping (address => uint256) balances;
-    mapping (address => mapping (address => uint256)) allowed;
+    mapping(address => uint256) balances;
+    mapping(address => mapping(address => uint256)) allowed;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -212,13 +212,15 @@ contract PolyToken is IERC20 {
       @param _value The amount of token to be transferred
       @return Whether the transfer was successful or not */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-        uint256 _allowance = allowed[_from][msg.sender];
-        require(_allowance >= _value);
-        balances[_from] = balances[_from].sub(_value);
-        allowed[_from][msg.sender] = _allowance.sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        Transfer(_from, _to, _value);
-        return true;
+      require(_to != address(0));
+      require(_value <= balances[_from]);
+      require(_value <= allowed[_from][msg.sender]);
+
+      balances[_from] = balances[_from].sub(_value);
+      balances[_to] = balances[_to].add(_value);
+      allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+      Transfer(_from, _to, _value);
+      return true;
     }
 
     /* @param _owner The address from which the balance will be retrieved
@@ -319,7 +321,7 @@ contract Customers is ICustomers {
     }
 
     // Customers (kyc provider address => customer address)
-    mapping (address => mapping (address => Customer)) public customers;
+    mapping(address => mapping(address => Customer)) public customers;
 
     // KYC/Accreditation Provider
     struct Provider {
@@ -475,7 +477,7 @@ contract Template is ITemplate {
     address owner;
     string offeringType;
     bytes32 issuerJurisdiction;
-    mapping (bytes32 => bool) allowedJurisdictions;
+    mapping(bytes32 => bool) allowedJurisdictions;
     bool[] allowedRoles;
     bool accredited;
     address KYC;

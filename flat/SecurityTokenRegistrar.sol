@@ -97,8 +97,8 @@ contract PolyToken is IERC20 {
     uint8 public decimals = 18;
     string public symbol = "POLY";
 
-    mapping (address => uint256) balances;
-    mapping (address => mapping (address => uint256)) allowed;
+    mapping(address => uint256) balances;
+    mapping(address => mapping(address => uint256)) allowed;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -127,13 +127,15 @@ contract PolyToken is IERC20 {
       @param _value The amount of token to be transferred
       @return Whether the transfer was successful or not */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-        uint256 _allowance = allowed[_from][msg.sender];
-        require(_allowance >= _value);
-        balances[_from] = balances[_from].sub(_value);
-        allowed[_from][msg.sender] = _allowance.sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        Transfer(_from, _to, _value);
-        return true;
+      require(_to != address(0));
+      require(_value <= balances[_from]);
+      require(_value <= allowed[_from][msg.sender]);
+
+      balances[_from] = balances[_from].sub(_value);
+      balances[_to] = balances[_to].add(_value);
+      allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+      Transfer(_from, _to, _value);
+      return true;
     }
 
     /* @param _owner The address from which the balance will be retrieved
@@ -390,8 +392,8 @@ contract SecurityToken is IERC20 {
     string public symbol;
     address public owner;
     uint256 public totalSupply;
-    mapping (address => mapping (address => uint256)) allowed;
-    mapping (address => uint256) balances;
+    mapping(address => mapping(address => uint256)) allowed;
+    mapping(address => uint256) balances;
 
     // Template
     address public delegate;
@@ -423,11 +425,11 @@ contract SecurityToken is IERC20 {
         uint256 yayPercent;
         bool frozen;
     }
-    mapping(address => mapping (address => bool)) voted;
+    mapping(address => mapping(address => bool)) voted;
     mapping(address => Allocation) allocations;
 
 		// Security Token Offering statistics
-    mapping (address => uint256) contributedToSTO;
+    mapping(address => uint256) contributedToSTO;
 		uint tokensIssuedBySTO = 0;
 
     // Notifications
@@ -543,7 +545,7 @@ contract SecurityToken is IERC20 {
     {
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
-        require(complianceProof != 0);
+        require(complianceProof != 0x0);
         require(delegate != address(0));
         require(_startTime > now && _endTime > _startTime);
         require(POLY.balanceOf(this) >= allocations[delegate].amount + _fee);
@@ -752,7 +754,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     ) external
     {
       PolyToken POLY = PolyToken(polyTokenAddress);
-      require(POLY.transferFrom(msg.sender, _host, _fee));
+      POLY.transferFrom(_owner, _host, _fee);
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
@@ -777,7 +779,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
 
     // Get security token address by ticker name
     function getSecurityTokenAddress(string _ticker) public constant returns (address) {
-      return tickers[_ticker] ;
+      return tickers[_ticker];
     }
 
     // Get Security token details by its ethereum address
