@@ -94,10 +94,10 @@ contract SecurityToken is IERC20 {
         _;
     }
 
-		modifier onlySTO() {
-			require (msg.sender == address(STO));
-			_;
-		}
+    modifier onlySTO() {
+        require (msg.sender == address(STO));
+        _;
+    }
 
     modifier onlyShareholder() {
         require (shareholders[msg.sender].allowed == true);
@@ -219,11 +219,11 @@ contract SecurityToken is IERC20 {
           return POLY.transfer(owner, POLY.balanceOf(this));
         } else {
   				require(now > endSTO + allocations[msg.sender].vestingPeriod);
-          require(allocations[msg.sender].frozen == false);
-          require(allocations[msg.sender].amount > 0);
+                require(allocations[msg.sender].frozen == false);
+                require(allocations[msg.sender].amount > 0);
   				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
-          allocations[msg.sender].amount = 0;
-          return true;
+                allocations[msg.sender].amount = 0;
+                return true;
         }
     }
 
@@ -250,13 +250,16 @@ contract SecurityToken is IERC20 {
     @param _amountOfSecurityTokens The amount of ST to pay out.
     @param _polyContributed The amount of POLY paid for the security tokens. */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
-        require(startSTO > now && endSTO < now);
+        require(shareholders[_contributor].allowed);
+        require(startSTO > now && endSTO > now);
         require(POLY.transferFrom(_contributor, this, _polyContributed));
-        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= balanceOf(this));
-        require(maxPoly > allocations[owner].amount + _polyContributed);
+        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
+        require(maxPoly >= allocations[owner].amount.add(_polyContributed));
+        balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
+        balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
-        allocations[owner].amount = allocations[owner].amount + _polyContributed;
+        allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
         return true;
     }
 
