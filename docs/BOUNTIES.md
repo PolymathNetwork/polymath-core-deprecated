@@ -1,1 +1,0 @@
-# Polymath Bounty Program
