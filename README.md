@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/PolymathNetwork/polymath-core.svg?token=Urvmqzpy4pAxp6EpzZd6&branch=master)](https://travis-ci.com/PolymathNetwork/polymath-core)
-<img src="https://img.shields.io/badge/chat-telegram-blue.svg" href="https://t.me/polymathnetwork">
+<a href="https://t.me/polymathnetwork"><img src="https://img.shields.io/badge/40k+-telegram-blue.svg"></a>
 
 <!--img src="https://img.shields.io/badge/bounties-1,000,000-green.svg" href="/issues-->
 
