@@ -63,7 +63,7 @@ contract Customers is ICustomers {
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
         require(_details != 0x0);
-        require(providers[_providerAddress].details == 0);
+        require(providers[_providerAddress].details == 0x0);
         require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         LogNewProvider(_providerAddress, _name, _details);
@@ -73,7 +73,7 @@ contract Customers is ICustomers {
     /* @dev Change a providers fee
     @param _newFee The new fee of the provider */
     function changeFee(uint256 _newFee) public returns (bool success) {
-        require(providers[msg.sender].details != 0);
+        require(providers[msg.sender].details != 0x0);
         providers[msg.sender].fee = _newFee;
         return true;
     }
