@@ -211,7 +211,9 @@ contract('SecurityToken', accounts => {
           maxPoly,
           lockupPeriod,
           quorum,
-      );  
+          {
+            from : owner
+          });  
 
       STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
       securityToken = await SecurityToken.at(STAddress);
@@ -682,6 +684,9 @@ describe("Compliance contracts functions",async()=>{
       maxPoly,
       lockupPeriod,
       quorum,
+      {
+        from : owner
+      }
   );  
 
   let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
