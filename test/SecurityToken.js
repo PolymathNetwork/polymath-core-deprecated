@@ -1,4 +1,7 @@
 import should from 'should';
+import increaseTime from './helpers/time';
+import latestTime from './helpers/latestTime';
+import { ensureException, convertHex, duration } from './helpers/Utils';
 
 const SecurityToken = artifacts.require('SecurityToken.sol');
 const Template = artifacts.require('Template.sol');
@@ -7,25 +10,7 @@ const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const STO = artifacts.require('STOContract.sol'); 
-const Utils = require('./helpers/Utils');
 
-// use this function in the time.js -- TODO
-async function timeJump(timeToInc) {
-  return new Promise((resolve, reject) => {
-      web3
-          .currentProvider
-          .sendAsync({
-              jsonrpc: '2.0',
-              method: 'evm_increaseTime',
-              params: [(timeToInc)] // timeToInc is the time in seconds to increase
-          }, function (err, result) {
-              if (err) {
-                  reject(err);
-              }
-              resolve(result);
-          });
-  });
-}
 
 contract('SecurityToken', accounts => {
 
@@ -68,11 +53,11 @@ contract('SecurityToken', accounts => {
   const witnessProof1 = 'asfretgtredfgsdfd';
 
   //verifyCustomer() and approveProvider constants
-  const expcurrentTime = new Date().getTime() / 1000;       //should get time currently
+  const expcurrentTime = latestTime();                      //should get time currently
   const willNotExpire = 1577836800;                         //Jan 1st 2020, to represent a time that won't fail for testing
   const willExpire = 1500000000;                            //July 14 2017 will expire
-  const startTime = Math.floor(Date.now() / 1000) + 50000;
-  const endTime = startTime + 2592000;                      // add 30 days more 
+  const startTime = latestTime() + duration.seconds(5000);
+  const endTime = startTime + duration.days(30);                      // add 30 days more 
 
   //newProvider() constants
   const providerName0 = 'KYC-Chain';
@@ -282,7 +267,7 @@ contract('SecurityToken', accounts => {
         {
            from : owner 
           });
-      Utils.convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
+      convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
       let success = await securityToken.selectOfferingProposal(
         0, 
         startTime, 
@@ -305,7 +290,7 @@ contract('SecurityToken', accounts => {
       try{
       let status = await securityToken.addToWhitelist(customer1,{from: provider1});
       } catch(error) {
-            Utils.ensureException(error);
+            ensureException(error);
       }
     });
 
@@ -314,7 +299,7 @@ contract('SecurityToken', accounts => {
       try {
           await securityToken.withdrawPoly({from:delegateOfTemp})
       } catch(error) {
-          Utils.ensureException(error);
+          ensureException(error);
       }
     });
 
@@ -329,7 +314,7 @@ contract('SecurityToken', accounts => {
                 value: web3.toWei('10', 'Ether')
             });
     } catch (error) {
-         Utils.ensureException(error);
+         ensureException(error);
     }
 });
 
@@ -409,7 +394,7 @@ it('updateComplianceProof:should update the new merkle root',async()=>{
         from : owner
       }
     );
-    Utils.convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
+    convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
 });
 
 it('updateComplianceProof:should not update the new merkle root -- called by unauthorized msg.sender',async()=>{
@@ -421,7 +406,7 @@ it('updateComplianceProof:should not update the new merkle root -- called by una
       from : customer1
     });
   } catch(error) {
-    Utils.ensureException(error);
+    ensureException(error);
 }
 });
 
@@ -461,7 +446,7 @@ describe("Compliance contracts functions",async()=>{
           from : attestor0
         });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
  });
 
@@ -485,7 +470,7 @@ describe("Compliance contracts functions",async()=>{
           from : customer0
         });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 
@@ -500,7 +485,7 @@ describe("Compliance contracts functions",async()=>{
           from : customer0
         });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 
@@ -515,7 +500,7 @@ describe("Compliance contracts functions",async()=>{
           from : customer0
         });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 
@@ -539,7 +524,7 @@ describe("Compliance contracts functions",async()=>{
           from : customer1
         });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 
@@ -562,7 +547,7 @@ describe("Compliance contracts functions",async()=>{
         from : customer1
       });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 
@@ -584,14 +569,14 @@ describe("Compliance contracts functions",async()=>{
         from : attestor0
       });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 });
 
   describe("functions have timejump", async() =>{
     it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
-      await timeJump(50100);  // timejump to make now greater than or equal to the startTime of the sto
+      await increaseTime(5010);  // timejump to make now greater than or equal to the startTime of the sto
       await POLY.approve(securityToken.address, 900, { from : customer1 });
       let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
        txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
@@ -604,7 +589,7 @@ describe("Compliance contracts functions",async()=>{
     try {
       let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
     } catch(error) {
-      Utils.ensureException(error);
+       ensureException(error);
     }
   });
   
@@ -613,7 +598,7 @@ describe("Compliance contracts functions",async()=>{
     try {
       let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
     } catch(error) {
-      Utils.ensureException(error);
+      ensureException(error);
     } 
   });
   
@@ -627,11 +612,11 @@ describe("Compliance contracts functions",async()=>{
     try {
       let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     } 
   });
     it('voteToFreeze: Should successfully freeze the fee of network participant',async()=>{
-      await timeJump(2592000);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      await increaseTime(2592000); // difference between startTime and endTime                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
       let txRetrun = await securityToken.voteToFreeze(customer0, { from : customer1 });;
       txRetrun.logs[0].args._recipient.should.equal(customer0);
       assert.isTrue(txRetrun.logs[0].args._frozen);
@@ -640,7 +625,7 @@ describe("Compliance contracts functions",async()=>{
     it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
 
-      await timeJump(vestingPeriod);  
+      await increaseTime(vestingPeriod);  
       let balance = await POLY.balanceOf(securityToken.address);
 
       let success = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
@@ -658,7 +643,7 @@ describe("Compliance contracts functions",async()=>{
               gas : 3000000 
     });
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
 });
 
@@ -667,7 +652,7 @@ describe("Compliance contracts functions",async()=>{
     try {
       let success = await securityToken.withdrawPoly({from:customer1});
     } catch(error) {
-      Utils.ensureException(error);
+        ensureException(error);
     }
   });
 

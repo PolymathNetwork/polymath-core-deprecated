@@ -1,13 +1,13 @@
 //this thing is essentially coded in full for a quick once over, not perfect but should be 80% i hope - dave nov 3
+import { convertHex, ensureException } from './helpers/Utils.js';
 
-import expectRevert from './helpers/expectRevert';
 const SecurityTokenRegistrar = artifacts.require(
   './SecurityTokenRegistrar.sol',
 );
 const SecurityToken = artifacts.require('./SecurityToken.sol');
 const POLY = artifacts.require('./PolyToken.sol');
 const Compliance = artifacts.require('./Compliance.sol');
-const Utils = require('./helpers/Utils');
+
 
 contract('SecurityTokenRegistrar', accounts => {
   //createSecurityToken variables
@@ -122,7 +122,7 @@ contract('SecurityTokenRegistrar', accounts => {
                         from : issuer1
                       })
           } catch(error) {
-            Utils.ensureException(error);
+              ensureException(error);
           }
       });
 
@@ -157,7 +157,7 @@ contract('SecurityTokenRegistrar', accounts => {
                         from : issuer1
                       })
           } catch(error) {
-              Utils.ensureException(error);
+              ensureException(error);
           }
       });
 
@@ -220,7 +220,7 @@ contract('SecurityTokenRegistrar', accounts => {
                                     from : issuer2
                                   });
             } catch(error){
-               Utils.ensureException(error);
+                ensureException(error);
             }    
       });
 
@@ -250,7 +250,7 @@ contract('SecurityTokenRegistrar', accounts => {
                                         quorum,
                                        );
         } catch(error) {
-            Utils.ensureException(error);
+            ensureException(error);
         }
       });
 
@@ -279,7 +279,7 @@ contract('SecurityTokenRegistrar', accounts => {
                                         quorum,
                                         );
         } catch(error) {
-            Utils.ensureException(error);
+              ensureException(error);
         }
       });
      });

@@ -1,10 +1,11 @@
-import expectRevert from './helpers/expectRevert';
+import {ensureException}  from './helpers/Utils.js';
+import latestTime from './helpers/latestTime';
 
 const Compliance = artifacts.require('../contracts/Customers.sol');
 const POLY = artifacts.require('../contracts/PolyToken.sol');
 const Customers = artifacts.require('../contracts/Customers.sol');
 const BigNumber = require('bignumber.js');
-const Utils = require('./helpers/Utils');
+
 
 contract('Customers', accounts => {
   const customersAddress = '0xbe40f369c413a2c7eaab9d9cc85cfc1dbe664ec6'; //hard coded, from testrpc. need to ensure this is repeatable. truffle 4.0 should be like this. i use "hello" for mneumonic if no truffle 4.0
@@ -32,7 +33,7 @@ contract('Customers', accounts => {
   const witnessProof2 = 'asfretgtredfgsdfd';
 
   //verifyCustomer() and approveProvider constants
-  const expcurrentTime = new Date().getTime() / 1000; //should get time currently
+  const expcurrentTime = latestTime(); //should get time currently
   const willNotExipre = 1577836800; //Jan 1st 2020, to represent a time that won't fail for testing
   const willExpire = 1500000000; //July 14 2017 will expire
 
@@ -45,8 +46,6 @@ contract('Customers', accounts => {
   const providerFee2 = 100;
 
   describe('function verifyCustomer', async () => {
-    it('if a KYC provider is expired or unnapproved, they cant verify customers', async () => {});
-
     it('An approved and active KYC provider can validate customers as being in a jurisdiction and accredit a customer', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
@@ -102,7 +101,7 @@ contract('Customers', accounts => {
           },
         );
       } catch (error) {
-        Utils.ensureException(error);
+          ensureException(error);
       }
     });
   });
@@ -156,7 +155,7 @@ contract('Customers', accounts => {
           100,
         );
       } catch (error) {
-            Utils.ensureException(error);
+            ensureException(error);
       }
     });
 
@@ -183,7 +182,7 @@ contract('Customers', accounts => {
           100,
         );
       } catch (error) {
-        return Utils.ensureException(error);
+          ensureException(error);
       }
     });
 
@@ -209,7 +208,7 @@ contract('Customers', accounts => {
           100,
         );
       } catch (error) {
-        return Utils.ensureException(error);
+          ensureException(error);
       }
     });
   });
