@@ -1,6 +1,6 @@
-
+import { ensureException, convertHex } from './helpers/Utils.js';
 const Template = artifacts.require('Template.sol');
-const Utils = require('./helpers/Utils');
+
 
 contract("Template",(accounts)=>{
 
@@ -80,7 +80,7 @@ contract("Template",(accounts)=>{
         try {
             await template.addJurisdiction(jurisdiction, [true, false, true, true], { from : accounts[8] });
         } catch(error) {
-            Utils.ensureException(error);
+            ensureException(error);
         }
     });
 
@@ -101,7 +101,7 @@ contract("Template",(accounts)=>{
         try {
             await template.addJurisdiction(jurisdiction, [true, false, true], { from : owner });
         } catch(error) {
-            Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -125,7 +125,7 @@ contract("Template",(accounts)=>{
         try {
             await template.addJurisdiction(['hong-hk','japan-jp'], [true, false], { from : owner });
         } catch(error) {
-            Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -161,7 +161,7 @@ contract("Template",(accounts)=>{
         try {
             await template.addRoles([1,2,3], { from : accounts[8] });
         } catch(error) {
-            Utils.ensureException(error); 
+                ensureException(error); 
         }
     });
 
@@ -184,7 +184,7 @@ contract("Template",(accounts)=>{
         try {
             await template.addRoles([3], { from : accounts[8] });
         } catch(error) {
-            Utils.ensureException(error); 
+                ensureException(error); 
         }
     });
 
@@ -203,7 +203,7 @@ contract("Template",(accounts)=>{
         );
         await template.updateDetails("This is the second template",{ from : owner });
         let tempDetails = await template.getTemplateDetails();
-        assert.strictEqual(Utils.convertHex(tempDetails[0]),"This is the second template");
+        assert.strictEqual(convertHex(tempDetails[0]),"This is the second template");
     });
 
     it("updateDetails: Should fail in updating the details of the template --details are null ", async()=>{
@@ -222,7 +222,7 @@ contract("Template",(accounts)=>{
         try {
             await template.updateDetails('',{ from : owner });
         } catch(error) {
-            Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -242,7 +242,7 @@ contract("Template",(accounts)=>{
         try {
             await template.updateDetails("This is the second template",{ from : accounts[8] });
         } catch(error) {
-            Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -278,7 +278,7 @@ contract("Template",(accounts)=>{
         try {
             await template.finalizeTemplate({ from : accounts[8] });
         } catch(error) {
-            Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -318,7 +318,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(issuerJurisdiction, accredited, 1);
         } catch(error) {
-            Utils.ensureException(error);
+                ensureException(error);
         } 
     });
 
@@ -340,7 +340,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(0x0, accredited, 1);
          } catch(error) {
-             Utils.ensureException(error);
+                ensureException(error);
          } 
     });
 
@@ -362,7 +362,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(0x0, accredited, 4);
          } catch(error) {
-             Utils.ensureException(error);
+                ensureException(error);
          } 
     });
 
@@ -384,7 +384,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(issuerJurisdiction, accredited, 1);
          } catch(error) {
-             Utils.ensureException(error);
+                ensureException(error);
          } 
     });
 

@@ -1,7 +1,5 @@
-import expectRevert from './helpers/expectRevert';
-
 const POLY = artifacts.require('PolyToken.sol');
-const Utils = require('./helpers/Utils');
+import {ensureException} from './helpers/Utils.js'
 const BigNumber = require('bignumber.js');
 
 
@@ -46,7 +44,7 @@ contract("polyToken", (accounts) => {
                     value: web3.toWei('10', 'Ether')
                 });
         } catch (error) {
-            return Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -184,7 +182,7 @@ contract("polyToken", (accounts) => {
         try {
             await poly.transferFrom(holder1, holder3, 500, {from: holder2});
         } catch (error) {
-            return Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -197,7 +195,7 @@ contract("polyToken", (accounts) => {
                 .transferFrom
                 .call(holder1, holder3, 100, {from: holder2});
         } catch (error) {
-            return Utils.ensureException(error);
+                ensureException(error);
         }
     });
 
@@ -228,7 +226,7 @@ contract("polyToken", (accounts) => {
         try {
             await poly.transferFrom(holder1, holder3, 200, {from: holder2});
         } catch (error) {
-            return Utils.ensureException(error);
+            ensureException(error);
         }
     });
 
