@@ -81,7 +81,7 @@ contract Customers is ICustomers {
     /* @dev Verify an investor
     @param _customer The customer's public key address
     @param _jurisdiction The jurisdiction code of the customer
-    @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4, etc.
+    @param _role The type of customer - investor:1, delegate:2, issuer:3, marketmaker:4, etc.
     @param _accredited Whether the customer is accredited or not (only applied to investors)
     @param _expires The time the verification expires */
     function verifyCustomer(

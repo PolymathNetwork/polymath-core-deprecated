@@ -63,7 +63,7 @@ contract('SecurityToken', accounts => {
   const jurisdiction0 = '0';
   const jurisdiction1 = '1';
   const customerInvestorRole = 1;
-  const customerIssuerRole = 2;
+  const customerIssuerRole = 3;
   const witnessProof0 = 'ASffjflfgffgf';
   const witnessProof1 = 'asfretgtredfgsdfd';
 
