@@ -78,6 +78,7 @@ contract SecurityToken is IERC20 {
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
     event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
+    event LogTokenIssued(address indexed _contributor, uint256 _stAmount, uint256 _polyContributed, uint256 _timestamp);
 
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -251,7 +252,7 @@ contract SecurityToken is IERC20 {
     @param _polyContributed The amount of POLY paid for the security tokens. */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
         require(shareholders[_contributor].allowed);
-        require(startSTO > now && endSTO > now);
+        require(now >= startSTO && now <= endSTO);
         require(POLY.transferFrom(_contributor, this, _polyContributed));
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         require(maxPoly >= allocations[owner].amount.add(_polyContributed));
@@ -260,6 +261,7 @@ contract SecurityToken is IERC20 {
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
+        LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
         return true;
     }
 

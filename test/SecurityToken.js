@@ -425,46 +425,6 @@ it('updateComplianceProof:should not update the new merkle root -- called by una
 }
 });
 
-it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
-    await POLY.approve(securityToken.address, 900, { from : customer1 });
-    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
-     txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
-     txReturn.logs[0].args._contributor.should.equal(customer1);
-});
-
-it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
-  await POLY.getTokens(1000, issuer, { from : issuer});
-  await POLY.approve(securityToken.address, 900, { from : issuer });
-  try {
-    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
-  } catch(error) {
-    Utils.ensureException(error);
-  }
-});
-
-it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
-async()=>{
-  try {
-    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
-  } catch(error) {
-    Utils.ensureException(error);
-  } 
-});
-
-it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to maxpoly limit is reached',
-async()=>{
-  await POLY.getTokens(100000, customer1, { from : customer1 });
-  await POLY.approve(securityToken.address, 100900, { from : customer1 });
-  let txReturn = await stoContract.buySecurityToken(99100, { from : customer1 , gas : 400000 });
-  txReturn.logs[0].args._ployContribution.toNumber().should.equal(99100);
-  txReturn.logs[0].args._contributor.should.equal(customer1);
-  try {
-    let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
-  } catch(error) {
-    Utils.ensureException(error);
-  } 
-});
-
 });
 
 describe("Compliance contracts functions",async()=>{
@@ -630,8 +590,48 @@ describe("Compliance contracts functions",async()=>{
 });
 
   describe("functions have timejump", async() =>{
+    it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
+      await timeJump(50100);  // timejump to make now greater than or equal to the startTime of the sto
+      await POLY.approve(securityToken.address, 900, { from : customer1 });
+      let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
+       txReturn.logs[0].args._contributor.should.equal(customer1);
+  });
+  
+  it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
+    await POLY.getTokens(1000, issuer, { from : issuer});
+    await POLY.approve(securityToken.address, 900, { from : issuer });
+    try {
+      let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+    } catch(error) {
+      Utils.ensureException(error);
+    }
+  });
+  
+  it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
+  async()=>{
+    try {
+      let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+    } catch(error) {
+      Utils.ensureException(error);
+    } 
+  });
+  
+  it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to maxpoly limit is reached',
+  async()=>{
+    await POLY.getTokens(100000, customer1, { from : customer1 });
+    await POLY.approve(securityToken.address, 100900, { from : customer1 });
+    let txReturn = await stoContract.buySecurityToken(99100, { from : customer1 , gas : 400000 });
+    txReturn.logs[0].args._ployContribution.toNumber().should.equal(99100);
+    txReturn.logs[0].args._contributor.should.equal(customer1);
+    try {
+      let txReturn = await stoContract.buySecurityToken(900, { from : customer1 , gas : 400000 });
+    } catch(error) {
+      Utils.ensureException(error);
+    } 
+  });
     it('voteToFreeze: Should successfully freeze the fee of network participant',async()=>{
-      await timeJump(2592000 + 50000);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      await timeJump(2592000);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
       let txRetrun = await securityToken.voteToFreeze(customer0, { from : customer1 });;
       txRetrun.logs[0].args._recipient.should.equal(customer0);
       assert.isTrue(txRetrun.logs[0].args._frozen);
