@@ -9,21 +9,27 @@ pragma solidity ^0.4.18;
 
 import './interfaces/ITemplate.sol';
 
+/**
+ * @title Template 
+ * @dev  Template details used for the security token offering to ensure the regulatory compliance
+ */
+
 contract Template is ITemplate {
 
-    address public owner;
-    string public offeringType;
-    bytes32 public issuerJurisdiction;
-    mapping(bytes32 => bool) public allowedJurisdictions;
-    mapping(uint8 => bool) public allowedRoles;
-    bool public accredited;
-    address public KYC;
-    bytes32 details;
-    bool finalized;
-    uint256 public expires;
-    uint256 fee;
-    uint8 quorum;
-    uint256 vestingPeriod;
+    address public owner;                                           // Address of the owner of template
+    string public offeringType;                                     // Name of the security being issued
+    bytes32 public issuerJurisdiction;                              // Variable contains the jurisdiction of the issuer of the template
+    mapping(bytes32 => bool) public allowedJurisdictions;           // Mapping that contains the allowed staus of Jurisdictions 
+    mapping(uint8 => bool) public allowedRoles;                     // Mapping that contains the allowed status of Roles
+    bool public accredited;                                         // Variable that define the required level of accrediation for the investor 
+    address public KYC;                                             // Address of the KYC provider
+    bytes32 details;                                                // Details of the offering requirements 
+    bool finalized;                                                 // Variable to know the status of the template (complete - true, not complete - false)
+    uint256 public expires;                                         // Timestamp when template expires
+    uint256 fee;                                                    // Amount of POLY to use the template (held in escrow until issuance)
+    uint8 quorum;                                                   // Minimum percent of shareholders which need to vote to freeze
+    uint256 vestingPeriod;                                          // Length of time to vest funds
+
 
     function Template (
         address _owner,
