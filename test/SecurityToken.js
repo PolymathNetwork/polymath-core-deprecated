@@ -1,5 +1,5 @@
 import should from 'should';
-import increaseTime from './helpers/time';
+import { increaseTime, takeSnapshot, revertToSnapshot } from './helpers/time';
 import latestTime from './helpers/latestTime';
 import { ensureException, convertHex, duration } from './helpers/Utils';
 
@@ -278,11 +278,21 @@ contract('SecurityToken', accounts => {
       success.logs[0].args._auditor.should.equal(customer0);  
     });
 
-    it('addToWhitelist: should add the customer address into the whitelist',async()=>{
+    it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == KYC',async()=>{
+      let id = await takeSnapshot();
       let template = await Template.at(templateAddress);
       await template.addJurisdiction(['1','0'],[true,true],{from:attestor0});
       await template.addRoles([1,2],{from:attestor0}); 
       let status = await securityToken.addToWhitelist(customer1,{from: provider0});
+      status.logs[0].args._shareholder.should.equal(customer1);
+      await revertToSnapshot(id);
+    });
+
+    it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == issuer',async()=>{
+      let template = await Template.at(templateAddress);
+      await template.addJurisdiction(['1','0'],[true,true],{from:attestor0});
+      await template.addRoles([1,2],{from:attestor0}); 
+      let status = await securityToken.addToWhitelist(customer1,{from: owner});
       status.logs[0].args._shareholder.should.equal(customer1);
     });
 

@@ -217,8 +217,8 @@ contract SecurityToken is IERC20 {
      * @return bool success
     */
     function addToWhitelist(address _whitelistAddress) public returns (bool success) {
-        require(KYC == msg.sender);
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(msg.sender, _whitelistAddress);
+        require(KYC == msg.sender || owner == msg.sender);
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);

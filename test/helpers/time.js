@@ -2,7 +2,7 @@
 // aren’t included within the original RPC specification.
 // See https://github.com/ethereumjs/testrpc#implemented-methods
 
-export default function increaseTime (duration) {
+function increaseTime (duration) {
     const id = Date.now();
   
     return new Promise((resolve, reject) => {
@@ -25,5 +25,38 @@ export default function increaseTime (duration) {
     });
   }
 
+export default function takeSnapshot() {
+    return new Promise((resolve, reject) => {
+        web3.currentProvider.sendAsync({
+            jsonrpc: '2.0',
+            method: 'evm_snapshot',
+            params: [],
+            id: new Date().getTime()
+        }, (err, result) => {
+            if (err) {
+                return reject(err);
+            }
 
-  
+            resolve(result.result);
+        });
+    });
+};
+
+function revertToSnapshot(snapShotId) {
+    return new Promise((resolve, reject) => {
+        web3.currentProvider.sendAsync({
+            jsonrpc: '2.0',
+            method: 'evm_revert',
+            params: [snapShotId],
+            id: new Date().getTime()
+        }, (err) => {
+            if (err) {
+                return reject(err);
+            }
+
+            resolve();
+        });
+    });
+};
+
+  export { increaseTime, takeSnapshot, revertToSnapshot };
