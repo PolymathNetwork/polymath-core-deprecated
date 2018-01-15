@@ -45,11 +45,11 @@ library SafeMath {
 
 /// ERC Token Standard #20 Interface (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md)
 interface IERC20 {
-    function balanceOf(address _owner) public constant returns (uint256 balance);
+    function balanceOf(address _owner) public view returns (uint256 balance);
     function transfer(address _to, uint256 _value) public returns (bool success);
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
     function approve(address _spender, uint256 _value) public returns (bool success);
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining);
+    function allowance(address _owner, address _spender) public view returns (uint256 remaining);
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
@@ -113,7 +113,7 @@ contract PolyToken is IERC20 {
 
     /* @param _owner The address from which the balance will be retrieved
     @return The balance */
-    function balanceOf(address _owner) public constant returns (uint256 balance) {
+    function balanceOf(address _owner) public view returns (uint256 balance) {
         return balances[_owner];
     }
 
@@ -130,7 +130,7 @@ contract PolyToken is IERC20 {
     /* @param _owner The address of the account owning tokens
     @param _spender The address of the account able to transfer the tokens
     @return Amount of remaining tokens allowed to spent */
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
+    function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
 
@@ -191,80 +191,90 @@ interface ICustomers {
 
 
 
+/**
+ * @title Customers
+ * @dev Contract use to register the user on the Platform platform
+ */
+
 contract Customers is ICustomers {
 
-    PolyToken POLY;
+    PolyToken POLY;                                                     // Instance of the POLY token
 
-    uint256 public constant newProviderFee = 1000;
+    uint256 public constant NEW_PROVIDER_FEE = 1000;                    // Constant variable which holds the fee to register the KYC Oracles
 
-    // A Customer
-    struct Customer {
-        bytes32 jurisdiction;
-        uint256 joined;
-        uint8 role;
-        bool verified;
-        bool accredited;
-        bytes32 proof;
-        uint256 expires;
+    struct Customer {                                                   // Structure use to store the details of the customers
+        bytes32 jurisdiction;                                           // Customers jurisdiction as ex - ISO3166 
+        uint256 joined;                                                 // Timestamp when customer register
+        uint8 role;                                                     // role of the customer 
+        bool verified;                                                  // Boolean variable to check the status of the customer whether it is verified or not 
+        bool accredited;                                                // Accrediation status of the customer
+        bytes32 proof;                                                  // Proof for customer
+        uint256 expires;                                                // Timestamp when customer verification expires 
     }
 
-    // Customers (kyc provider address => customer address)
-    mapping(address => mapping(address => Customer)) public customers;
+    mapping(address => mapping(address => Customer)) public customers;  // Customers (kyc provider address => customer address)
 
-    // KYC/Accreditation Provider
-    struct Provider {
-        string name;
-        uint256 joined;
-        bytes32 details;
-        uint256 fee;
+    struct Provider {                                                   // KYC/Accreditation Provider
+        string name;                                                    // Name of the provider 
+        uint256 joined;                                                 // Timestamp when provider register     
+        bytes32 details;                                                // Details of provider 
+        uint256 fee;                                                    // Fee charged by the KYC providers  
     }
 
-    // KYC/Accreditation Providers
-    mapping(address => Provider) public providers;
+    mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
 
     // Notifications
     event LogNewProvider(address providerAddress, string name, bytes32 details);
     event LogCustomerVerified(address customer, address provider, uint8 role);
-
+    
+    // Modifier
     modifier onlyProvider() {
         require(providers[msg.sender].details != 0x0);
         _;
     }
 
-    // Constructor
+    /**
+     * @dev Constructor 
+     */
     function Customers(address _polyTokenAddress) public {
         POLY = PolyToken(_polyTokenAddress);
     }
 
-    /* @dev Allow new provider applications
-    @param _providerAddress The provider's public key address
-    @param _name The provider's name
-    @param _details A SHA256 hash of the new providers details
-    @param _fee The fee charged for customer verification */
+    /** 
+     * @dev Allow new provider applications
+     * @param _providerAddress The provider's public key address
+     * @param _name The provider's name
+     * @param _details A SHA256 hash of the new providers details
+     * @param _fee The fee charged for customer verification 
+     */
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
         require(_details != 0x0);
-        require(providers[_providerAddress].details == 0);
-        require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
+        require(providers[_providerAddress].details == 0x0);
+        require(POLY.transferFrom(_providerAddress, address(this), NEW_PROVIDER_FEE));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         LogNewProvider(_providerAddress, _name, _details);
         return true;
     }
 
-    /* @dev Change a providers fee
-    @param _newFee The new fee of the provider */
+    /**
+     * @dev Change a providers fee
+     * @param _newFee The new fee of the provider 
+     */
     function changeFee(uint256 _newFee) public returns (bool success) {
-        require(providers[msg.sender].details != 0);
+        require(providers[msg.sender].details != 0x0);
         providers[msg.sender].fee = _newFee;
         return true;
     }
 
-    /* @dev Verify an investor
-    @param _customer The customer's public key address
-    @param _jurisdiction The jurisdiction code of the customer
-    @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4, etc.
-    @param _accredited Whether the customer is accredited or not (only applied to investors)
-    @param _expires The time the verification expires */
+    /** 
+     * @dev Verify an investor
+     * @param _customer The customer's public key address
+     * @param _jurisdiction The jurisdiction code of the customer
+     * @param _role The type of customer - investor:1, delegate:2, issuer:3, marketmaker:4, etc.
+     * @param _accredited Whether the customer is accredited or not (only applied to investors)
+     * @param _expires The time the verification expires 
+     */
     function verifyCustomer(
         address _customer,
         bytes32 _jurisdiction,
@@ -283,7 +293,15 @@ contract Customers is ICustomers {
         return true;
     }
 
-    // Get customer attestation data by KYC provider and customer ethereum address
+    ///////////////////
+    /// GET Functions
+    //////////////////
+
+    /**
+     * @dev Get customer attestation data by KYC provider and customer ethereum address
+     * @param _provider Address of the KYC provider.
+     * @param _customer Address of the customer ethereum address
+     */
     function getCustomer(address _provider, address _customer) public constant returns (
         bytes32,
         bool,
@@ -300,7 +318,10 @@ contract Customers is ICustomers {
       );
     }
 
-    // Get provider details and fee by ethereum address
+    /**
+     * Get provider details and fee by ethereum address
+     * @param _providerAddress Address of the KYC provider
+     */
     function getProvider(address _providerAddress) public constant returns (
         string name,
         uint256 joined,

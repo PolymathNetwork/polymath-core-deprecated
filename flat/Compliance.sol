@@ -157,11 +157,11 @@ library SafeMath {
 
 /// ERC Token Standard #20 Interface (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md)
 interface IERC20 {
-    function balanceOf(address _owner) public constant returns (uint256 balance);
+    function balanceOf(address _owner) public view returns (uint256 balance);
     function transfer(address _to, uint256 _value) public returns (bool success);
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
     function approve(address _spender, uint256 _value) public returns (bool success);
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining);
+    function allowance(address _owner, address _spender) public view returns (uint256 remaining);
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
@@ -225,7 +225,7 @@ contract PolyToken is IERC20 {
 
     /* @param _owner The address from which the balance will be retrieved
     @return The balance */
-    function balanceOf(address _owner) public constant returns (uint256 balance) {
+    function balanceOf(address _owner) public view returns (uint256 balance) {
         return balances[_owner];
     }
 
@@ -242,7 +242,7 @@ contract PolyToken is IERC20 {
     /* @param _owner The address of the account owning tokens
     @param _spender The address of the account able to transfer the tokens
     @return Amount of remaining tokens allowed to spent */
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
+    function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
 
@@ -303,80 +303,90 @@ interface ICustomers {
 
 
 
+/**
+ * @title Customers
+ * @dev Contract use to register the user on the Platform platform
+ */
+
 contract Customers is ICustomers {
 
-    PolyToken POLY;
+    PolyToken POLY;                                                     // Instance of the POLY token
 
-    uint256 public constant newProviderFee = 1000;
+    uint256 public constant NEW_PROVIDER_FEE = 1000;                    // Constant variable which holds the fee to register the KYC Oracles
 
-    // A Customer
-    struct Customer {
-        bytes32 jurisdiction;
-        uint256 joined;
-        uint8 role;
-        bool verified;
-        bool accredited;
-        bytes32 proof;
-        uint256 expires;
+    struct Customer {                                                   // Structure use to store the details of the customers
+        bytes32 jurisdiction;                                           // Customers jurisdiction as ex - ISO3166 
+        uint256 joined;                                                 // Timestamp when customer register
+        uint8 role;                                                     // role of the customer 
+        bool verified;                                                  // Boolean variable to check the status of the customer whether it is verified or not 
+        bool accredited;                                                // Accrediation status of the customer
+        bytes32 proof;                                                  // Proof for customer
+        uint256 expires;                                                // Timestamp when customer verification expires 
     }
 
-    // Customers (kyc provider address => customer address)
-    mapping(address => mapping(address => Customer)) public customers;
+    mapping(address => mapping(address => Customer)) public customers;  // Customers (kyc provider address => customer address)
 
-    // KYC/Accreditation Provider
-    struct Provider {
-        string name;
-        uint256 joined;
-        bytes32 details;
-        uint256 fee;
+    struct Provider {                                                   // KYC/Accreditation Provider
+        string name;                                                    // Name of the provider 
+        uint256 joined;                                                 // Timestamp when provider register     
+        bytes32 details;                                                // Details of provider 
+        uint256 fee;                                                    // Fee charged by the KYC providers  
     }
 
-    // KYC/Accreditation Providers
-    mapping(address => Provider) public providers;
+    mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
 
     // Notifications
     event LogNewProvider(address providerAddress, string name, bytes32 details);
     event LogCustomerVerified(address customer, address provider, uint8 role);
-
+    
+    // Modifier
     modifier onlyProvider() {
         require(providers[msg.sender].details != 0x0);
         _;
     }
 
-    // Constructor
+    /**
+     * @dev Constructor 
+     */
     function Customers(address _polyTokenAddress) public {
         POLY = PolyToken(_polyTokenAddress);
     }
 
-    /* @dev Allow new provider applications
-    @param _providerAddress The provider's public key address
-    @param _name The provider's name
-    @param _details A SHA256 hash of the new providers details
-    @param _fee The fee charged for customer verification */
+    /** 
+     * @dev Allow new provider applications
+     * @param _providerAddress The provider's public key address
+     * @param _name The provider's name
+     * @param _details A SHA256 hash of the new providers details
+     * @param _fee The fee charged for customer verification 
+     */
     function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_providerAddress != address(0));
         require(_details != 0x0);
-        require(providers[_providerAddress].details == 0);
-        require(POLY.transferFrom(_providerAddress, address(this), newProviderFee));
+        require(providers[_providerAddress].details == 0x0);
+        require(POLY.transferFrom(_providerAddress, address(this), NEW_PROVIDER_FEE));
         providers[_providerAddress] = Provider(_name, now, _details, _fee);
         LogNewProvider(_providerAddress, _name, _details);
         return true;
     }
 
-    /* @dev Change a providers fee
-    @param _newFee The new fee of the provider */
+    /**
+     * @dev Change a providers fee
+     * @param _newFee The new fee of the provider 
+     */
     function changeFee(uint256 _newFee) public returns (bool success) {
-        require(providers[msg.sender].details != 0);
+        require(providers[msg.sender].details != 0x0);
         providers[msg.sender].fee = _newFee;
         return true;
     }
 
-    /* @dev Verify an investor
-    @param _customer The customer's public key address
-    @param _jurisdiction The jurisdiction code of the customer
-    @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4, etc.
-    @param _accredited Whether the customer is accredited or not (only applied to investors)
-    @param _expires The time the verification expires */
+    /** 
+     * @dev Verify an investor
+     * @param _customer The customer's public key address
+     * @param _jurisdiction The jurisdiction code of the customer
+     * @param _role The type of customer - investor:1, delegate:2, issuer:3, marketmaker:4, etc.
+     * @param _accredited Whether the customer is accredited or not (only applied to investors)
+     * @param _expires The time the verification expires 
+     */
     function verifyCustomer(
         address _customer,
         bytes32 _jurisdiction,
@@ -395,7 +405,15 @@ contract Customers is ICustomers {
         return true;
     }
 
-    // Get customer attestation data by KYC provider and customer ethereum address
+    ///////////////////
+    /// GET Functions
+    //////////////////
+
+    /**
+     * @dev Get customer attestation data by KYC provider and customer ethereum address
+     * @param _provider Address of the KYC provider.
+     * @param _customer Address of the customer ethereum address
+     */
     function getCustomer(address _provider, address _customer) public constant returns (
         bytes32,
         bool,
@@ -412,7 +430,10 @@ contract Customers is ICustomers {
       );
     }
 
-    // Get provider details and fee by ethereum address
+    /**
+     * Get provider details and fee by ethereum address
+     * @param _providerAddress Address of the KYC provider
+     */
     function getProvider(address _providerAddress) public constant returns (
         string name,
         uint256 joined,
@@ -472,21 +493,27 @@ interface ITemplate {
 
 
 
+/**
+ * @title Template 
+ * @dev  Template details used for the security token offering to ensure the regulatory compliance
+ */
+
 contract Template is ITemplate {
 
-    address owner;
-    string offeringType;
-    bytes32 issuerJurisdiction;
-    mapping(bytes32 => bool) allowedJurisdictions;
-    bool[] allowedRoles;
-    bool accredited;
-    address KYC;
-    bytes32 details;
-    bool finalized;
-    uint256 expires;
-    uint256 fee;
-    uint8 quorum;
-    uint256 vestingPeriod;
+    address public owner;                                           // Address of the owner of template
+    string public offeringType;                                     // Name of the security being issued
+    bytes32 public issuerJurisdiction;                              // Variable contains the jurisdiction of the issuer of the template
+    mapping(bytes32 => bool) public allowedJurisdictions;           // Mapping that contains the allowed staus of Jurisdictions 
+    mapping(uint8 => bool) public allowedRoles;                     // Mapping that contains the allowed status of Roles
+    bool public accredited;                                         // Variable that define the required level of accrediation for the investor 
+    address public KYC;                                             // Address of the KYC provider
+    bytes32 details;                                                // Details of the offering requirements 
+    bool finalized;                                                 // Variable to know the status of the template (complete - true, not complete - false)
+    uint256 public expires;                                         // Timestamp when template expires
+    uint256 fee;                                                    // Amount of POLY to use the template (held in escrow until issuance)
+    uint8 quorum;                                                   // Minimum percent of shareholders which need to vote to freeze
+    uint256 vestingPeriod;                                          // Length of time to vest funds
+
 
     function Template (
         address _owner,
@@ -697,40 +724,37 @@ interface ISecurityToken {
 
 
 
+/**
+ * @title Compilance
+ * @dev Regulatory details offered by the security token
+ */
+
 contract Compliance is ICompliance {
 
     string public VERSION = "0.1";
 
-    // A compliance template
-    struct TemplateReputation {
-        address owner;
-        uint256 totalRaised;
-        uint256 timesUsed;
-        uint256 expires;
-        address[] usedBy;
+    struct TemplateReputation {                                         // Structure contains the compliance template details
+        address owner;                                                  // Address of the template owner
+        uint256 totalRaised;                                            // Total amount raised by the issuers that used the template
+        uint256 timesUsed;                                              // How many times template will be used as the compliance regulator for different security token
+        uint256 expires;                                                // Timestamp when template get expire
+        address[] usedBy;                                               // Array of security token addresses that used the particular template
     }
-    mapping(address => TemplateReputation) templates;
+    mapping(address => TemplateReputation) templates;                   // Mapping used for storing the template past records corresponds to template address
+    mapping(address => address[]) public templateProposals;             // Template proposals for a specific security token
 
-    // Template proposals for a specific security token
-    mapping(address => address[]) public templateProposals;
-
-    // Smart contract proposals for a specific security token offering
-    struct Offering {
+    struct Offering {                                                   // Smart contract proposals for a specific security token offering
         address auditor;
         uint256 fee;
         uint256 vestingPeriod;
         uint8 quorum;
         address[] usedBy;
     }
-    mapping(address => Offering) offerings;
-    // Security token contract proposals for a specific security token
-    mapping(address => address[]) public offeringProposals;
+    mapping(address => Offering) offerings;                             // Mapping used for storing the Offering detials corresponds to offering contract address
+    mapping(address => address[]) public offeringProposals;             // Security token contract proposals for a specific security token
 
-    // Instance of the Compliance contract
-    Customers public PolyCustomers;
-
-    // 100 Day minimum vesting period for POLY earned
-    uint256 public constant minimumVestingPeriod = 60 * 60 * 24 * 100;
+    Customers public PolyCustomers;                                      // Instance of the Compliance contract
+    uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
 
     // Notifications
     event LogTemplateCreated(address indexed creator, address _template, string _offeringType);
@@ -742,16 +766,18 @@ contract Compliance is ICompliance {
         PolyCustomers = Customers(_polyCustomersAddress);
     }
 
-    /* @dev `createTemplate` is a simple function to create a new compliance template
-    @param _offeringType The name of the security being issued
-    @param _issuerJurisdiction The jurisdiction id of the issuer
-    @param _accredited Accreditation status required for investors
-    @param _KYC KYC provider used by the template
-    @param _details Details of the offering requirements
-    @param _expires Timestamp of when the template will expire
-    @param _fee Amount of POLY to use the template (held in escrow until issuance)
-    @param _quorum Minimum percent of shareholders which need to vote to freeze
-    @param _vestingPeriod Length of time to vest funds */
+    /**
+     * @dev `createTemplate` is a simple function to create a new compliance template
+     * @param _offeringType The name of the security being issued
+     * @param _issuerJurisdiction The jurisdiction id of the issuer
+     * @param _accredited Accreditation status required for investors
+     * @param _KYC KYC provider used by the template
+     * @param _details Details of the offering requirements
+     * @param _expires Timestamp of when the template will expire
+     * @param _fee Amount of POLY to use the template (held in escrow until issuance)
+     * @param _quorum Minimum percent of shareholders which need to vote to freeze
+     * @param _vestingPeriod Length of time to vest funds 
+     */
     function createTemplate(
         string _offeringType,
         bytes32 _issuerJurisdiction,
@@ -767,7 +793,7 @@ contract Compliance is ICompliance {
         var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
         require(role == 2 && verified && expires > now);
         require(_quorum > 0 && _quorum < 100);
-        require(_vestingPeriod >= minimumVestingPeriod);
+        require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
         address _template = new Template(
             msg.sender,
             _offeringType,
@@ -790,10 +816,12 @@ contract Compliance is ICompliance {
         LogTemplateCreated(msg.sender, _template, _offeringType);
     }
 
-    /* @dev Propose a bid for a security token issuance
-    @param _securityToken The security token being bid on
-    @param _template The unique template address
-    @return bool success */
+    /**
+     * @dev Propose a bid for a security token issuance
+     * @param _securityToken The security token being bid on
+     * @param _template The unique template address
+     * @return bool success 
+     */
     function proposeTemplate(
         address _securityToken,
         address _template
@@ -806,10 +834,12 @@ contract Compliance is ICompliance {
         return true;
     }
 
-    /* @dev Cancel a Template proposal if the bid hasn't been accepted
-    @param _securityToken The security token being bid on
-    @param _templateProposalIndex The template proposal array index
-    @return bool success */
+    /**
+     * @dev Cancel a Template proposal if the bid hasn't been accepted
+     * @param _securityToken The security token being bid on
+     * @param _templateProposalIndex The template proposal array index
+     * @return bool success 
+     */
     function cancelTemplateProposal(
         address _securityToken,
         uint256 _templateProposalIndex
@@ -823,11 +853,13 @@ contract Compliance is ICompliance {
         return true;
     }
 
-    /* @dev Set the STO contract by the issuer.
-       @param _STOAddress address of the STO contract deployed over the network.
-       @param _fee fee to be paid in poly to use that contract
-       @param _vestingPeriod no. of days investor binded to hold the Security token
-       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    /**
+     * @dev Set the STO contract by the issuer.
+     * @param _STOAddress address of the STO contract deployed over the network.
+     * @param _fee fee to be paid in poly to use that contract
+     * @param _vestingPeriod no. of days investor binded to hold the Security token
+     * @param _quorum Minimum percent of shareholders which need to vote to freeze
+     */
     function setSTO (
         address _STOAddress,
         uint256 _fee,
@@ -837,7 +869,7 @@ contract Compliance is ICompliance {
     {
             require(_STOAddress != address(0));
             require(_quorum > 0 && _quorum < 100);
-            require(_vestingPeriod >= minimumVestingPeriod);
+            require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
             offerings[_STOAddress].auditor = msg.sender;
             offerings[_STOAddress].fee = _fee;
             offerings[_STOAddress].vestingPeriod = _vestingPeriod;
@@ -845,10 +877,12 @@ contract Compliance is ICompliance {
             return true;
     }
 
-    /* @dev Propose a Security Token Offering Contract for an issuance
-    @param _securityToken The security token being bid on
-    @param _stoContract The security token offering contract address
-    @return bool success */
+    /**
+     * @dev Propose a Security Token Offering Contract for an issuance
+     * @param _securityToken The security token being bid on
+     * @param _stoContract The security token offering contract address
+     * @return bool success 
+     */
     function proposeOfferingContract(
         address _securityToken,
         address _stoContract
@@ -864,10 +898,12 @@ contract Compliance is ICompliance {
         return true;
     }
 
-    /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
-    @param _securityToken The security token being bid on
-    @param _offeringProposalIndex The offering proposal array index
-    @return bool success */
+    /**
+     * @dev Cancel a STO contract proposal if the bid hasn't been accepted
+     * @param _securityToken The security token being bid on
+     * @param _offeringProposalIndex The offering proposal array index
+     * @return bool success 
+     */
     function cancelOfferingProposal(
         address _securityToken,
         uint256 _offeringProposalIndex
@@ -881,40 +917,48 @@ contract Compliance is ICompliance {
         return true;
     }
 
-    /* @dev `updateTemplateReputation` is a constant function that updates the
-     history of a security token template usage to keep track of previous uses
-    @param _template The unique template id
-    @param _templateIndex The array index of the template proposal */
+    /**
+     * @dev `updateTemplateReputation` is a constant function that updates the
+       history of a security token template usage to keep track of previous uses
+     * @param _template The unique template id
+     * @param _templateIndex The array index of the template proposal 
+     */
     function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success) {
         require(templateProposals[msg.sender][_templateIndex] == _template);
         templates[_template].usedBy.push(msg.sender);
         return true;
     }
 
-    /* @dev `updateOfferingReputation` is a constant function that updates the
-     history of a security token offering contract to keep track of previous uses
-    @param _contractAddress The smart contract address of the STO contract
-    @param _offeringProposalIndex The array index of the security token offering proposal */
+    /**
+     * @dev `updateOfferingReputation` is a constant function that updates the
+       history of a security token offering contract to keep track of previous uses
+     * @param _stoContract The smart contract address of the STO contract
+     * @param _offeringProposalIndex The array index of the security token offering proposal 
+     */
     function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success) {
         require(offeringProposals[msg.sender][_offeringProposalIndex] == _stoContract);
         offerings[_stoContract].usedBy.push(msg.sender);
         return true;
     }
 
-    /* @dev Get template details by the proposal index
-    @param _securityTokenAddress The security token ethereum address
-    @param _templateIndex The array index of the template being checked
-    @return Template struct */
+    /**
+     * @dev Get template details by the proposal index
+     * @param _securityTokenAddress The security token ethereum address
+     * @param _templateIndex The array index of the template being checked
+     * @return Template struct 
+     */
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
         address template
     ){
         return templateProposals[_securityTokenAddress][_templateIndex];
     }
 
-    /* @dev Get security token offering smart contract details by the proposal index
-    @param _securityTokenAddress The security token ethereum address
-    @param _offeringProposalIndex The array index of the STO contract being checked
-    @return Contract struct */
+    /** 
+     * @dev Get security token offering smart contract details by the proposal index
+     * @param _securityTokenAddress The security token ethereum address
+     * @param _offeringProposalIndex The array index of the STO contract being checked
+     * @return Contract struct 
+     */
     function getOfferingByProposal(address _securityTokenAddress, uint8 _offeringProposalIndex) view public returns (
         address stoContract,
         address auditor,
