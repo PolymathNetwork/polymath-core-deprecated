@@ -20,12 +20,12 @@ contract("Template",(accounts)=>{
     let owner;
 
     before(async()=>{
-        KYCAddress = accounts[0];
+        KYCAddress = accounts[0];                               // Asigining the KYC address
         owner = accounts[1];
     });
 
-    it("Verify the constructor parameter",
-    async()=>{
+    describe("Constructor",async()=>{
+    it("Verify the constructor parameter",async()=>{
         let template = await Template.new(
             owner,
             offeringType,
@@ -45,7 +45,13 @@ contract("Template",(accounts)=>{
         assert.equal(tempData[3], owner);
         assert.equal(tempData[4], KYCAddress);
     });
+});
 
+    ////////////////////////////////////
+    ////// addJurisdiction() Test Cases
+    ////////////////////////////////////
+
+    describe("addJurisdiction() Test Cases",async()=>{
     it("addJuridisction: Should add the array of jurisdiction into the allowedJusrisdiction mapping",
     async()=>{
         let template = await Template.new(
@@ -101,11 +107,11 @@ contract("Template",(accounts)=>{
         try {
             await template.addJurisdiction(jurisdiction, [true, false, true], { from : owner });
         } catch(error) {
-                ensureException(error);
+            ensureException(error);
         }
     });
 
-    it("addJuridisction: Should fail adding into mapping allowedJurisdiction -- change restricted in finalize template",
+    it("addJuridisction: Should fail adding into mapping allowedJurisdiction -- Template status is being finalized",
     async()=>{
         let template = await Template.new(
             owner,
@@ -125,10 +131,16 @@ contract("Template",(accounts)=>{
         try {
             await template.addJurisdiction(['hong-hk','japan-jp'], [true, false], { from : owner });
         } catch(error) {
-                ensureException(error);
+            ensureException(error);
         }
     });
+});
 
+    ///////////////////////////////////
+    ////// addRoles() Test Cases
+    //////////////////////////////////
+
+    describe("addRoles() Test Cases",async()=>{
     it("addRoles:Should add the new roles",async()=>{
         let template = await Template.new(
             owner,
@@ -145,7 +157,7 @@ contract("Template",(accounts)=>{
         await template.addRoles([1,2,3], { from : owner });
     });
     
-    it("addRoles:Should add the new roles",async()=>{
+    it("addRoles:Should fail in adding the new roles -- fail because msg.sender is not the owner",async()=>{
         let template = await Template.new(
             owner,
             offeringType,
@@ -161,11 +173,11 @@ contract("Template",(accounts)=>{
         try {
             await template.addRoles([1,2,3], { from : accounts[8] });
         } catch(error) {
-                ensureException(error); 
+            ensureException(error); 
         }
     });
 
-    it("addRoles:Should add the new roles",async()=>{
+    it("addRoles:Should fail in adding the new roles -- because template status will change to finalized",async()=>{
         let template = await Template.new(
             owner,
             offeringType,
@@ -184,10 +196,16 @@ contract("Template",(accounts)=>{
         try {
             await template.addRoles([3], { from : accounts[8] });
         } catch(error) {
-                ensureException(error); 
+            ensureException(error); 
         }
     });
+});
 
+    ////////////////////////////////
+    ///// updateDetails() Test Cases
+    ////////////////////////////////
+
+    describe("updateDetails() Test Cases",async()=>{
     it("updateDetails: Should update the details of the template", async()=>{
         let template = await Template.new(
             owner,
@@ -222,7 +240,7 @@ contract("Template",(accounts)=>{
         try {
             await template.updateDetails('',{ from : owner });
         } catch(error) {
-                ensureException(error);
+            ensureException(error);
         }
     });
 
@@ -242,10 +260,16 @@ contract("Template",(accounts)=>{
         try {
             await template.updateDetails("This is the second template",{ from : accounts[8] });
         } catch(error) {
-                ensureException(error);
+            ensureException(error);
         }
     });
+});
 
+    ///////////////////////////////////
+    ///// finalizeTemplate() test cases
+    ///////////////////////////////////
+    
+    describe("finalizeTemplate() Test Cases",async()=>{
     it("finalizetemplate: Should change the template status to finalize", async()=>{
         let template = await Template.new(
             owner,
@@ -262,7 +286,7 @@ contract("Template",(accounts)=>{
         await template.finalizeTemplate({ from : owner });
     });
 
-    it("finalizetemplate: Should change the template status to finalize", async()=>{
+    it("finalizetemplate: Should fail to change the template status to finalize -- Due to msg.sender is not owner ", async()=>{
         let template = await Template.new(
             owner,
             offeringType,
@@ -278,10 +302,16 @@ contract("Template",(accounts)=>{
         try {
             await template.finalizeTemplate({ from : accounts[8] });
         } catch(error) {
-                ensureException(error);
+            ensureException(error);
         }
     });
+});
 
+    ////////////////////////////////////////////
+    ///// checkTemplateRequirements() Test cases
+    ////////////////////////////////////////////
+
+    describe("checkTemplateRequirements() Test Cases", async()=>{
     it('checkTemplateRequirements: Should met the requirements of template', async()=>{
         let template = await Template.new(
             owner,
@@ -297,7 +327,8 @@ contract("Template",(accounts)=>{
         );
         await template.addJurisdiction(jurisdiction, [true, true, true, true], { from : owner });
         await template.addRoles([1,2], { from : owner });
-        await template.checkTemplateRequirements(issuerJurisdiction, accredited, 1);
+        let isverify = await template.checkTemplateRequirements.call(issuerJurisdiction, accredited, 1);
+        assert.isTrue(isverify);
     });
 
     it('checkTemplateRequirements: Should fail in meeting the requirements of template -- jurisdiction is false', async()=>{
@@ -318,7 +349,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(issuerJurisdiction, accredited, 1);
         } catch(error) {
-                ensureException(error);
+            ensureException(error);
         } 
     });
 
@@ -340,7 +371,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(0x0, accredited, 1);
          } catch(error) {
-                ensureException(error);
+            ensureException(error);
          } 
     });
 
@@ -362,7 +393,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(0x0, accredited, 4);
          } catch(error) {
-                ensureException(error);
+            ensureException(error);
          } 
     });
 
@@ -384,7 +415,7 @@ contract("Template",(accounts)=>{
         try {
             await template.checkTemplateRequirements(issuerJurisdiction, accredited, 1);
          } catch(error) {
-                ensureException(error);
+            ensureException(error);
          } 
     });
 
@@ -405,7 +436,7 @@ contract("Template",(accounts)=>{
         await template.addRoles([1,2], { from : owner });
         await template.checkTemplateRequirements(issuerJurisdiction, true, 1);
     });
-
+});
 
 
 });
