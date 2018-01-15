@@ -1,4 +1,4 @@
-import { convertHex, ensureException, duration } from './helpers/Utils.js';
+import { convertHex, ensureException, duration } from './helpers/utils.js';
 import latestTime from './helpers/latestTime';
 
 const SecurityTokenRegistrar = artifacts.require('./SecurityTokenRegistrar.sol');
@@ -19,7 +19,7 @@ contract('SecurityTokenRegistrar', accounts => {
   const createSecurityTokenFee = 10000;
   const maxPoly = 1000000;
   const quorum = 3;
-  const lockupPeriod = latestTime() + duration.days(90);                      //Current time + 90 days is the locking period (Testing Only)   
+  const lockupPeriod = latestTime() + duration.years(1);                      //Current time + 1 year is the locking period (Testing Only)   
   const getAmount = 1000000;
   const approvedAmount = 10000;
 

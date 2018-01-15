@@ -1,5 +1,5 @@
 const POLY = artifacts.require('PolyToken.sol');
-import {ensureException} from './helpers/Utils.js'
+import {ensureException} from './helpers/utils.js'
 const BigNumber = require('bignumber.js');
 
 

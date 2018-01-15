@@ -1,4 +1,4 @@
-import {ensureException, duration}  from './helpers/Utils.js';
+import {ensureException, duration}  from './helpers/utils.js';
 import latestTime from './helpers/latestTime';
 
 const Compliance = artifacts.require('../contracts/Customers.sol');
