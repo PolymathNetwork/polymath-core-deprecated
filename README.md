@@ -16,10 +16,10 @@ compliant securities tokens on a decentralized blockchain.
 
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)                           | [0x92b95e0b0ff21e9398785e9df2265e4137c930f2](https://ropsten.etherscan.io/address/0x92b95e0b0ff21e9398785e9df2265e4137c930f2) |
-| [Compliance](./contracts/Compliance.sol)                         | [0x0205f8c4f4ca1c7c1b092185862c0e54a8dc416e](https://ropsten.etherscan.io/address/0x0205f8c4f4ca1c7c1b092185862c0e54a8dc416e) |
-| [Customers](./contracts/Customers.sol)                           | [0x63be77433197d191e64b92981a444fe5fc157097](https://ropsten.etherscan.io/address/0x63be77433197d191e64b92981a444fe5fc157097) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x22e73631cbcf68150fdd8b62065499f96acb9aaa](https://ropsten.etherscan.io/address/0x22e73631cbcf68150fdd8b62065499f96acb9aaa) |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0x3d84b2808d923b69c75a12d35f648849a28f32f2](https://ropsten.etherscan.io/address/0x3d84b2808d923b69c75a12d35f648849a28f32f2) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x6e6db7838404ffa6bdd2bc175b82488205120712](https://ropsten.etherscan.io/address/0x6e6db7838404ffa6bdd2bc175b82488205120712) |
+| [Customers](./contracts/Customers.sol)                           | [0x4844f78b1cd76cd45e4289d6e9409f38252a7fd4](https://ropsten.etherscan.io/address/0x4844f78b1cd76cd45e4289d6e9409f38252a7fd4) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x6051ba9f1c2b177f41741ff69ce553b398a058ff](https://ropsten.etherscan.io/address/0x6051ba9f1c2b177f41741ff69ce553b398a058ff) |
 
 ## Setup
 
