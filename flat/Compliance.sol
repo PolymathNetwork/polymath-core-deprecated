@@ -394,7 +394,8 @@ contract Customers is ICustomers {
         bool _accredited,
         uint256 _expires
     ) public onlyProvider returns (bool success)
-    {
+    {   
+        require(_expires > now);
         require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;
@@ -541,9 +542,11 @@ contract Template is ITemplate {
         vestingPeriod = _vestingPeriod;
     }
 
-    /* @dev `addJurisdiction` allows the adding of new jurisdictions to a template
-    @param _allowedJurisdictions An array of jurisdictions
-    @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not */
+    /** 
+     * @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+     * @param _allowedJurisdictions An array of jurisdictions
+     * @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not 
+     */
     function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public {
         require(owner == msg.sender);
         require(_allowedJurisdictions.length == _allowed.length);
@@ -553,8 +556,10 @@ contract Template is ITemplate {
         }
     }
 
-    /* @dev `addRole` allows the adding of new roles to be added to whitelist
-    @param _allowedRoles User roles that can purchase the security */
+    /**
+     * @dev `addRole` allows the adding of new roles to be added to whitelist
+     * @param _allowedRoles User roles that can purchase the security 
+     */
     function addRoles(uint8[] _allowedRoles) public {
         require(owner == msg.sender);
         require(!finalized);
@@ -563,7 +568,11 @@ contract Template is ITemplate {
         }
     }
 
-    /// @notice `updateDetails`
+    /** 
+     * @notice `updateDetails`
+     * @param _details details of the template need to change
+     * @return allowed boolean variable
+    */
     function updateDetails(bytes32 _details) public returns (bool allowed) {
         require(_details != 0x0);
         require(owner == msg.sender);
@@ -571,16 +580,23 @@ contract Template is ITemplate {
         return true;
     }
 
-    /* @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements */
+    /** 
+     * @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements 
+     * @return success
+     */
     function finalizeTemplate() public returns (bool success) {
         require(owner == msg.sender);
         finalized = true;
         return true;
     }
 
-    /* @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
-    @param _jurisdiction The ISO-3166 code of the investors jurisdiction
-    @param _accredited Whether the investor is accredited or not */
+    /**
+     * @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
+     * @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+     * @param _accredited Whether the investor is accredited or not
+     * @param _role role of the user
+     * @return allowed boolean variable
+     */
     function checkTemplateRequirements(
         bytes32 _jurisdiction,
         bool _accredited,
@@ -596,14 +612,19 @@ contract Template is ITemplate {
         return true;
     }
 
-    /* getTemplateDetails is a constant function that gets template details
-    @return bytes32 details, bool finalized */
+    /**
+     * @dev getTemplateDetails is a constant function that gets template details
+     * @return bytes32 details, bool finalized 
+     */
     function getTemplateDetails() view public returns (bytes32, bool) {
         require(expires > now);
         return (details, finalized);
     }
 
-    /// `getUsageFees` is a function to get all the details on template usage fees
+    /**
+     * @dev `getUsageFees` is a function to get all the details on template usage fees
+     * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
+    */
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
         return (fee, quorum, vestingPeriod, owner, KYC);
     }

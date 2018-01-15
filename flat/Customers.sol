@@ -282,7 +282,8 @@ contract Customers is ICustomers {
         bool _accredited,
         uint256 _expires
     ) public onlyProvider returns (bool success)
-    {
+    {   
+        require(_expires > now);
         require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;

@@ -799,6 +799,9 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint8 _quorum
     ) external
     {
+      require(_totalSupply > 0);
+      require(tickers[_ticker] == 0x0);
+      require(_lockupPeriod >= now);
       PolyToken POLY = PolyToken(polyTokenAddress);
       POLY.transferFrom(msg.sender, _host, _fee);
       address newSecurityTokenAddress = new SecurityToken(
@@ -825,6 +828,8 @@ contract SecurityTokenRegistrar is ISTRegistrar {
 
     /**
      * @dev Get security token address by ticker name
+     * @param _ticker Symbol of the Scurity token
+     * @return address _ticker
      */
     function getSecurityTokenAddress(string _ticker) public constant returns (address) {
       return tickers[_ticker];
@@ -832,6 +837,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
 
     /**
      * @dev Get Security token details by its ethereum address
+     * @param _STAddress Security token address
      */
     function getSecurityTokenData(address _STAddress) public constant returns (
       uint256 totalSupply,
