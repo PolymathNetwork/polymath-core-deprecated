@@ -74,9 +74,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint8 _quorum
     ) external
     {
-      require(_totalSupply > 0);
+      require(_totalSupply > 0 && _maxPoly > 0 && _fee > 0);
       require(tickers[_ticker] == 0x0);
       require(_lockupPeriod >= now);
+      require(_owner != address(0) && _host != address(0));
+      require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
       PolyToken POLY = PolyToken(polyTokenAddress);
       POLY.transferFrom(msg.sender, _host, _fee);
       address newSecurityTokenAddress = new SecurityToken(
