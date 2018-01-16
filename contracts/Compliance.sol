@@ -158,6 +158,7 @@ contract Compliance is ICompliance {
             require(_STOAddress != address(0));
             require(_quorum > 0 && _quorum <= 100);
             require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
+            require(_fee > 0);
             offerings[_STOAddress].auditor = msg.sender;
             offerings[_STOAddress].fee = _fee;
             offerings[_STOAddress].vestingPeriod = _vestingPeriod;
