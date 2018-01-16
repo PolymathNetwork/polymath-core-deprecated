@@ -56,23 +56,29 @@ interface IERC20 {
 
 interface ICustomers {
 
-  /* @dev Allow new provider applications
-  @param _providerAddress The provider's public key address
-  @param _name The provider's name
-  @param _details A SHA256 hash of the new providers details
-  @param _fee The fee charged for customer verification */
+  /** 
+   * @dev Allow new provider applications
+   * @param _providerAddress The provider's public key address
+   * @param _name The provider's name
+   * @param _details A SHA256 hash of the new providers details
+   * @param _fee The fee charged for customer verification 
+   */
   function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success);
 
-  /* @dev Change a providers fee
-  @param _newFee The new fee of the provider */
+  /**
+   * @dev Change a providers fee
+   * @param _newFee The new fee of the provider 
+   */
   function changeFee(uint256 _newFee) public returns (bool success);
 
-  /* @dev Verify an investor
-  @param _customer The customer's public key address
-  @param _jurisdiction The jurisdiction code of the customer
-  @param _role The type of customer - investor:1, issuer:2, delegate:3, marketmaker:4, etc.
-  @param _accredited Whether the customer is accredited or not (only applied to investors)
-  @param _expires The time the verification expires */
+  /** 
+   * @dev Verify an investor
+   * @param _customer The customer's public key address
+   * @param _jurisdiction The jurisdiction code of the customer
+   * @param _role The type of customer - investor:1, delegate:2, issuer:3, marketmaker:4, etc.
+   * @param _accredited Whether the customer is accredited or not (only applied to investors)
+   * @param _expires The time the verification expires 
+   */
   function verifyCustomer(
     address _customer,
     bytes32 _jurisdiction,
@@ -81,7 +87,15 @@ interface ICustomers {
     uint256 _expires
   ) public returns (bool success);
 
-  // Get customer attestation data by KYC provider and customer ethereum address
+   ///////////////////
+    /// GET Functions
+    //////////////////
+
+  /**
+    * @dev Get customer attestation data by KYC provider and customer ethereum address
+    * @param _provider Address of the KYC provider.
+    * @param _customer Address of the customer ethereum address
+    */
   function getCustomer(address _provider, address _customer) public constant returns (
     bytes32,
     bool,
@@ -90,7 +104,10 @@ interface ICustomers {
     uint256
   );
 
-  // Get provider details and fee by ethereum address
+  /**
+   * Get provider details and fee by ethereum address
+   * @param _providerAddress Address of the KYC provider
+   */
   function getProvider(address _providerAddress) public constant returns (
     string name,
     uint256 joined,
@@ -101,17 +118,19 @@ interface ICustomers {
 
 interface ISTRegistrar {
 
-    /* @dev Creates a new Security Token and saves it to the registry
-    @param _name Name of the security token
-    @param _ticker Ticker name of the security
-    @param _totalSupply Total amount of tokens being created
-    @param _owner Ethereum public key address of the security token owner
-    @param _host The host of the security token wizard
-    @param _fee Fee being requested by the wizard host
-    @param _type Type of security being tokenized
-    @param _polyRaise Amount of POLY being raised
-    @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-    @param _quorum Percent of initial investors required to freeze POLY raise */
+   /** 
+    * @dev Creates a new Security Token and saves it to the registry
+    * @param _name Name of the security token
+    * @param _ticker Ticker name of the security
+    * @param _totalSupply Total amount of tokens being created
+    * @param _owner Ethereum public key address of the security token owner
+    * @param _host The host of the security token wizard
+    * @param _fee Fee being requested by the wizard host
+    * @param _type Type of security being tokenized
+    * @param _maxPoly Amount of POLY being raised
+    * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+    * @param _quorum Percent of initial investors required to freeze POLY raise 
+    */
     function createSecurityToken (
         string _name,
         string _ticker,
@@ -120,7 +139,7 @@ interface ISTRegistrar {
         address _host,
         uint256 _fee,
         uint8 _type,
-        uint256 _polyRaise,
+        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum
     ) external;
@@ -135,16 +154,18 @@ interface ISTRegistrar {
 
 interface ICompliance {
 
-    /* @dev `createTemplate` is a simple function to create a new compliance template
-    @param _offeringType The name of the security being issued
-    @param _issuerJurisdiction The jurisdiction id of the issuer
-    @param _accredited Accreditation status required for investors
-    @param _KYC KYC provider used by the template
-    @param _details Details of the offering requirements
-    @param _expires Timestamp of when the template will expire
-    @param _fee Amount of POLY to use the template (held in escrow until issuance)
-    @param _quorum Minimum percent of shareholders which need to vote to freeze
-    @param _vestingPeriod Length of time to vest funds */
+    /**
+     * @dev `createTemplate` is a simple function to create a new compliance template
+     * @param _offeringType The name of the security being issued
+     * @param _issuerJurisdiction The jurisdiction id of the issuer
+     * @param _accredited Accreditation status required for investors
+     * @param _KYC KYC provider used by the template
+     * @param _details Details of the offering requirements
+     * @param _expires Timestamp of when the template will expire
+     * @param _fee Amount of POLY to use the template (held in escrow until issuance)
+     * @param _quorum Minimum percent of shareholders which need to vote to freeze
+     * @param _vestingPeriod Length of time to vest funds 
+     */
     function createTemplate(
         string _offeringType,
         bytes32 _issuerJurisdiction,
@@ -157,38 +178,46 @@ interface ICompliance {
         uint256 _vestingPeriod
     ) public;
 
-    /* @dev Propose a bid for a security token issuance
-    @param _securityToken The security token being bid on
-    @param _template The unique template address
-    @return bool success */
+   /**
+     * @dev Propose a bid for a security token issuance
+     * @param _securityToken The security token being bid on
+     * @param _template The unique template address
+     * @return bool success 
+     */
     function proposeTemplate(
         address _securityToken,
         address _template
     ) public returns (bool success);
 
-    /* @dev Propose a Security Token Offering Contract for an issuance
-    @param _securityToken The security token being bid on
-    @param _stoContract The security token offering contract address
-    @return bool success */
+    /**
+     * @dev Propose a Security Token Offering Contract for an issuance
+     * @param _securityToken The security token being bid on
+     * @param _stoContract The security token offering contract address
+     * @return bool success 
+     */
     function proposeOfferingContract(
         address _securityToken,
         address _stoContract
     ) public returns (bool success);
 
-    /* @dev Cancel a Template proposal if the bid hasn't been accepted
-    @param _securityToken The security token being bid on
-    @param _templateProposalIndex The template proposal array index
-    @return bool success */
+    /**
+     * @dev Cancel a Template proposal if the bid hasn't been accepted
+     * @param _securityToken The security token being bid on
+     * @param _templateProposalIndex The template proposal array index
+     * @return bool success 
+     */
     function cancelTemplateProposal(
         address _securityToken,
         uint256 _templateProposalIndex
     ) public returns (bool success);
 
-    /* @dev Set the STO contract by the issuer.
-       @param _STOAddress address of the STO contract deployed over the network.
-       @param _fee fee to be paid in poly to use that contract
-       @param _vestingPeriod no. of days investor binded to hold the Security token
-       @param _quorum Minimum percent of shareholders which need to vote to freeze*/
+    /**
+     * @dev Set the STO contract by the issuer.
+     * @param _STOAddress address of the STO contract deployed over the network.
+     * @param _fee fee to be paid in poly to use that contract
+     * @param _vestingPeriod no. of days investor binded to hold the Security token
+     * @param _quorum Minimum percent of shareholders which need to vote to freeze
+     */
     function setSTO (
         address _STOAddress,
         uint256 _fee,
@@ -196,39 +225,49 @@ interface ICompliance {
         uint8 _quorum
     ) public returns (bool success);
 
-    /* @dev Cancel a STO contract proposal if the bid hasn't been accepted
-    @param _securityToken The security token being bid on
-    @param _offeringProposalIndex The offering proposal array index
-    @return bool success */
+    /**
+     * @dev Cancel a STO contract proposal if the bid hasn't been accepted
+     * @param _securityToken The security token being bid on
+     * @param _offeringProposalIndex The offering proposal array index
+     * @return bool success 
+     */
     function cancelOfferingProposal(
         address _securityToken,
         uint256 _offeringProposalIndex
     ) public returns (bool success);
 
-    /* @dev `updateTemplateReputation` is a constant function that updates the
-     history of a security token template usage to keep track of previous uses
-    @param _template The unique template id
-    @param _templateIndex The array index of the template proposal */
+    /**
+     * @dev `updateTemplateReputation` is a constant function that updates the
+       history of a security token template usage to keep track of previous uses
+     * @param _template The unique template id
+     * @param _templateIndex The array index of the template proposal 
+     */
     function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success);
 
-    /* @dev `updateOfferingReputation` is a constant function that updates the
-     history of a security token offering contract to keep track of previous uses
-    @param _contractAddress The smart contract address of the STO contract
-    @param _offeringProposalIndex The array index of the security token offering proposal */
+    /**
+     * @dev `updateOfferingReputation` is a constant function that updates the
+       history of a security token offering contract to keep track of previous uses
+     * @param _stoContract The smart contract address of the STO contract
+     * @param _offeringProposalIndex The array index of the security token offering proposal 
+     */
     function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success);
 
-    /* @dev Get template details by the proposal index
-    @param _securityTokenAddress The security token ethereum address
-    @param _templateIndex The array index of the template being checked
-    @return Template struct */
+    /**
+     * @dev Get template details by the proposal index
+     * @param _securityTokenAddress The security token ethereum address
+     * @param _templateIndex The array index of the template being checked
+     * @return Template struct 
+     */
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
         address template
     );
 
-    /* @dev Get security token offering smart contract details by the proposal index
-    @param _securityTokenAddress The security token ethereum address
-    @param _offeringProposalIndex The array index of the STO contract being checked
-    @return Contract struct */
+    /** 
+     * @dev Get security token offering smart contract details by the proposal index
+     * @param _securityTokenAddress The security token ethereum address
+     * @param _offeringProposalIndex The array index of the STO contract being checked
+     * @return Contract struct 
+     */
     function getOfferingByProposal(address _securityTokenAddress, uint8 _offeringProposalIndex) view public returns (
         address stoContract,
         address auditor,
@@ -240,44 +279,66 @@ interface ICompliance {
 
 interface ITemplate {
 
-  /* @dev `addJurisdiction` allows the adding of new jurisdictions to a template
-  @param _allowedJurisdictions An array of jurisdictions
-  @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not */
+  /** 
+   * @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+   * @param _allowedJurisdictions An array of jurisdictions
+   * @param _allowed An array of whether the jurisdiction is allowed to purchase the security or not 
+   */
   function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public;
 
-  /* @dev `addRole` allows the adding of new roles to be added to whitelist
-  @param _allowedRoles User roles that can purchase the security */
+  /**
+   * @dev `addRole` allows the adding of new roles to be added to whitelist
+   * @param _allowedRoles User roles that can purchase the security 
+   */
   function addRoles(uint8[] _allowedRoles) public;
 
-  /// @notice `updateDetails`
+  /** 
+   * @notice `updateDetails`
+   * @param _details details of the template need to change
+   * @return allowed boolean variable
+   */
   function updateDetails(bytes32 _details) public returns (bool allowed);
 
-  /* @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements */
+  /** 
+   * @dev `finalizeTemplate` is used to finalize template.full compliance process/requirements 
+   * @return success
+   */
   function finalizeTemplate() public returns (bool success);
 
-  /* @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
-  @param _jurisdiction The ISO-3166 code of the investors jurisdiction
-  @param _accredited Whether the investor is accredited or not */
+  /**
+   * @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
+   * @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+   * @param _accredited Whether the investor is accredited or not
+   * @param _role role of the user
+   * @return allowed boolean variable
+   */
   function checkTemplateRequirements(
       bytes32 _jurisdiction,
       bool _accredited,
       uint8 _role
   ) public constant returns (bool allowed);
 
-  /* getTemplateDetails is a constant function that gets template details
-  @return bytes32 details, bool finalized */
+  /**
+   * @dev getTemplateDetails is a constant function that gets template details
+   * @return bytes32 details, bool finalized 
+   */
   function getTemplateDetails() view public returns (bytes32, bool);
 
-  /// `getUsageFees` is a function to get all the details on template usage fees
+  /**
+   * @dev `getUsageFees` is a function to get all the details on template usage fees
+   * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
+   */
   function getUsageDetails() view public returns (uint256, uint8, uint256, address, address);
 }
 
 interface ISTO {
 
-    /* @dev Initializes the STO with certain params
-    @param _tokenAddress The Security Token address
-    @param _startTime Given in UNIX time this is the time that the offering will begin
-    @param _endTime Given in UNIX time this is the time that the offering will end */
+    /** 
+     * @dev Initializes the STO with certain params
+     * @param _tokenAddress The Security Token address
+     * @param _startTime Given in UNIX time this is the time that the offering will begin
+     * @param _endTime Given in UNIX time this is the time that the offering will end 
+     */
     function securityTokenOffering(
         address _tokenAddress,
         uint256 _startTime,
@@ -382,7 +443,7 @@ contract SecurityToken is IERC20 {
     }
 
     modifier onlyShareholder() {
-        require (shareholders[msg.sender].allowed == true);
+        require (shareholders[msg.sender].allowed);
         _;
     }
 
@@ -493,7 +554,7 @@ contract SecurityToken is IERC20 {
      * @dev Add a verified address to the Security Token whitelist
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
-    */
+     */
     function addToWhitelist(address _whitelistAddress) public returns (bool success) {
         require(KYC == msg.sender || owner == msg.sender);
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
@@ -511,14 +572,13 @@ contract SecurityToken is IERC20 {
     function withdrawPoly() public returns (bool success) {
   	   if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
-        } else {
-  				require(now > endSTO + allocations[msg.sender].vestingPeriod);
-                require(allocations[msg.sender].frozen == false);
-                require(allocations[msg.sender].amount > 0);
-  				require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
-                allocations[msg.sender].amount = 0;
-                return true;
-        }
+        } 
+        require(now > endSTO + allocations[msg.sender].vestingPeriod);
+        require(allocations[msg.sender].frozen == false);
+        require(allocations[msg.sender].amount > 0);
+        require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+        allocations[msg.sender].amount = 0;
+        return true;
     }
 
     /**
@@ -534,7 +594,7 @@ contract SecurityToken is IERC20 {
         voted[msg.sender][_recipient] == true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
-        if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
+        if (allocations[_recipient].yayPercent >= allocations[_recipient].quorum) {
           allocations[_recipient].frozen = true;
         }
         LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].quorum, allocations[_recipient].frozen);
