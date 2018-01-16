@@ -16,10 +16,10 @@ compliant securities tokens on a decentralized blockchain.
 
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)                           | [0x3d84b2808d923b69c75a12d35f648849a28f32f2](https://ropsten.etherscan.io/address/0x3d84b2808d923b69c75a12d35f648849a28f32f2) |
-| [Compliance](./contracts/Compliance.sol)                         | [0x6e6db7838404ffa6bdd2bc175b82488205120712](https://ropsten.etherscan.io/address/0x6e6db7838404ffa6bdd2bc175b82488205120712) |
-| [Customers](./contracts/Customers.sol)                           | [0x4844f78b1cd76cd45e4289d6e9409f38252a7fd4](https://ropsten.etherscan.io/address/0x4844f78b1cd76cd45e4289d6e9409f38252a7fd4) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x6051ba9f1c2b177f41741ff69ce553b398a058ff](https://ropsten.etherscan.io/address/0x6051ba9f1c2b177f41741ff69ce553b398a058ff) |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0x17073ed7259d368ced101acdb2ab7eae51b26041](https://ropsten.etherscan.io/address/0x17073ed7259d368ced101acdb2ab7eae51b26041) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x522b29bc815ea7c6c881d817f0ae22310bae33e1](https://ropsten.etherscan.io/address/0x522b29bc815ea7c6c881d817f0ae22310bae33e1) |
+| [Customers](./contracts/Customers.sol)                           | [0xdc67f93a667d64dbf5ae0d4a7c7758c76346e572](https://ropsten.etherscan.io/address/0xdc67f93a667d64dbf5ae0d4a7c7758c76346e572) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x81ac3d04f6c19673737ea22813e716d41411678e](https://ropsten.etherscan.io/address/0x81ac3d04f6c19673737ea22813e716d41411678e) |
 
 ## Setup
 
