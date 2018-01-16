@@ -315,7 +315,7 @@ contract SecurityToken is IERC20 {
      * @return bool success 
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
             allowed[_from][msg.sender] = _allowance.sub(_value);
