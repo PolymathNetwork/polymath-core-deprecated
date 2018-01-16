@@ -38,7 +38,7 @@ contract SecurityToken is IERC20 {
 
     // Template
     address public delegate;                                          // Address who create the template
-    bytes32 public complianceProof;                                   //   
+    bytes32 public merkleRoot;                                        //   
     address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template        
 
     // Security token shareholders
@@ -169,16 +169,16 @@ contract SecurityToken is IERC20 {
     /**
      * @dev Update compliance proof hash for the issuance
      * @param _newMerkleRoot New merkle root hash of the compliance Proofs
-     * @param _complianceProof Compliance Proof hash
+     * @param _merkleRoot Compliance Proof hash
      * @return bool success 
      */
     function updateComplianceProof(
         bytes32 _newMerkleRoot,
-        bytes32 _complianceProof
+        bytes32 _merkleRoot
     ) public onlyOwnerOrDelegate returns (bool success)
     {
-        complianceProof = _newMerkleRoot;
-        LogUpdatedComplianceProof(_newMerkleRoot, _complianceProof);
+        _merkleRoot = _newMerkleRoot;
+        LogUpdatedComplianceProof(_newMerkleRoot, _merkleRoot);
         return true;
     }
 
