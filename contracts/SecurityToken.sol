@@ -215,7 +215,7 @@ contract SecurityToken is IERC20 {
      * @dev Add a verified address to the Security Token whitelist
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
-    */
+     */
     function addToWhitelist(address _whitelistAddress) public returns (bool success) {
         require(KYC == msg.sender || owner == msg.sender);
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);

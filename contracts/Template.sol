@@ -87,7 +87,7 @@ contract Template is ITemplate {
      * @notice `updateDetails`
      * @param _details details of the template need to change
      * @return allowed boolean variable
-    */
+     */
     function updateDetails(bytes32 _details) public returns (bool allowed) {
         require(_details != 0x0);
         require(owner == msg.sender);
@@ -139,7 +139,7 @@ contract Template is ITemplate {
     /**
      * @dev `getUsageFees` is a function to get all the details on template usage fees
      * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
-    */
+     */
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
         return (fee, quorum, vestingPeriod, owner, KYC);
     }
