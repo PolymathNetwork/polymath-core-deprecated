@@ -71,7 +71,7 @@ contract SecurityToken is IERC20 {
                                                                         
 
 	// Security Token Offering statistics
-    mapping(address => uint256) contributedToSTO;
+    mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor  
 	uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
@@ -277,7 +277,7 @@ contract SecurityToken is IERC20 {
         balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
-        contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_amountOfSecurityTokens);
+        contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
         LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
         return true;
