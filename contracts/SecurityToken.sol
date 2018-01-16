@@ -200,7 +200,7 @@ contract SecurityToken is IERC20 {
         require(complianceProof != 0x0);
         require(delegate != address(0));
         require(_startTime > now && _endTime > _startTime);
-        require(POLY.balanceOf(this) >= allocations[delegate].amount + _fee);
+        require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
         allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         STO = ISTO(_stoContract);
         shareholders[address(STO)] = Shareholder(this, true, 5);
@@ -250,10 +250,10 @@ contract SecurityToken is IERC20 {
     function voteToFreeze(address _recipient) public onlyShareholder returns (bool success) {
         require(delegate != address(0));
         require(now > endSTO);
-        require(now < endSTO + allocations[_recipient].vestingPeriod);
+        require(now < endSTO.add(allocations[_recipient].vestingPeriod));
         require(voted[msg.sender][_recipient] == false);
         voted[msg.sender][_recipient] == true;
-        allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
+        allocations[_recipient].yayVotes = allocations[_recipient].yayVotes.add(contributedToSTO[msg.sender]);
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
         if (allocations[_recipient].yayPercent >= allocations[_recipient].quorum) {
           allocations[_recipient].frozen = true;
