@@ -256,7 +256,7 @@ contract SecurityToken is IERC20 {
         voted[msg.sender][_recipient] == true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes + contributedToSTO[msg.sender];
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
-        if (allocations[_recipient].yayPercent > allocations[_recipient].quorum) {
+        if (allocations[_recipient].yayPercent >= allocations[_recipient].quorum) {
           allocations[_recipient].frozen = true;
         }
         LogVoteToFreeze(_recipient, allocations[_recipient].yayPercent, allocations[_recipient].quorum, allocations[_recipient].frozen);
