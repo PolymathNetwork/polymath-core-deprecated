@@ -237,7 +237,7 @@ contract SecurityToken is IERC20 {
           return POLY.transfer(owner, POLY.balanceOf(this));
         }
         require(now > endSTO + allocations[msg.sender].vestingPeriod);
-        require(allocations[msg.sender].frozen == false);
+        require(!allocations[msg.sender].frozen);
         require(allocations[msg.sender].amount > 0);
         require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
         allocations[msg.sender].amount = 0;
@@ -253,8 +253,8 @@ contract SecurityToken is IERC20 {
         require(delegate != address(0));
         require(now > endSTO);
         require(now < endSTO.add(allocations[_recipient].vestingPeriod));
-        require(voted[msg.sender][_recipient] == false);
-        voted[msg.sender][_recipient] == true;
+        require(!voted[msg.sender][_recipient]);
+        voted[msg.sender][_recipient] = true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes.add(contributedToSTO[msg.sender]);
         allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(allocations[owner].amount);
         if (allocations[_recipient].yayPercent >= allocations[_recipient].quorum) {
@@ -286,7 +286,7 @@ contract SecurityToken is IERC20 {
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
         // Update the amount of tokens issued by STO
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
-        // Update the amount of POLY a contributor has contributed and allocated to the owner 
+        // Update the amount of POLY a contributor has contributed and allocated to the owner
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
         LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
