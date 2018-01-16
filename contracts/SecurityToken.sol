@@ -76,7 +76,7 @@ contract SecurityToken is IERC20 {
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
-    event LogUpdatedComplianceProof(bytes32 merkleRoot, bytes32 _complianceProofHash);
+    event LogUpdatedComplianceProof(bytes32 _merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
     event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);

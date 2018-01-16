@@ -45,7 +45,7 @@ contract Compliance is ICompliance {
     uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
 
     // Notifications
-    event LogTemplateCreated(address indexed creator, address _template, string _offeringType);
+    event LogTemplateCreated(address indexed _creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate);
 
