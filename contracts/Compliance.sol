@@ -80,7 +80,7 @@ contract Compliance is ICompliance {
     {
         var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
         require(role == 2 && verified && expires > now);
-        require(_quorum > 0 && _quorum < 100);
+        require(_quorum > 0 && _quorum <= 100);
         require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
         address _template = new Template(
             msg.sender,
@@ -156,7 +156,7 @@ contract Compliance is ICompliance {
         ) public returns (bool success)
     {
             require(_STOAddress != address(0));
-            require(_quorum > 0 && _quorum < 100);
+            require(_quorum > 0 && _quorum <= 100);
             require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
             offerings[_STOAddress].auditor = msg.sender;
             offerings[_STOAddress].fee = _fee;
