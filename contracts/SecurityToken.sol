@@ -68,7 +68,7 @@ contract SecurityToken is IERC20 {
     }
     mapping(address => mapping(address => bool)) voted;               // Voting mapping
     mapping(address => Allocation) allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
-                                                                        
+    mapping(address => bool) isSTOProposed;                                                                   
 
 	// Security Token Offering statistics
     mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor  
@@ -196,6 +196,7 @@ contract SecurityToken is IERC20 {
     ) public onlyDelegate returns (bool success)
     {
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
+        require(!isSTOProposed[_stoContract]);
         require(_stoContract != address(0));
         require(merkleRoot != 0x0);
         require(delegate != address(0));
@@ -207,6 +208,7 @@ contract SecurityToken is IERC20 {
         startSTO = _startTime;
         endSTO = _endTime;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
+        isSTOProposed[_stoContract] = !isSTOProposed[_stoContract];
         LogSetSTOContract(STO, _stoContract, _auditor, _startTime, _endTime);
         return true;
     }
@@ -254,7 +256,7 @@ contract SecurityToken is IERC20 {
         require(voted[msg.sender][_recipient] == false);
         voted[msg.sender][_recipient] == true;
         allocations[_recipient].yayVotes = allocations[_recipient].yayVotes.add(contributedToSTO[msg.sender]);
-        allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(tokensIssuedBySTO);
+        allocations[_recipient].yayPercent = allocations[_recipient].yayVotes.mul(100).div(allocations[owner].amount);
         if (allocations[_recipient].yayPercent >= allocations[_recipient].quorum) {
           allocations[_recipient].frozen = true;
         }
