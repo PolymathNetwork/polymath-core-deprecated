@@ -104,7 +104,7 @@ contract SecurityToken is IERC20 {
     }
 
     modifier onlyShareholder() {
-        require (shareholders[msg.sender].allowed == true);
+        require (shareholders[msg.sender].allowed);
         _;
     }
 
