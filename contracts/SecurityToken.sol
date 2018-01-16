@@ -9,7 +9,7 @@ import './interfaces/ITemplate.sol';
 import './interfaces/ISTO.sol';
 
 /**
- * @title SecurityToken 
+ * @title SecurityToken
  * @dev Contract (A Blueprint) that contains the functionalities of the security token
  */
 
@@ -29,23 +29,23 @@ contract SecurityToken is IERC20 {
 
     // ERC20 Fields
     string public name;                                               // Name of the security token
-    uint8 public decimals;                                            // Decimals for the security token it should be 0 as standard   
-    string public symbol;                                             // Symbol of the security token 
-    address public owner;                                             // Address of the owner of the security token   
-    uint256 public totalSupply;                                       // Total number of security token generated 
+    uint8 public decimals;                                            // Decimals for the security token it should be 0 as standard
+    string public symbol;                                             // Symbol of the security token
+    address public owner;                                             // Address of the owner of the security token
+    uint256 public totalSupply;                                       // Total number of security token generated
     mapping(address => mapping(address => uint256)) allowed;          // Mapping as same as in ERC20 token
     mapping(address => uint256) balances;                             // Array used to store the balances of the security token holders
 
     // Template
     address public delegate;                                          // Address who create the template
-    bytes32 public merkleRoot;                                        //   
-    address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template        
+    bytes32 public merkleRoot;                                        //
+    address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template
 
     // Security token shareholders
-    struct Shareholder {                                              // Structure that contains the data of the shareholders 
+    struct Shareholder {                                              // Structure that contains the data of the shareholders
         address verifier;                                             // verifier - address of the KYC oracle
         bool allowed;                                                 // allowed - whether the shareholder is allowed to transfer or recieve the security token
-        uint8 role;                                                   // role - role of the shareholder {1,2,3,4}   
+        uint8 role;                                                   // role - role of the shareholder {1,2,3,4}
     }
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
@@ -54,12 +54,12 @@ contract SecurityToken is IERC20 {
     uint256 public maxPoly;                                           // Maximum amount of POLY will be invested in offering contract
 
     // The start and end time of the STO
-    uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start 
+    uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
     uint256 public endSTO;                                            // Timestamp when Security Token Offering contract will ends
 
     // POLY allocations
-    struct Allocation {                                               // Structure that contains the allocation of the POLY for stakeholders 
-        uint256 amount;                                               // stakeholders - delegate, issuer(owner), auditor    
+    struct Allocation {                                               // Structure that contains the allocation of the POLY for stakeholders
+        uint256 amount;                                               // stakeholders - delegate, issuer(owner), auditor
         uint256 vestingPeriod;
         uint8 quorum;
         uint256 yayVotes;
@@ -68,10 +68,10 @@ contract SecurityToken is IERC20 {
     }
     mapping(address => mapping(address => bool)) voted;               // Voting mapping
     mapping(address => Allocation) allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
-    mapping(address => bool) isSTOProposed;                                                                   
+    mapping(address => bool) isSTOProposed;
 
 	// Security Token Offering statistics
-    mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor  
+    mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
 	uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
@@ -108,7 +108,7 @@ contract SecurityToken is IERC20 {
         _;
     }
 
-    /** 
+    /**
      * @dev Set default security token parameters
      * @param _name Name of the security token
      * @param _ticker Ticker name of the security
@@ -119,7 +119,7 @@ contract SecurityToken is IERC20 {
      * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
      * @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
-     * @param _polyComplianceAddress Ethereum address of the PolyCompliance contract 
+     * @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
      */
     function SecurityToken(
         string _name,
@@ -150,7 +150,7 @@ contract SecurityToken is IERC20 {
     /**
      * @dev `selectTemplate` Select a proposed template for the issuance
      * @param _templateIndex Array index of the delegates proposed template
-     * @return bool success 
+     * @return bool success
      */
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
         address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
@@ -170,7 +170,7 @@ contract SecurityToken is IERC20 {
      * @dev Update compliance proof hash for the issuance
      * @param _newMerkleRoot New merkle root hash of the compliance Proofs
      * @param _merkleRoot Compliance Proof hash
-     * @return bool success 
+     * @return bool success
      */
     function updateComplianceProof(
         bytes32 _newMerkleRoot,
@@ -182,12 +182,12 @@ contract SecurityToken is IERC20 {
         return true;
     }
 
-    /** 
+    /**
      * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
      * @param _offeringProposalIndex Array index of the STO proposal
      * @param _startTime Start of issuance period
      * @param _endTime End of issuance period
-     * @return bool success 
+     * @return bool success
      */
     function selectOfferingProposal (
         uint8 _offeringProposalIndex,
@@ -230,12 +230,12 @@ contract SecurityToken is IERC20 {
 
     /**
      * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-     * @return bool success 
+     * @return bool success
      */
     function withdrawPoly() public returns (bool success) {
   	   if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
-        } 
+        }
         require(now > endSTO + allocations[msg.sender].vestingPeriod);
         require(allocations[msg.sender].frozen == false);
         require(allocations[msg.sender].amount > 0);
@@ -268,17 +268,25 @@ contract SecurityToken is IERC20 {
      * @dev `issueSecurityTokens` is used by the STO to keep track of STO investors
      * @param _contributor The address of the person whose contributing
      * @param _amountOfSecurityTokens The amount of ST to pay out.
-     * @param _polyContributed The amount of POLY paid for the security tokens. 
+     * @param _polyContributed The amount of POLY paid for the security tokens.
      */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
+        // The _contributor being issued tokens must be in the whitelist
         require(shareholders[_contributor].allowed);
+        // Tokens may only be issued while the STO is running
         require(now >= startSTO && now <= endSTO);
+        // In order to issue the ST, the _contributor first pays in POLY
         require(POLY.transferFrom(_contributor, this, _polyContributed));
+        // ST being issued can't be higher than the totalSupply
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
+        // POLY contributed can't be higher than maxPoly set for STO
         require(maxPoly >= allocations[owner].amount.add(_polyContributed));
+        // Update ST balances (transfers ST from owner/issuer to _contributor)
         balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
+        // Update the amount of tokens issued by STO
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
+        // Update the amount of POLY a contributor has contributed and allocated to the owner 
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
         LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
@@ -290,13 +298,13 @@ contract SecurityToken is IERC20 {
         return (Template, delegate, merkleRoot, STO, KYC);
     }
 
-/////////////////////////////////////////////// Customized ERC20 Functions //////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////// Customized ERC20 Functions ////////////////////////////////////////////////////////////
 
     /**
      * @dev Trasfer tokens from one address to another
      * @param _to Ethereum public address to transfer tokens to
      * @param _value Amount of tokens to send
-     * @return bool success 
+     * @return bool success
      */
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (shareholders[_to].allowed && balances[msg.sender] >= _value && _value > 0) {
@@ -309,12 +317,12 @@ contract SecurityToken is IERC20 {
         }
     }
 
-    /** 
+    /**
      * @dev Allows contracts to transfer tokens on behalf of token holders
      * @param _from Address to transfer tokens from
      * @param _to Address to send tokens to
      * @param _value Number of tokens to transfer
-     * @return bool success 
+     * @return bool success
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         if (shareholders[_to].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
@@ -332,17 +340,17 @@ contract SecurityToken is IERC20 {
     /**
      * @dev `balanceOf` used to get the balance of shareholders
      * @param _owner The address from which the balance will be retrieved
-     * @return The balance 
+     * @return The balance
      */
     function balanceOf(address _owner) public constant returns (uint256 balance) {
         return balances[_owner];
     }
 
-    /** 
+    /**
      * @dev Approve transfer of tokens manually
      * @param _spender Address to approve transfer to
      * @param _value Amount of tokens to approve for transfer
-     * @return bool success 
+     * @return bool success
      */
     function approve(address _spender, uint256 _value) public returns (bool success) {
         if (shareholders[_spender].allowed) {
@@ -359,7 +367,7 @@ contract SecurityToken is IERC20 {
      * @dev Use to get the allowance provided to the spender
      * @param _owner The address of the account owning tokens
      * @param _spender The address of the account able to transfer the tokens
-     * @return Amount of remaining tokens allowed to spent 
+     * @return Amount of remaining tokens allowed to spent
      */
     function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
         return allowed[_owner][_spender];
