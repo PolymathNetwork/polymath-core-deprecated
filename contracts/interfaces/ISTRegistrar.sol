@@ -27,4 +27,11 @@ interface ISTRegistrar {
         uint256 _lockupPeriod,
         uint8 _quorum
     ) external;
+
+     /**
+     * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
+     * @param _ticker Symbol of the security token
+     * @return bool success
+     */
+    function withdrawFunds(string _ticker) public returns (bool success);
 }

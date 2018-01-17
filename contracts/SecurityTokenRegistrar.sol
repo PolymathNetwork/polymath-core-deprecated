@@ -18,7 +18,7 @@ import './SecurityToken.sol';
 contract SecurityTokenRegistrar is ISTRegistrar {
 
     string public VERSION = "1";
-
+    SecurityToken securityToken;
     address public polyTokenAddress;                                // Address of POLY token 
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
@@ -105,6 +105,20 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
     }
 
+    /**
+     * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
+     * @param _ticker Symbol of the security token
+     * @return bool success
+     */
+    function withdrawFunds(string _ticker) public returns (bool success) {
+      securityToken = SecurityToken(getSecurityTokenAddress(_ticker));
+      require(securityToken.withdrawPoly(msg.sender));
+      return true;
+    }
+
+    //////////////////////////////
+    ///////// Get Functions
+    //////////////////////////////
     /**
      * @dev Get security token address by ticker name
      * @param _ticker Symbol of the Scurity token
