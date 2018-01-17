@@ -32,7 +32,7 @@ token which has voting rights to it's citizens. They could create a new KYC
 provider address and require each citizen to visit their office with documents
 and an ethereum address. Once verified, they would make the function call to add
 them to their datastore in Customers.sol and call addToWhitelist in the Zimbabwe
-Universal Income security token. Additionally, other issuers looking want to
+Universal Income security token. Additionally, other issuers looking to
 issue security tokens to only Zimbawe citizens in the future, as long as the
 investor verifications haven't expired (specified by the KYC provider when
 adding them to the datastore), they can be added to the new security token
