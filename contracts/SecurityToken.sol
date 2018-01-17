@@ -49,10 +49,11 @@ contract SecurityToken is IERC20 {
     }
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
-    // STO address
+    // STO 
     address public STO;                                               // Address of the security token offering contract
     uint256 public maxPoly;                                           // Maximum amount of POLY will be invested in offering contract
-
+    bool public isSTOProposed = false;
+    
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
     uint256 public endSTO;                                            // Timestamp when Security Token Offering contract will ends
@@ -68,7 +69,6 @@ contract SecurityToken is IERC20 {
     }
     mapping(address => mapping(address => bool)) voted;               // Voting mapping
     mapping(address => Allocation) allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
-    mapping(address => bool) isSTOProposed;
 
 	// Security Token Offering statistics
     mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
@@ -153,6 +153,7 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
+        require(!isSTOProposed);
         address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
         require(_template != address(0));
         Template = ITemplate(_template);
@@ -194,9 +195,9 @@ contract SecurityToken is IERC20 {
         uint256 _startTime,
         uint256 _endTime
     ) public onlyDelegate returns (bool success)
-    {
+    {   
+        require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
-        require(!isSTOProposed[_stoContract]);
         require(_stoContract != address(0));
         require(merkleRoot != 0x0);
         require(delegate != address(0));
@@ -207,8 +208,8 @@ contract SecurityToken is IERC20 {
         shareholders[address(STO)] = Shareholder(this, true, 5);
         startSTO = _startTime;
         endSTO = _endTime;
+        isSTOProposed = !isSTOProposed;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
-        isSTOProposed[_stoContract] = !isSTOProposed[_stoContract];
         LogSetSTOContract(STO, _stoContract, _auditor, _startTime, _endTime);
         return true;
     }
