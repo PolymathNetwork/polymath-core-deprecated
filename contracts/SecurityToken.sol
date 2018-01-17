@@ -145,6 +145,7 @@ contract SecurityToken is IERC20 {
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
+        Transfer(0x0, _owner, _totalSupply);
     }
 
     /**
@@ -285,6 +286,8 @@ contract SecurityToken is IERC20 {
         // Update ST balances (transfers ST from owner/issuer to _contributor)
         balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
+        // ERC20 Transfer event
+        Transfer(owner, _contributor, _amountOfSecurityTokens);
         // Update the amount of tokens issued by STO
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         // Update the amount of POLY a contributor has contributed and allocated to the owner
