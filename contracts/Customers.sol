@@ -9,13 +9,14 @@ pragma solidity ^0.4.18;
 
 import './PolyToken.sol';
 import './interfaces/ICustomers.sol';
+import './Ownable.sol';
 
 /**
  * @title Customers
  * @dev Contract use to register the user on the Platform platform
  */
 
-contract Customers is ICustomers {
+contract Customers is ICustomers, Ownable {
 
     PolyToken POLY;                                                     // Instance of the POLY token
 
@@ -56,6 +57,7 @@ contract Customers is ICustomers {
      * @dev Constructor 
      */
     function Customers(address _polyTokenAddress) public {
+        owner = msg.sender;
         POLY = PolyToken(_polyTokenAddress);
     }
 
