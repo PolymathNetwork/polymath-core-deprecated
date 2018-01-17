@@ -45,10 +45,10 @@ contract Compliance is ICompliance {
     uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
 
     // Notifications
-    event LogTemplateCreated(address indexed creator, address _template, string _offeringType);
+    event LogTemplateCreated(address indexed _creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
     event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate);
-    
+
     /* @param _polyCustomersAddress The address of the Polymath Customers contract */
     function Compliance(address _polyCustomersAddress) public {
         PolyCustomers = Customers(_polyCustomersAddress);
@@ -64,7 +64,7 @@ contract Compliance is ICompliance {
      * @param _expires Timestamp of when the template will expire
      * @param _fee Amount of POLY to use the template (held in escrow until issuance)
      * @param _quorum Minimum percent of shareholders which need to vote to freeze
-     * @param _vestingPeriod Length of time to vest funds 
+     * @param _vestingPeriod Length of time to vest funds
      */
     function createTemplate(
         string _offeringType,
@@ -111,7 +111,7 @@ contract Compliance is ICompliance {
      * @dev Propose a bid for a security token issuance
      * @param _securityToken The security token being bid on
      * @param _template The unique template address
-     * @return bool success 
+     * @return bool success
      */
     function proposeTemplate(
         address _securityToken,
@@ -129,7 +129,7 @@ contract Compliance is ICompliance {
      * @dev Cancel a Template proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
      * @param _templateProposalIndex The template proposal array index
-     * @return bool success 
+     * @return bool success
      */
     function cancelTemplateProposal(
         address _securityToken,
@@ -173,7 +173,7 @@ contract Compliance is ICompliance {
      * @dev Propose a Security Token Offering Contract for an issuance
      * @param _securityToken The security token being bid on
      * @param _stoContract The security token offering contract address
-     * @return bool success 
+     * @return bool success
      */
     function proposeOfferingContract(
         address _securityToken,
@@ -183,7 +183,7 @@ contract Compliance is ICompliance {
         var (,,,,KYC) = ISecurityToken(_securityToken).getTokenDetails();
         var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, offerings[_stoContract].auditor);
         require(offerings[_stoContract].auditor == msg.sender);
-        require(verified == true);
+        require(verified);
         require(expires > now);
         offeringProposals[_securityToken].push(_stoContract);
         LogNewContractProposal(_securityToken, _stoContract, msg.sender);
@@ -194,7 +194,7 @@ contract Compliance is ICompliance {
      * @dev Cancel a STO contract proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
      * @param _offeringProposalIndex The offering proposal array index
-     * @return bool success 
+     * @return bool success
      */
     function cancelOfferingProposal(
         address _securityToken,
@@ -213,7 +213,7 @@ contract Compliance is ICompliance {
      * @dev `updateTemplateReputation` is a constant function that updates the
        history of a security token template usage to keep track of previous uses
      * @param _template The unique template id
-     * @param _templateIndex The array index of the template proposal 
+     * @param _templateIndex The array index of the template proposal
      */
     function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success) {
         require(templateProposals[msg.sender][_templateIndex] == _template);
@@ -225,7 +225,7 @@ contract Compliance is ICompliance {
      * @dev `updateOfferingReputation` is a constant function that updates the
        history of a security token offering contract to keep track of previous uses
      * @param _stoContract The smart contract address of the STO contract
-     * @param _offeringProposalIndex The array index of the security token offering proposal 
+     * @param _offeringProposalIndex The array index of the security token offering proposal
      */
     function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success) {
         require(offeringProposals[msg.sender][_offeringProposalIndex] == _stoContract);
@@ -237,7 +237,7 @@ contract Compliance is ICompliance {
      * @dev Get template details by the proposal index
      * @param _securityTokenAddress The security token ethereum address
      * @param _templateIndex The array index of the template being checked
-     * @return Template struct 
+     * @return Template struct
      */
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
         address template
@@ -245,11 +245,11 @@ contract Compliance is ICompliance {
         return templateProposals[_securityTokenAddress][_templateIndex];
     }
 
-    /** 
+    /**
      * @dev Get security token offering smart contract details by the proposal index
      * @param _securityTokenAddress The security token ethereum address
      * @param _offeringProposalIndex The array index of the STO contract being checked
-     * @return Contract struct 
+     * @return Contract struct
      */
     function getOfferingByProposal(address _securityTokenAddress, uint8 _offeringProposalIndex) view public returns (
         address stoContract,
