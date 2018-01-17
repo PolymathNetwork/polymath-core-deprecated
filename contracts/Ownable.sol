@@ -1,6 +1,10 @@
 pragma solidity ^0.4.18;
 
-// Contract refrence from https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/ownership/Ownable.sol
+/**
+ *  Ownable <https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/ownership/Ownable.sol>
+ *  Copyright (c) 2016 Smart Contract Solutions, Inc.
+ *  Released under the MIT License (MIT)
+ */
 
 /**
  * @title Ownable
