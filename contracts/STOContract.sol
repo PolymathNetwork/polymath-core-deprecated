@@ -8,7 +8,7 @@ import './interfaces/IERC20.sol';
 contract STOContract is ISTO {
 
     using SafeMath for uint256;
-
+    string public VERSION = "1";
     ISecurityToken public SecurityToken;
     IERC20 public POLY;
     uint256 public endTime;

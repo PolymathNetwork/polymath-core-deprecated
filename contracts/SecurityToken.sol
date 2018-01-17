@@ -17,7 +17,7 @@ contract SecurityToken is IERC20 {
 
     using SafeMath for uint256;
 
-    uint256 public version = 1;
+    string public VERSION = "1";
 
     IERC20 public POLY;                                               // Instance of the POLY token contract
 

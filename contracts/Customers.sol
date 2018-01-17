@@ -18,10 +18,12 @@ import './Ownable.sol';
 
 contract Customers is ICustomers, Ownable {
 
+    string public VERSION = "1";
+
     PolyToken POLY;                                                     // Instance of the POLY token
 
     uint256 public NEW_PROVIDER_FEE = 1000;                             // Constant variable which holds the fee to register the KYC Oracles
-    
+
     struct Customer {                                                   // Structure use to store the details of the customers
         bytes32 jurisdiction;                                           // Customers jurisdiction as ex - ISO3166 
         uint256 joined;                                                 // Timestamp when customer register

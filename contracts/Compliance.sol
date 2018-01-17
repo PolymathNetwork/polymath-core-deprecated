@@ -19,7 +19,7 @@ import './interfaces/ISecurityToken.sol';
 
 contract Compliance is ICompliance {
 
-    string public VERSION = "0.1";
+    string public VERSION = "1";
 
     struct TemplateReputation {                                         // Structure contains the compliance template details
         address owner;                                                  // Address of the template owner

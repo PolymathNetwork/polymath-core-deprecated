@@ -17,6 +17,8 @@ import './SecurityToken.sol';
 
 contract SecurityTokenRegistrar is ISTRegistrar {
 
+    string public VERSION = "1";
+
     address public polyTokenAddress;                                // Address of POLY token 
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address

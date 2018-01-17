@@ -16,6 +16,8 @@ import './interfaces/ITemplate.sol';
 
 contract Template is ITemplate {
 
+    string public VERSION = "1";
+
     address public owner;                                           // Address of the owner of template
     string public offeringType;                                     // Name of the security being issued
     bytes32 public issuerJurisdiction;                              // Variable contains the jurisdiction of the issuer of the template
