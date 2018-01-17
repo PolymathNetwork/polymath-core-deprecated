@@ -157,7 +157,8 @@ contract Compliance is ICompliance {
         uint256 _vestingPeriod,
         uint8 _quorum
         ) public returns (bool success)
-    {
+    {       
+            require(offerings[_STOAddress].auditor == address(0));
             require(_STOAddress != address(0));
             require(_quorum > 0 && _quorum <= 100);
             require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
