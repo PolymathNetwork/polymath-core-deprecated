@@ -1,11 +1,11 @@
 pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
-import './interfaces/ISTO.sol'; 
+import './STO20.sol'; 
 import './interfaces/ISecurityToken.sol';
 import './interfaces/IERC20.sol';
 
-contract STOContract is ISTO {
+contract STOContract is STO20 {
 
     using SafeMath for uint256;
     string public VERSION = "1";

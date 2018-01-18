@@ -49,14 +49,10 @@
     /** 
      * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
      * @param _offeringProposalIndex Array index of the STO proposal
-     * @param _startTime Start of issuance period
-     * @param _endTime End of issuance period
      * @return bool success 
      */
     function selectOfferingProposal (
-        uint8 _offeringProposalIndex,
-        uint256 _startTime,
-        uint256 _endTime
+        uint8 _offeringProposalIndex
     ) public returns (bool success);
 
     /**

@@ -6,7 +6,7 @@ import './interfaces/ICustomers.sol';
 import './interfaces/ISTRegistrar.sol';
 import './interfaces/ICompliance.sol';
 import './interfaces/ITemplate.sol';
-import './interfaces/ISTO.sol';
+import './STO20.sol';
 
 /**
  * @title SecurityToken
@@ -26,6 +26,8 @@ contract SecurityToken is IERC20 {
     ITemplate public Template;                                        // Instance of the Template contract
 
     ICustomers public PolyCustomers;                                  // Instance of the Customers contract
+
+    STO20 public STO;
 
     // ERC20 Fields
     string public name;                                               // Name of the security token
@@ -51,7 +53,7 @@ contract SecurityToken is IERC20 {
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
     // STO 
-    address public STO;                                               // Address of the security token offering contract
+   // address public STO;                                               // Address of the security token offering contract
     uint256 public maxPoly;                                           // Maximum amount of POLY will be invested in offering contract
     bool public isSTOProposed = false;
     
@@ -188,31 +190,24 @@ contract SecurityToken is IERC20 {
     /**
      * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
      * @param _offeringProposalIndex Array index of the STO proposal
-     * @param _startTime Start of issuance period
-     * @param _endTime End of issuance period
      * @return bool success
      */
-    function selectOfferingProposal (
-        uint8 _offeringProposalIndex,
-        uint256 _startTime,
-        uint256 _endTime
-    ) public onlyDelegate returns (bool success)
-    {   
+    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {   
         require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
         require(merkleRoot != 0x0);
         require(delegate != address(0));
-        require(_startTime > now && _endTime > _startTime);
         require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
+        STO = STO20(_stoContract);
+        require(STO.endTime() > now && STO.endTime() > STO.startTime());
         allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
-        STO = ISTO(_stoContract);
         shareholders[address(STO)] = Shareholder(this, true, 5);
-        startSTO = _startTime;
-        endSTO = _endTime;
+        startSTO = STO.startTime();
+        endSTO = STO.endTime();
         isSTOProposed = !isSTOProposed;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
-        LogSetSTOContract(STO, _stoContract, _auditor, _startTime, _endTime);
+        LogSetSTOContract(STO, _stoContract, _auditor, startSTO, endSTO);
         return true;
     }
 

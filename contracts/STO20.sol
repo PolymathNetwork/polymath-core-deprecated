@@ -1,7 +1,10 @@
 pragma solidity ^0.4.18;
 
-interface ISTO {
+contract STO20 {
 
+    uint256 public startTime;
+    uint256 public endTime;
+    
     /** 
      * @dev Initializes the STO with certain params
      * @param _tokenAddress The Security Token address
