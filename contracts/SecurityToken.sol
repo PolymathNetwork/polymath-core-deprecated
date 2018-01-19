@@ -187,19 +187,25 @@ contract SecurityToken is IERC20 {
      * @param _offeringProposalIndex Array index of the STO proposal
      * @return bool success
      */
-    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {   
+    function selectOfferingProposal (
+        uint8 _offeringProposalIndex,
+        uint256 _startTime,
+        uint256 _endTime
+    ) public onlyDelegate returns (bool success) 
+    {   
         require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
         require(merkleRoot != 0x0);
         require(delegate != address(0));
         require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
+        require(_startTime > now && _endTime > _startTime);
         STO = STO20(_stoContract);
-        require(STO.startTime() > now && STO.endTime() > STO.startTime());
+        require(STO.securityTokenOffering(_startTime, _endTime));
         allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         shareholders[address(STO)] = Shareholder(this, true, 5);
-        startSTO = STO.startTime();
-        endSTO = STO.endTime();
+        startSTO = _startTime;
+        endSTO = _endTime;
         isSTOProposed = !isSTOProposed;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
         LogSetSTOContract(STO, _stoContract, _auditor, startSTO, endSTO);

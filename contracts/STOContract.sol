@@ -13,28 +13,32 @@ contract STOContract is STO20 {
     IERC20 public POLY;
     uint256 public endTime;
     uint256 public startTime;
-    address public tokenAddress;
+    address public securityTokenAddress;
     uint256 public rateInPoly = 100;        // Test figure
     uint256 public maxPoly = 1000000;
     
     event LogBoughtSecurityToken(address indexed _contributor, uint256 _ployContribution, uint256 _timestamp);
 
-    function STOContract(address _polyTokenAddres) public {
+    modifier onlyST() {
+        require(msg.sender == securityTokenAddress);
+        _;
+    }
+
+    function STOContract(address _polyTokenAddres, address _securityTokenAddress) public {
         POLY = IERC20(_polyTokenAddres);
+        require(_securityTokenAddress != address(0));
+        securityTokenAddress = _securityTokenAddress;
+        SecurityToken = ISecurityToken(_securityTokenAddress);
     }
 
     function securityTokenOffering(
-        address _tokenAddress, 
         uint256 _startTime, 
         uint256 _endTime
-        ) external
+        ) onlyST external returns (bool)
     {   
-        require(_tokenAddress != address(0));
-        tokenAddress = _tokenAddress;
-        SecurityToken = ISecurityToken(_tokenAddress);
         startTime = _startTime;
         endTime = _endTime;
-        
+        return true;    
     }
 
     function buySecurityToken(uint256 _polyContributed) public returns(bool) {   
