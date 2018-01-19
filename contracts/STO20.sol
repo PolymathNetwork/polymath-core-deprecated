@@ -5,10 +5,10 @@ contract STO20 {
     uint256 public startTime;
     uint256 public endTime;
     uint256 public maxPoly;
-    address public token;
+    address public securityTokenAddress;
 
     modifier onlyST() {
-        require(msg.sender == token);
+        require(msg.sender == securityTokenAddress);
         _;
     }
     
@@ -20,10 +20,11 @@ contract STO20 {
     function securityTokenOffering(
         uint256 _startTime,
         uint256 _endTime
-    ) onlyST external returns (bool) 
+    ) external onlyST returns(bool) 
     {
         startTime = _startTime;
         endTime = _endTime;
+        return true;
     }
 
 }
