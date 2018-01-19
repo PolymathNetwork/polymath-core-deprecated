@@ -41,7 +41,6 @@ contract Customers is ICustomers, Ownable {
         uint256 joined;                                                 // Timestamp when provider register     
         bytes32 details;                                                // Details of provider 
         uint256 fee;                                                    // Fee charged by the KYC providers
-        bool active;                                                    // Whether the provider is active or not
     }
 
     mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
@@ -76,7 +75,7 @@ contract Customers is ICustomers, Ownable {
         require(_details != 0x0);
         require(providers[_providerAddress].details == 0x0);
         require(POLY.transferFrom(_providerAddress, address(this), NEW_PROVIDER_FEE));
-        providers[_providerAddress] = Provider(_name, now, _details, _fee, false);
+        providers[_providerAddress] = Provider(_name, now, _details, _fee);
         LogNewProvider(_providerAddress, _name, _details);
         return true;
     }
@@ -108,7 +107,6 @@ contract Customers is ICustomers, Ownable {
     ) public onlyProvider returns (bool success)
     {   
         require(_expires > now);
-        require(providers[msg.sender].active);
         require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;
@@ -142,19 +140,6 @@ contract Customers is ICustomers, Ownable {
     function changeRegisterationFee(uint256 _newProviderFee) onlyOwner public {
         require(_newProviderFee > 0);
         NEW_PROVIDER_FEE = _newProviderFee;
-    }
-
-    /**
-     * @dev Owner change the flag active to true or false
-     * @param _providersList List of addresses of providers
-     * @param _status List of value of active flag
-     */
-
-    function changeStatus(address[] _providersList, bool[] _status) onlyOwner public {
-        require(_providersList.length == _status.length);
-        for (uint256 i = 0; i < _providersList.length; i++ ) {
-            providers[_providersList[i]].active = _status[i];
-        }
     }
 
     ///////////////////
