@@ -19,7 +19,6 @@
         string _ticker,
         uint256 _totalSupply,
         address _owner,
-        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,

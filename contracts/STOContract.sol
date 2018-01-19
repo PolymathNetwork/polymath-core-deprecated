@@ -15,6 +15,7 @@ contract STOContract is STO20 {
     uint256 public startTime;
     address public tokenAddress;
     uint256 public rateInPoly = 100;        // Test figure
+    uint256 public maxPoly = 1000000;
     
     event LogBoughtSecurityToken(address indexed _contributor, uint256 _ployContribution, uint256 _timestamp);
 

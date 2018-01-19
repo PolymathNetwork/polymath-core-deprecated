@@ -4,6 +4,7 @@ contract STO20 {
 
     uint256 public startTime;
     uint256 public endTime;
+    uint256 public maxPoly;
     
     /** 
      * @dev Initializes the STO with certain params
