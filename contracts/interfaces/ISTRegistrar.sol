@@ -22,7 +22,6 @@ interface ISTRegistrar {
         address _host,
         uint256 _fee,
         uint8 _type,
-        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum
     ) external;

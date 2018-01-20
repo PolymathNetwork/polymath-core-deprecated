@@ -45,7 +45,7 @@ contract('SecurityToken', accounts => {
 
   //verifyCustomer() and approveProvider constants
   const expcurrentTime = latestTime();                               // Current Time
-  const willExpires = latestTime() + duration.days(2);            // Current time + 1 year more
+  const willExpires = latestTime() + duration.days(2);               // Current time + 1 year more
   const startTime = latestTime() + duration.seconds(5000);           // Start time will be 5000 seconds more than the latest time
   const endTime = startTime + duration.days(30);                     // Add 30 days more 
 
@@ -95,9 +95,6 @@ contract('SecurityToken', accounts => {
         customers.address,
         compliance.address
       );
-      // Provide approval to the customer contract to register the provider0 (This step is performed by the Polymath wizard)
-      await POLY.getTokens(1000000, provider0, { from : provider0 });
-      await POLY.approve(customers.address, 100000, { from : provider0 });
 
       await customers.newProvider(
         provider0,
@@ -118,9 +115,6 @@ contract('SecurityToken', accounts => {
           {
               from:provider0
       });
-      // Provide approval to the customer contract to register the provider1 (This step is performed by the Polymath wizard)
-      await POLY.getTokens(1000000, provider1, { from : provider1 });
-      await POLY.approve(customers.address, 100000, { from : provider1 });
 
       await customers.newProvider(
         provider1,
@@ -198,7 +192,6 @@ contract('SecurityToken', accounts => {
           host,
           fee,
           type,
-          maxPoly,
           lockupPeriod,
           quorum,
           {
@@ -252,7 +245,7 @@ contract('SecurityToken', accounts => {
     });
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
-      stoContract = await STO.new(POLY.address,{ from : stoCreater, gas : 5000000 });
+      stoContract = await STO.new(POLY.address, { from : stoCreater, gas : 5000000 });
       await stoContract.securityTokenOffering(securityToken.address, startTime, endTime); 
       let isSTOAdded = await compliance.setSTO(
         stoContract.address, 
@@ -275,12 +268,9 @@ contract('SecurityToken', accounts => {
         {
            from : issuer 
           });
-      convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
-      
+      convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
       let success = await securityToken.selectOfferingProposal(
         0, 
-        startTime, 
-        endTime,
         {
            from: delegateOfTemp 
         });
@@ -322,7 +312,7 @@ contract('SecurityToken', accounts => {
     it('withdrawPoly: should fail to withdraw because of the current time is less than the endSTO + vesting periond',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
       try {
-          await securityToken.withdrawPoly({ from : delegateOfTemp });
+          await STRegistrar.withdrawFunds('POLY', { from : delegateOfTemp });
       } catch(error) {
           ensureException(error);
       }
@@ -402,18 +392,6 @@ it('Approve max (2^256 - 1)', async() => {
             '+77');
     assert.isTrue(result);
 });
-
-it('approve: should not approve the spender because it is not whitelisted',async()=>{
-     await securityToken.approve(host, 1000, { from : investor1 });
-     let txReturn = await securityToken.allowance(investor1,host);
-     assert.strictEqual(txReturn.toNumber(),0);
-});
-
-it('transferFrom: should not transfer because address are not whitelisted',async()=>{
-  await securityToken.transferFrom(investor1, host, 1000,{ from : issuer});
-  let txReturn = await securityToken.balanceOf(host);
-  assert.strictEqual(txReturn.toNumber(),0);
-});
 });
 
 it('updateComplianceProof:should update the new merkle root',async()=>{
@@ -424,7 +402,7 @@ it('updateComplianceProof:should update the new merkle root',async()=>{
         from : issuer
       }
     );
-    convertHex(txReturn.logs[0].args.merkleRoot).should.equal(witnessProof0);
+    convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
 });
 
 it('updateComplianceProof:should not update the new merkle root -- called by unauthorized msg.sender',async()=>{
@@ -678,69 +656,68 @@ describe("Compliance contracts functions",async()=>{
     ///// withdrawPoly() Test Cases
     ////////////////////////////////
 
-    describe("withdrawPoly() Test Cases with different variations",async()=>{
-    it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
-      let delegateOfTemp = await securityToken.delegate.call();
+//     describe("withdrawPoly() Test Cases with different variations",async()=>{
+//     it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
+//       let delegateOfTemp = await securityToken.delegate.call();
 
-      await increaseTime(vestingPeriod);  
-      let balance = await POLY.balanceOf(securityToken.address);
+//       await increaseTime(vestingPeriod);  
+//       let balance = await POLY.balanceOf(securityToken.address);
 
-      let success = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
-      assert.strictEqual(success.logs[0].args._value.toNumber(),1000);
-      let delegateBalance = await POLY.balanceOf(delegateOfTemp);
+//       let success = await STRegistrar.withdrawFunds(ticker, { from : delegateOfTemp , gas : 3000000 });
+//       assert.strictEqual(success.logs[0].args._value.toNumber(),1000);
+//       let delegateBalance = await POLY.balanceOf(delegateOfTemp);
 
-      assert.strictEqual(delegateBalance.toNumber(),10000);
-  });
+//       assert.strictEqual(delegateBalance.toNumber(),10000);
+//   });
 
-  it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
-    let balance = await POLY.balanceOf(securityToken.address);
-    try {
-    let success = await securityToken.withdrawPoly({ 
-              from : issuer,
-              gas : 3000000 
-    });
-    } catch(error) {
-        ensureException(error);
-    }
-});
+//   it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
+//     let balance = await POLY.balanceOf(securityToken.address);
+//     try {
+//     let success = await STRegistrar.withdrawFunds(ticker, { 
+//               from : issuer,
+//               gas : 3000000 
+//     });
+//     } catch(error) {
+//         ensureException(error);
+//     }
+// });
 
 
-  it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
-    try {
-      let success = await securityToken.withdrawPoly({from:investor1});
-    } catch(error) {
-        ensureException(error);
-    }
-  });
+//   it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
+//     try {
+//       let success = await STRegistrar.withdrawFunds(ticker, {from:investor1});
+//     } catch(error) {
+//         ensureException(error);
+//     }
+//   });
 
-  it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
-    let balanceBefore = await POLY.balanceOf(issuer);
-    let tempST = await STRegistrar.createSecurityToken(
-      "Poly Temp",
-      "TPOLY",
-      totalSupply,
-      issuer,
-      host,
-      fee,
-      type,
-      maxPoly,
-      lockupPeriod,
-      quorum,
-      {
-        from : issuer
-      }
-  );  
+//   it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
+//     let balanceBefore = await POLY.balanceOf(issuer);
+//     let tempST = await STRegistrar.createSecurityToken(
+//       "Poly Temp",
+//       "TPOLY",
+//       totalSupply,
+//       issuer,
+//       host,
+//       fee,
+//       type,
+//       lockupPeriod,
+//       quorum,
+//       {
+//         from : issuer
+//       }
+//   );  
 
-  let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
-  let TempSecurityToken = await SecurityToken.at(tempSTAddress);
-  let balanceAfter = await POLY.balanceOf(issuer);
-  assert.strictEqual( (balanceBefore - balanceAfter), fee);
+//   let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
+//   let TempSecurityToken = await SecurityToken.at(tempSTAddress);
+//   let balanceAfter = await POLY.balanceOf(issuer);
+//   assert.strictEqual( (balanceBefore - balanceAfter), fee);
 
-  let txReturn = await TempSecurityToken.withdrawPoly();
-  let ballast = await POLY.balanceOf(tempSTAddress);
-  assert.strictEqual(ballast.toNumber(),0);
-  });
-});
+//   let txReturn = await STRegistrar.withdrawFunds('TPOLY', { from : issuer});
+//   let ballast = await POLY.balanceOf(tempSTAddress);
+//   assert.strictEqual(ballast.toNumber(),0);
+//   });
+// });
 });
 
 });

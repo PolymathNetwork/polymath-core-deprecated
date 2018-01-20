@@ -177,8 +177,8 @@ contract SecurityToken is IERC20 {
         bytes32 _merkleRoot
     ) public onlyOwnerOrDelegate returns (bool success)
     {
-        _merkleRoot = _newMerkleRoot;
-        LogUpdatedComplianceProof(_newMerkleRoot, _merkleRoot);
+        merkleRoot = _newMerkleRoot;
+        LogUpdatedComplianceProof(merkleRoot, _merkleRoot);
         return true;
     }
 
@@ -187,25 +187,19 @@ contract SecurityToken is IERC20 {
      * @param _offeringProposalIndex Array index of the STO proposal
      * @return bool success
      */
-    function selectOfferingProposal (
-        uint8 _offeringProposalIndex,
-        uint256 _startTime,
-        uint256 _endTime
-    ) public onlyDelegate returns (bool success) 
-    {   
+    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {   
         require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
         require(merkleRoot != 0x0);
         require(delegate != address(0));
         require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
-        require(_startTime > now && _endTime > _startTime);
         STO = STO20(_stoContract);
-        require(STO.securityTokenOffering(_startTime, _endTime));
+        require(STO.startTime() > now && STO.endTime() > STO.startTime());
         allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         shareholders[address(STO)] = Shareholder(this, true, 5);
-        startSTO = _startTime;
-        endSTO = _endTime;
+        startSTO = STO.startTime();
+        endSTO = STO.endTime();
         isSTOProposed = !isSTOProposed;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
         LogSetSTOContract(STO, _stoContract, _auditor, startSTO, endSTO);
@@ -356,14 +350,10 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        if (shareholders[_spender].allowed) {
-            require(_value != 0);
-            allowed[msg.sender][_spender] = _value;
-            Approval(msg.sender, _spender, _value);
-            return true;
-        } else {
-            return false;
-        }
+        require(_value != 0);
+        allowed[msg.sender][_spender] = _value;
+        Approval(msg.sender, _spender, _value);
+        return true;
     }
 
     /**
