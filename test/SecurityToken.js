@@ -244,6 +244,14 @@ contract('SecurityToken', accounts => {
       assert.strictEqual(data[0], templateAddress);
     });
 
+    it("startOffering: Should not start the offering -- fail STO is not proposed yet", async()=>{
+      try {  
+        await securityToken.startOffering({ from : host});
+      } catch (error) {
+        ensureException(error);
+      }
+     });
+
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
       stoContract = await STO.new(POLY.address, { from : stoCreater, gas : 5000000 });
       await stoContract.securityTokenOffering(securityToken.address, startTime, endTime); 
@@ -269,6 +277,8 @@ contract('SecurityToken', accounts => {
            from : issuer 
           });
       convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
+
+      let issuerBalance = await securityToken.balanceOf(issuer);
       let success = await securityToken.selectOfferingProposal(
         0, 
         {
@@ -276,6 +286,31 @@ contract('SecurityToken', accounts => {
         });
       success.logs[0].args._auditor.should.equal(issuer);  
     });
+
+    describe("startOffering() Test Cases",async()=>{
+      it("Should not start the offering -- fail msg.sender is not issuer", async()=>{
+       try {  
+         await securityToken.startOffering({ from : host});
+       } catch (error) {
+         ensureException(error);
+       }
+      });
+   
+      it("Should active the offering by transferring all ST to the STO contract", async()=>{
+        let balance = await securityToken.balanceOf(issuer); 
+        let txReturn = await securityToken.startOffering({ from : issuer});
+        txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
+        assert.isTrue(await securityToken.isOfferingStart.call());
+      });
+   
+      it("Should not start the offering -- fail offering already active", async()=>{
+       try {  
+         await securityToken.startOffering({ from : issuer});
+       } catch (error) {
+          ensureException(error);
+       }
+      });
+   })
 
     //////////////////////////////////
     ////// addToWhiteList() Test Cases
@@ -312,88 +347,13 @@ contract('SecurityToken', accounts => {
     it('withdrawPoly: should fail to withdraw because of the current time is less than the endSTO + vesting periond',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
       try {
-          await STRegistrar.withdrawFunds('POLY', { from : delegateOfTemp });
+          await STRegistrar.withdrawFunds(ticker, { from : delegateOfTemp });
       } catch(error) {
           ensureException(error);
       }
     });
 
-    /////////////////////////////////////////////////////
-    ////////// Test Suite SecurityToken ERC20 functions 
-    ////////////////////////////////////////////////////
-
-describe("Test Suite for ERC20 Functions", async()=>{
-    it('transfer: ether directly to the token contract -- it will throw', async() => {
-      try {
-        await web3
-            .eth
-            .sendTransaction({
-                from: investor1,
-                to: securityToken.address,
-                value: web3.toWei('10', 'Ether')
-            });
-    } catch (error) {
-         ensureException(error);
-    }
-});
-
-
-it('approve: msg.sender should approve 1000 to accounts[7] & withdraws 200 twice fail in 3 tx when trasferring more than allowance', 
-async() => {
-    await securityToken.transfer(investor1, 1000, {from: issuer});
-    let status0 = await securityToken.addToWhitelist(investor2,{from: provider0});
-    status0.logs[0].args._shareholder.should.equal(investor2);
-
-    let status1 = await securityToken.addToWhitelist(delegate1,{from: provider0});
-    status1.logs[0].args._shareholder.should.equal(delegate1);
-
-    await securityToken.approve(investor2, 1000, {from: investor1});
-    let _allowance1 = await securityToken
-        .allowance
-        .call(investor1, investor2);
-    assert.strictEqual(_allowance1.toNumber(), 1000);
-    await securityToken.transferFrom(investor1, delegate1, 200, {from: investor2});
-    let _balance1 = await securityToken
-        .balanceOf
-        .call(delegate1);
-    assert.strictEqual(_balance1.toNumber(), 200);
-    let _allowance2 = await securityToken
-        .allowance
-        .call(investor1,investor2);
-    assert.strictEqual(_allowance2.toNumber(), 800);
-    let _balance2 = await securityToken
-        .balanceOf
-        .call(investor1);
-    assert.strictEqual(_balance2.toNumber(), 800);
-    await securityToken.transferFrom(investor1, delegate1, 200, {from: investor2});
-    let _balance3 = await securityToken
-        .balanceOf
-        .call(delegate1);
-    assert.strictEqual(_balance3.toNumber(), 400);
-    let _allowance3 = await securityToken
-        .allowance
-        .call(investor1, investor2);
-    assert.strictEqual(_allowance3.toNumber(), 600);
-    let _balance4 = await securityToken
-        .balanceOf
-        .call(investor1);
-    assert.strictEqual(_balance4.toNumber(), 600);
-   
-    let txReturn = await securityToken.transferFrom.call(investor1, delegate1, 800, {from: investor2});
-    assert.isFalse(txReturn);
-  });
-
-
-
-it('Approve max (2^256 - 1)', async() => {
-    await securityToken.approve(investor1, '115792089237316195423570985008687907853269984665640564039457584007913129639935', {from: issuer});
-    let _allowance = await securityToken.allowance(issuer, investor1);
-    let result = _allowance.equals('1.15792089237316195423570985008687907853269984665640564039457584007913129639935e' +
-            '+77');
-    assert.isTrue(result);
-});
-});
-
+  
 it('updateComplianceProof:should update the new merkle root',async()=>{
     let txReturn = await securityToken.updateComplianceProof(
       witnessProof0,
@@ -604,13 +564,13 @@ describe("Compliance contracts functions",async()=>{
   });
   
   it('issueSecurityTokens: Should not successfully allocate the security token to contributor -- less allowance',async()=>{
-    await POLY.getTokens(1000, investor2, { from : investor2});
-    await POLY.approve(securityToken.address, 900, { from : investor2 });
-    try {
-      let txReturn = await stoContract.buySecurityToken(1000, { from : investor2 , gas : 400000 });
-    } catch(error) {
-       ensureException(error);
-    }
+      await POLY.getTokens(1000, investor2, { from : investor2});
+      await POLY.approve(securityToken.address, 900, { from : investor2 });
+      try {
+        let txReturn = await stoContract.buySecurityToken(1000, { from : investor2 , gas : 400000 });
+      } catch(error) {
+        ensureException(error);
+      }
   });
   
   it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
@@ -628,7 +588,7 @@ describe("Compliance contracts functions",async()=>{
     await POLY.getTokens(100000, investor1, { from : investor1 });
     await POLY.approve(securityToken.address, 100100, { from : investor1 });
 
-    // This function call internally calls issueSecurityTokens  ( 150 extradded because auditor of STO is equal to owner of security Token)
+    // This function call internally calls issueSecurityTokens  ( 150 extra added because auditor of STO is equal to owner of security Token)
     let txReturn = await stoContract.buySecurityToken(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
     
     txReturn.logs[0].args._ployContribution.toNumber().should.equal(maxPoly - (investedAmount + 150));
@@ -641,6 +601,83 @@ describe("Compliance contracts functions",async()=>{
     } 
   });
   });
+
+    /////////////////////////////////////////////////////
+    ////////// Test Suite SecurityToken ERC20 functions 
+    ////////////////////////////////////////////////////
+
+    describe("Test Suite for ERC20 Functions", async()=>{
+      it('transfer: ether directly to the token contract -- it will throw', async() => {
+        try {
+          await web3
+              .eth
+              .sendTransaction({
+                  from: investor1,
+                  to: securityToken.address,
+                  value: web3.toWei('10', 'Ether')
+              });
+      } catch (error) {
+          ensureException(error);
+      }
+    });
+
+
+    it('approve: msg.sender should approve 1000 to accounts[7] & withdraws 200 twice fail in 3 tx when trasferring more than allowance', 
+    async() => {
+      let currentBalance = await securityToken.balanceOf(investor1);
+      let status0 = await securityToken.addToWhitelist(investor2,{from: provider0});
+      status0.logs[0].args._shareholder.should.equal(investor2);
+
+      let status1 = await securityToken.addToWhitelist(delegate1,{from: provider0});
+      status1.logs[0].args._shareholder.should.equal(delegate1);
+
+      await securityToken.approve(investor2, 900, {from: investor1});
+      let _allowance1 = await securityToken
+          .allowance
+          .call(investor1, investor2);
+      assert.strictEqual(_allowance1.toNumber(), 900);
+      await securityToken.transferFrom(investor1, delegate1, 200, {from: investor2});
+      let _balance1 = await securityToken
+          .balanceOf
+          .call(delegate1);
+      assert.strictEqual(_balance1.toNumber(), 200);
+      let _allowance2 = await securityToken
+          .allowance
+          .call(investor1,investor2);
+      assert.strictEqual(_allowance2.toNumber(), 700);
+      let _balance2 = await securityToken
+          .balanceOf
+          .call(investor1);
+      assert.strictEqual(_balance2.toNumber(), currentBalance - 200);
+      await securityToken.transferFrom(investor1, delegate1, 200, {from: investor2});
+      let _balance3 = await securityToken
+          .balanceOf
+          .call(delegate1);
+      assert.strictEqual(_balance3.toNumber(), 400);
+      let _allowance3 = await securityToken
+          .allowance
+          .call(investor1, investor2);
+      assert.strictEqual(_allowance3.toNumber(), 500);
+      let _balance4 = await securityToken
+          .balanceOf
+          .call(investor1);
+      assert.strictEqual(_balance4.toNumber(), currentBalance - 400);
+    
+      let txReturn = await securityToken.transferFrom.call(investor1, delegate1, 800, {from: investor2});
+      assert.isFalse(txReturn);
+    });
+
+
+
+    it('Approve max (2^256 - 1)', async() => {
+      await securityToken.approve(investor1, '115792089237316195423570985008687907853269984665640564039457584007913129639935', {from: issuer});
+      let _allowance = await securityToken.allowance(issuer, investor1);
+      let result = _allowance.equals('1.15792089237316195423570985008687907853269984665640564039457584007913129639935e' +
+              '+77');
+      assert.isTrue(result);
+    });
+  });
+
 
     describe("Test to check the vote to freeze functionality ",async()=>{
       it('voteToFreeze: Should successfully freeze the fee of network participant',async()=>{
@@ -656,68 +693,67 @@ describe("Compliance contracts functions",async()=>{
     ///// withdrawPoly() Test Cases
     ////////////////////////////////
 
-//     describe("withdrawPoly() Test Cases with different variations",async()=>{
-//     it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
-//       let delegateOfTemp = await securityToken.delegate.call();
+    describe("withdrawPoly() Test Cases with different variations",async()=>{
+    it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
+      let delegateOfTemp = await securityToken.delegate.call();
+      // Time jump of now + vesting period
+      await increaseTime(vestingPeriod);  
+      let balance = await POLY.balanceOf(securityToken.address);
 
-//       await increaseTime(vestingPeriod);  
-//       let balance = await POLY.balanceOf(securityToken.address);
+      let txReturn = await STRegistrar.withdrawFunds(ticker, { from : delegateOfTemp , gas : 3000000 });
+      let delegateBalance = await POLY.balanceOf(delegateOfTemp);
 
-//       let success = await STRegistrar.withdrawFunds(ticker, { from : delegateOfTemp , gas : 3000000 });
-//       assert.strictEqual(success.logs[0].args._value.toNumber(),1000);
-//       let delegateBalance = await POLY.balanceOf(delegateOfTemp);
+      assert.strictEqual(delegateBalance.toNumber(),10000);
+  });
 
-//       assert.strictEqual(delegateBalance.toNumber(),10000);
-//   });
-
-//   it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
-//     let balance = await POLY.balanceOf(securityToken.address);
-//     try {
-//     let success = await STRegistrar.withdrawFunds(ticker, { 
-//               from : issuer,
-//               gas : 3000000 
-//     });
-//     } catch(error) {
-//         ensureException(error);
-//     }
-// });
+  it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
+    let balance = await POLY.balanceOf(securityToken.address);
+    try {
+    let success = await STRegistrar.withdrawFunds(ticker, { 
+              from : issuer,
+              gas : 3000000 
+    });
+    } catch(error) {
+        ensureException(error);
+    }
+});
 
 
-//   it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
-//     try {
-//       let success = await STRegistrar.withdrawFunds(ticker, {from:investor1});
-//     } catch(error) {
-//         ensureException(error);
-//     }
-//   });
+  it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
+    try {
+      let success = await STRegistrar.withdrawFunds(ticker, {from:investor1});
+    } catch(error) {
+        ensureException(error);
+    }
+  });
 
-//   it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
-//     let balanceBefore = await POLY.balanceOf(issuer);
-//     let tempST = await STRegistrar.createSecurityToken(
-//       "Poly Temp",
-//       "TPOLY",
-//       totalSupply,
-//       issuer,
-//       host,
-//       fee,
-//       type,
-//       lockupPeriod,
-//       quorum,
-//       {
-//         from : issuer
-//       }
-//   );  
+  it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
+    let balanceBefore = await POLY.balanceOf(issuer);
+    let tempST = await STRegistrar.createSecurityToken(
+      "Poly Temp",
+      "TPOLY",
+      totalSupply,
+      issuer,
+      host,
+      fee,
+      type,
+      lockupPeriod,
+      quorum,
+      {
+        from : issuer
+      }
+  );  
 
-//   let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
-//   let TempSecurityToken = await SecurityToken.at(tempSTAddress);
-//   let balanceAfter = await POLY.balanceOf(issuer);
-//   assert.strictEqual( (balanceBefore - balanceAfter), fee);
+  let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
+  let TempSecurityToken = await SecurityToken.at(tempSTAddress);
+  let balanceAfter = await POLY.balanceOf(issuer);
+  assert.strictEqual( (balanceBefore - balanceAfter), fee);
 
-//   let txReturn = await STRegistrar.withdrawFunds('TPOLY', { from : issuer});
-//   let ballast = await POLY.balanceOf(tempSTAddress);
-//   assert.strictEqual(ballast.toNumber(),0);
-//   });
-// });
+  let txReturn = await STRegistrar.withdrawFunds('TPOLY', { from : issuer});
+  let ballast = await POLY.balanceOf(tempSTAddress);
+  assert.strictEqual(ballast.toNumber(),0);
+  });
+});
 });
 
 });

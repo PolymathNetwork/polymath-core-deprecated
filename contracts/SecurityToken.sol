@@ -54,6 +54,7 @@ contract SecurityToken is IERC20 {
 
     // STO 
     bool public isSTOProposed = false;
+    bool public isOfferingStart = false;
     
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
@@ -143,6 +144,7 @@ contract SecurityToken is IERC20 {
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
+        registrarAddress = msg.sender;
         Transfer(0x0, _owner, _totalSupply);
     }
 
@@ -207,6 +209,22 @@ contract SecurityToken is IERC20 {
     }
 
     /**
+     * @dev Start the offering by sending all the tokens to STO contract
+     * @return bool
+     */
+    function startOffering() onlyOwner external returns (bool success) {
+        require(isSTOProposed);
+        require(!isOfferingStart);
+        uint256 tokenAmount = this.balanceOf(msg.sender);
+        require(tokenAmount == totalSupply);
+        balances[STO] = balances[STO].add(tokenAmount);
+        balances[msg.sender] = balances[msg.sender].sub(balances[STO]);
+        isOfferingStart = !isOfferingStart;
+        Transfer(owner, STO, tokenAmount);
+        return true;
+    }
+
+    /**
      * @dev Add a verified address to the Security Token whitelist
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
@@ -228,6 +246,7 @@ contract SecurityToken is IERC20 {
      */
     function withdrawPoly(address _to) public returns (bool success) {
         require(msg.sender == registrarAddress);
+        require(_to != address(0));
   	    if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         }
@@ -266,6 +285,8 @@ contract SecurityToken is IERC20 {
      * @param _polyContributed The amount of POLY paid for the security tokens.
      */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
+        // Check whether the offering active or not
+        require(isOfferingStart);
         // The _contributor being issued tokens must be in the whitelist
         require(shareholders[_contributor].allowed);
         // Tokens may only be issued while the STO is running
@@ -276,11 +297,11 @@ contract SecurityToken is IERC20 {
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         // POLY contributed can't be higher than maxPoly set by STO
         require(STO.maxPoly() >= allocations[owner].amount.add(_polyContributed));
-        // Update ST balances (transfers ST from owner/issuer to _contributor)
-        balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
+        // Update ST balances (transfers ST from STO to _contributor)
+        balances[STO] = balances[STO].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
         // ERC20 Transfer event
-        Transfer(owner, _contributor, _amountOfSecurityTokens);
+        Transfer(STO, _contributor, _amountOfSecurityTokens);
         // Update the amount of tokens issued by STO
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         // Update the amount of POLY a contributor has contributed and allocated to the owner

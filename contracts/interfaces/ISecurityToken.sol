@@ -54,6 +54,12 @@
     ) public returns (bool success);
 
     /**
+     * @dev Start the offering by sending all the tokens to STO contract
+     * @return bool
+     */
+    function startOffering() external returns (bool success);
+
+    /**
      * @dev Add a verified address to the Security Token whitelist
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
