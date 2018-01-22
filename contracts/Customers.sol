@@ -9,20 +9,17 @@ pragma solidity ^0.4.18;
 
 import './PolyToken.sol';
 import './interfaces/ICustomers.sol';
-import './Ownable.sol';
 
 /**
  * @title Customers
  * @dev Contract use to register the user on the Platform platform
  */
 
-contract Customers is ICustomers, Ownable {
+contract Customers is ICustomers {
 
     string public VERSION = "1";
 
     PolyToken POLY;                                                     // Instance of the POLY token
-
-    uint256 public NEW_PROVIDER_FEE = 1000;                             // Constant variable which holds the fee to register the KYC Oracles
 
     struct Customer {                                                   // Structure use to store the details of the customers
         bytes32 jurisdiction;                                           // Customers jurisdiction as ex - ISO3166 
@@ -41,7 +38,6 @@ contract Customers is ICustomers, Ownable {
         uint256 joined;                                                 // Timestamp when provider register     
         bytes32 details;                                                // Details of provider 
         uint256 fee;                                                    // Fee charged by the KYC providers
-        bool active;                                                    // Whether the provider is active or not
     }
 
     mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
@@ -60,7 +56,6 @@ contract Customers is ICustomers, Ownable {
      * @dev Constructor 
      */
     function Customers(address _polyTokenAddress) public {
-        owner = msg.sender;
         POLY = PolyToken(_polyTokenAddress);
     }
 
@@ -75,8 +70,7 @@ contract Customers is ICustomers, Ownable {
         require(_providerAddress != address(0));
         require(_details != 0x0);
         require(providers[_providerAddress].details == 0x0);
-        require(POLY.transferFrom(_providerAddress, address(this), NEW_PROVIDER_FEE));
-        providers[_providerAddress] = Provider(_name, now, _details, _fee, false);
+        providers[_providerAddress] = Provider(_name, now, _details, _fee);
         LogNewProvider(_providerAddress, _name, _details);
         return true;
     }
@@ -108,7 +102,6 @@ contract Customers is ICustomers, Ownable {
     ) public onlyProvider returns (bool success)
     {   
         require(_expires > now);
-        require(providers[msg.sender].active);
         require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
         customers[msg.sender][_customer].jurisdiction = _jurisdiction;
         customers[msg.sender][_customer].role = _role;
@@ -117,44 +110,6 @@ contract Customers is ICustomers, Ownable {
         customers[msg.sender][_customer].verified = true;
         LogCustomerVerified(_customer, msg.sender, _role);
         return true;
-    }
-
-    //////////////////////////
-    ///// Owner functions
-    //////////////////////////
-
-    /**
-     * @dev Used to withdraw POLY from the contract to owner account
-     * @return bool
-     */
-    function withdrawReservePoly(address _to) onlyOwner public returns(bool) {
-        uint256 balance = POLY.balanceOf(this);
-        require(POLY.transfer(_to,balance));
-        return true;
-    }
-
-    /**
-     * @dev Use to change the Registeration fee for Providers to register on platform
-     * @param _newProviderFee New Fee charged to providers
-    
-     */
-
-    function changeRegisterationFee(uint256 _newProviderFee) onlyOwner public {
-        require(_newProviderFee > 0);
-        NEW_PROVIDER_FEE = _newProviderFee;
-    }
-
-    /**
-     * @dev Owner change the flag active to true or false
-     * @param _providersList List of addresses of providers
-     * @param _status List of value of active flag
-     */
-
-    function changeStatus(address[] _providersList, bool[] _status) onlyOwner public {
-        require(_providersList.length == _status.length);
-        for (uint256 i = 0; i < _providersList.length; i++ ) {
-            providers[_providersList[i]].active = _status[i];
-        }
     }
 
     ///////////////////

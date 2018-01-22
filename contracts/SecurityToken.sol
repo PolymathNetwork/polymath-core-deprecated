@@ -6,7 +6,7 @@ import './interfaces/ICustomers.sol';
 import './interfaces/ISTRegistrar.sol';
 import './interfaces/ICompliance.sol';
 import './interfaces/ITemplate.sol';
-import './interfaces/ISTO.sol';
+import './STO20.sol';
 
 /**
  * @title SecurityToken
@@ -26,6 +26,8 @@ contract SecurityToken is IERC20 {
     ITemplate public Template;                                        // Instance of the Template contract
 
     ICustomers public PolyCustomers;                                  // Instance of the Customers contract
+
+    STO20 public STO;
 
     // ERC20 Fields
     string public name;                                               // Name of the security token
@@ -51,9 +53,8 @@ contract SecurityToken is IERC20 {
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
     // STO 
-    address public STO;                                               // Address of the security token offering contract
-    uint256 public maxPoly;                                           // Maximum amount of POLY will be invested in offering contract
     bool public isSTOProposed = false;
+    bool public hasOfferingStarted = false;
     
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
@@ -115,7 +116,6 @@ contract SecurityToken is IERC20 {
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum address of the security token owner
-     * @param _maxPoly Amount of POLY being raised
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
      * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
@@ -127,7 +127,6 @@ contract SecurityToken is IERC20 {
         string _ticker,
         uint256 _totalSupply,
         address _owner,
-        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
@@ -139,13 +138,13 @@ contract SecurityToken is IERC20 {
         name = _name;
         symbol = _ticker;
         owner = _owner;
-        maxPoly = _maxPoly;
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
+        registrarAddress = msg.sender;
         Transfer(0x0, _owner, _totalSupply);
     }
 
@@ -180,39 +179,48 @@ contract SecurityToken is IERC20 {
         bytes32 _merkleRoot
     ) public onlyOwnerOrDelegate returns (bool success)
     {
-        _merkleRoot = _newMerkleRoot;
-        LogUpdatedComplianceProof(_newMerkleRoot, _merkleRoot);
+        merkleRoot = _newMerkleRoot;
+        LogUpdatedComplianceProof(merkleRoot, _merkleRoot);
         return true;
     }
 
     /**
      * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
      * @param _offeringProposalIndex Array index of the STO proposal
-     * @param _startTime Start of issuance period
-     * @param _endTime End of issuance period
      * @return bool success
      */
-    function selectOfferingProposal (
-        uint8 _offeringProposalIndex,
-        uint256 _startTime,
-        uint256 _endTime
-    ) public onlyDelegate returns (bool success)
-    {   
+    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {   
         require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
         require(merkleRoot != 0x0);
         require(delegate != address(0));
-        require(_startTime > now && _endTime > _startTime);
         require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
+        STO = STO20(_stoContract);
+        require(STO.startTime() > now && STO.endTime() > STO.startTime());
         allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
-        STO = ISTO(_stoContract);
         shareholders[address(STO)] = Shareholder(this, true, 5);
-        startSTO = _startTime;
-        endSTO = _endTime;
+        startSTO = STO.startTime();
+        endSTO = STO.endTime();
         isSTOProposed = !isSTOProposed;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
-        LogSetSTOContract(STO, _stoContract, _auditor, _startTime, _endTime);
+        LogSetSTOContract(STO, _stoContract, _auditor, startSTO, endSTO);
+        return true;
+    }
+
+    /**
+     * @dev Start the offering by sending all the tokens to STO contract
+     * @return bool
+     */
+    function startOffering() onlyOwner external returns (bool success) {
+        require(isSTOProposed);
+        require(!hasOfferingStarted);
+        uint256 tokenAmount = this.balanceOf(msg.sender);
+        require(tokenAmount == totalSupply);
+        balances[STO] = balances[STO].add(tokenAmount);
+        balances[msg.sender] = balances[msg.sender].sub(tokenAmount);
+        hasOfferingStarted = !hasOfferingStarted;
+        Transfer(owner, STO, tokenAmount);
         return true;
     }
 
@@ -238,6 +246,7 @@ contract SecurityToken is IERC20 {
      */
     function withdrawPoly(address _to) public returns (bool success) {
         require(msg.sender == registrarAddress);
+        require(_to != address(0));
   	    if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         }
@@ -276,6 +285,8 @@ contract SecurityToken is IERC20 {
      * @param _polyContributed The amount of POLY paid for the security tokens.
      */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
+        // Check whether the offering active or not
+        require(hasOfferingStarted);
         // The _contributor being issued tokens must be in the whitelist
         require(shareholders[_contributor].allowed);
         // Tokens may only be issued while the STO is running
@@ -284,13 +295,13 @@ contract SecurityToken is IERC20 {
         require(POLY.transferFrom(_contributor, this, _polyContributed));
         // ST being issued can't be higher than the totalSupply
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
-        // POLY contributed can't be higher than maxPoly set for STO
-        require(maxPoly >= allocations[owner].amount.add(_polyContributed));
-        // Update ST balances (transfers ST from owner/issuer to _contributor)
-        balances[owner] = balances[owner].sub(_amountOfSecurityTokens);
+        // POLY contributed can't be higher than maxPoly set by STO
+        require(STO.maxPoly() >= allocations[owner].amount.add(_polyContributed));
+        // Update ST balances (transfers ST from STO to _contributor)
+        balances[STO] = balances[STO].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
         // ERC20 Transfer event
-        Transfer(owner, _contributor, _amountOfSecurityTokens);
+        Transfer(STO, _contributor, _amountOfSecurityTokens);
         // Update the amount of tokens issued by STO
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         // Update the amount of POLY a contributor has contributed and allocated to the owner
@@ -360,14 +371,10 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        if (shareholders[_spender].allowed) {
-            require(_value != 0);
-            allowed[msg.sender][_spender] = _value;
-            Approval(msg.sender, _spender, _value);
-            return true;
-        } else {
-            return false;
-        }
+        require(_value != 0);
+        allowed[msg.sender][_spender] = _value;
+        Approval(msg.sender, _spender, _value);
+        return true;
     }
 
     /**

@@ -1,25 +1,29 @@
 pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
-import './interfaces/ISTO.sol'; 
+import './STO20.sol'; 
 import './interfaces/ISecurityToken.sol';
 import './interfaces/IERC20.sol';
 
-contract STOContract is ISTO {
+/**
+ * @dev Highly Recommended - Only a sample STO Contract Not useful for mainnet
+ */
+
+contract STOContract is STO20 {
 
     using SafeMath for uint256;
     string public VERSION = "1";
+
     ISecurityToken public SecurityToken;
     IERC20 public POLY;
-    uint256 public endTime;
-    uint256 public startTime;
-    address public tokenAddress;
     uint256 public rateInPoly = 100;        // Test figure
-    
-    event LogBoughtSecurityToken(address indexed _contributor, uint256 _ployContribution, uint256 _timestamp);
+    address public securityTokenAddress;
+
+    event LogBoughtSecurityToken(address indexed _contributor, uint256 _ployContribution, uint256 _timestamp);  
 
     function STOContract(address _polyTokenAddres) public {
         POLY = IERC20(_polyTokenAddres);
+        maxPoly = 100000;
     }
 
     function securityTokenOffering(
@@ -29,7 +33,7 @@ contract STOContract is ISTO {
         ) external
     {   
         require(_tokenAddress != address(0));
-        tokenAddress = _tokenAddress;
+        securityTokenAddress = _tokenAddress;
         SecurityToken = ISecurityToken(_tokenAddress);
         startTime = _startTime;
         endTime = _endTime;
@@ -42,8 +46,6 @@ contract STOContract is ISTO {
         require(SecurityToken.issueSecurityTokens(msg.sender, _amountOfSecurityTokens, _polyContributed));
         LogBoughtSecurityToken(msg.sender, _polyContributed, now);
         return true;
-    }  
-
-
+    } 
      
 }

@@ -17,7 +17,6 @@ contract('SecurityTokenRegistrar', accounts => {
   const securityType = 5;
   const numberOfSecurityTypes = 8;                                           //8 is chosen for testing,    
   const createSecurityTokenFee = 10000;
-  const maxPoly = 1000000;
   const quorum = 3;
   const lockupPeriod = latestTime() + duration.years(1);                      //Current time + 1 year is the locking period (Testing Only)   
   const getAmount = 1000000;
@@ -79,7 +78,6 @@ contract('SecurityTokenRegistrar', accounts => {
         host,
         createSecurityTokenFee,
         numberOfSecurityTypes,
-        maxPoly,
         lockupPeriod,
         quorum,
         {
@@ -122,7 +120,6 @@ contract('SecurityTokenRegistrar', accounts => {
               host,
               createSecurityTokenFee,
               numberOfSecurityTypes,
-              maxPoly,
               lockupPeriod,
               quorum,
               {
@@ -158,7 +155,6 @@ contract('SecurityTokenRegistrar', accounts => {
               host,
               createSecurityTokenFee,
               numberOfSecurityTypes,
-              maxPoly,
               lockupPeriod,
               quorum,
               {
@@ -205,7 +201,6 @@ contract('SecurityTokenRegistrar', accounts => {
                             host,
                             createSecurityTokenFee,
                             numberOfSecurityTypes,
-                            maxPoly,
                             lockupPeriod,
                             quorum,
                             {
@@ -222,7 +217,6 @@ contract('SecurityTokenRegistrar', accounts => {
                             host,
                             createSecurityTokenFee,
                             numberOfSecurityTypes,
-                            maxPoly,
                             lockupPeriod,
                             quorum,
                             {
@@ -255,7 +249,6 @@ contract('SecurityTokenRegistrar', accounts => {
                               host,
                               createSecurityTokenFee,
                               numberOfSecurityTypes,
-                              maxPoly,
                               lockupPeriod,
                               quorum,
                               {
@@ -286,7 +279,6 @@ contract('SecurityTokenRegistrar', accounts => {
                             host,
                             createSecurityTokenFee,
                             numberOfSecurityTypes,
-                            maxPoly,
                             lockupPeriod,
                             quorum,
                             {
