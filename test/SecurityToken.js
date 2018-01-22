@@ -354,7 +354,7 @@ contract('SecurityToken', accounts => {
         let balance = await securityToken.balanceOf(issuer); 
         let txReturn = await securityToken.startOffering({ from : issuer});
         txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
-        assert.isTrue(await securityToken.isOfferingStart.call());
+        assert.isTrue(await securityToken.hasOfferingStarted.call());
       });
    
       it("Should not start the offering -- fail offering already active", async()=>{

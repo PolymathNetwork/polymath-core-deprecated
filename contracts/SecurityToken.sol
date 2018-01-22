@@ -54,7 +54,7 @@ contract SecurityToken is IERC20 {
 
     // STO 
     bool public isSTOProposed = false;
-    bool public isOfferingStart = false;
+    bool public hasOfferingStarted = false;
     
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
@@ -214,12 +214,12 @@ contract SecurityToken is IERC20 {
      */
     function startOffering() onlyOwner external returns (bool success) {
         require(isSTOProposed);
-        require(!isOfferingStart);
+        require(!hasOfferingStarted);
         uint256 tokenAmount = this.balanceOf(msg.sender);
         require(tokenAmount == totalSupply);
         balances[STO] = balances[STO].add(tokenAmount);
-        balances[msg.sender] = balances[msg.sender].sub(balances[STO]);
-        isOfferingStart = !isOfferingStart;
+        balances[msg.sender] = balances[msg.sender].sub(tokenAmount);
+        hasOfferingStarted = !hasOfferingStarted;
         Transfer(owner, STO, tokenAmount);
         return true;
     }
@@ -286,7 +286,7 @@ contract SecurityToken is IERC20 {
      */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
         // Check whether the offering active or not
-        require(isOfferingStart);
+        require(hasOfferingStarted);
         // The _contributor being issued tokens must be in the whitelist
         require(shareholders[_contributor].allowed);
         // Tokens may only be issued while the STO is running
