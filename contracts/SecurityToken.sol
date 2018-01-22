@@ -47,14 +47,14 @@ contract SecurityToken is IERC20 {
         bool allowed;                                                 // allowed - whether the shareholder is allowed to transfer or recieve the security token
         uint8 role;                                                   // role - role of the shareholder {1,2,3,4}
     }
-    address public registrarAddress;                                  // SecurityTokenRegistrar contract address  
+    address public registrarAddress;                                  // SecurityTokenRegistrar contract address
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
-    // STO 
+    // STO
     address public STO;                                               // Address of the security token offering contract
     uint256 public maxPoly;                                           // Maximum amount of POLY will be invested in offering contract
     bool public isSTOProposed = false;
-    
+
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
     uint256 public endSTO;                                            // Timestamp when Security Token Offering contract will ends
@@ -197,7 +197,7 @@ contract SecurityToken is IERC20 {
         uint256 _startTime,
         uint256 _endTime
     ) public onlyDelegate returns (bool success)
-    {   
+    {
         require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));
@@ -305,8 +305,6 @@ contract SecurityToken is IERC20 {
         return (Template, delegate, merkleRoot, STO, KYC);
     }
 
-/////////////////////////////////////////////// Customized ERC20 Functions ////////////////////////////////////////////////////////////
-
     /**
      * @dev Trasfer tokens from one address to another
      * @param _to Ethereum public address to transfer tokens to
@@ -360,14 +358,10 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        if (shareholders[_spender].allowed) {
-            require(_value != 0);
-            allowed[msg.sender][_spender] = _value;
-            Approval(msg.sender, _spender, _value);
-            return true;
-        } else {
-            return false;
-        }
+        require(_value != 0);
+        allowed[msg.sender][_spender] = _value;
+        Approval(msg.sender, _spender, _value);
+        return true;
     }
 
     /**
