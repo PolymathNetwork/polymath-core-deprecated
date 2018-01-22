@@ -49,13 +49,13 @@ contract SecurityToken is IERC20 {
         bool allowed;                                                 // allowed - whether the shareholder is allowed to transfer or recieve the security token
         uint8 role;                                                   // role - role of the shareholder {1,2,3,4}
     }
-    address public registrarAddress;                                  // SecurityTokenRegistrar contract address  
+    address public registrarAddress;                                  // SecurityTokenRegistrar contract address
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
-    // STO 
+    // STO
     bool public isSTOProposed = false;
     bool public hasOfferingStarted = false;
-    
+
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
     uint256 public endSTO;                                            // Timestamp when Security Token Offering contract will ends
@@ -69,11 +69,11 @@ contract SecurityToken is IERC20 {
         uint256 yayPercent;
         bool frozen;
     }
-    mapping(address => mapping(address => bool)) voted;               // Voting mapping
-    mapping(address => Allocation) allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
+    mapping(address => mapping(address => bool)) public voted;               // Voting mapping
+    mapping(address => Allocation) public allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
 
 	// Security Token Offering statistics
-    mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
+    mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
 	uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
@@ -189,7 +189,7 @@ contract SecurityToken is IERC20 {
      * @param _offeringProposalIndex Array index of the STO proposal
      * @return bool success
      */
-    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {   
+    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {
         require(!isSTOProposed);
         var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
         require(_stoContract != address(0));

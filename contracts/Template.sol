@@ -32,6 +32,7 @@ contract Template is ITemplate {
     uint8 quorum;                                                   // Minimum percent of shareholders which need to vote to freeze
     uint256 vestingPeriod;                                          // Length of time to vest funds
 
+    event DetailsUpdated(bytes32 _prevDetails, bytes32 _newDetails, uint _updateDate);
 
     function Template (
         address _owner,
@@ -45,7 +46,7 @@ contract Template is ITemplate {
         uint8 _quorum,
         uint256 _vestingPeriod
     ) public
-    {   
+    {
         require(_KYC != address(0) && _owner != address(0));
         require(_fee > 0);
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);
@@ -98,7 +99,10 @@ contract Template is ITemplate {
     function updateDetails(bytes32 _details) public returns (bool allowed) {
         require(_details != 0x0);
         require(owner == msg.sender);
+        bytes32 prevDetails = details;
         details = _details;
+
+        DetailsUpdated(prevDetails, details, now);
         return true;
     }
 
