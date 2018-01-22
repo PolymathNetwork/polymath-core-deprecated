@@ -45,7 +45,7 @@ contract Template is ITemplate {
         uint8 _quorum,
         uint256 _vestingPeriod
     ) public
-    {   
+    {
         require(_KYC != address(0) && _owner != address(0));
         require(_fee > 0);
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);

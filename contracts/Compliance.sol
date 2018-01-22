@@ -117,11 +117,15 @@ contract Compliance is ICompliance {
         address _template
     ) public returns (bool success)
     {
+        // Require that template has not expired, that the caller is the
+        // owner of the template and that the template has been finalized
         require(templates[_template].expires > now);
         require(templates[_template].owner == msg.sender);
+        var (,finalized) = template.getTemplateDetails();
+        require(finalized);
+
+        //Get a reference of the template contract and add it to the templateProposals array
         template = Template(_template);
-        var (,finalize) = template.getTemplateDetails();
-        require(finalize);
         templateProposals[_securityToken].push(_template);
         LogNewTemplateProposal(_securityToken, _template, msg.sender);
         return true;
@@ -159,7 +163,7 @@ contract Compliance is ICompliance {
         uint256 _vestingPeriod,
         uint8 _quorum
         ) public returns (bool success)
-    {       
+    {
             require(offerings[_STOAddress].auditor == address(0));
             require(_STOAddress != address(0));
             require(_quorum > 0 && _quorum <= 100);
