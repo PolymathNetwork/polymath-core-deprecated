@@ -30,7 +30,7 @@ contract Compliance is ICompliance {
         uint256 expires;                                                // Timestamp when template get expire
         address[] usedBy;                                               // Array of security token addresses that used the particular template
     }
-    mapping(address => TemplateReputation) templates;                   // Mapping used for storing the template past records corresponds to template address
+    mapping(address => TemplateReputation) public templates;                   // Mapping used for storing the template past records corresponds to template address
     mapping(address => address[]) public templateProposals;             // Template proposals for a specific security token
 
     struct Offering {                                                   // Smart contract proposals for a specific security token offering
