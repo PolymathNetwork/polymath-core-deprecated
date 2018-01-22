@@ -233,16 +233,70 @@ contract('SecurityToken', accounts => {
         assert.equal((await securityToken.balanceOf(issuer)).toNumber(), totalSupply);
       });
 
-    it("selectTemplate: should owner of token can select the template",async()=>{
-      let proposeTemplate = await compliance.proposeTemplate(STAddress, templateAddress, { from : delegate0 });
+      it("addJurisdiction: Should add the Jurisdiction in template -- fail msg.sender is not owner of template",async()=>{
+        let template = await Template.at(templateAddress); 
+        try {
+          await template.addJurisdiction(['1','0'], [true,true], { from : delegate1 });
+        } catch(error) {
+          ensureException(error);
+        }
+      });
 
-      await POLY.getTokens(100000, issuer, { from : issuer });
-      await POLY.transfer(STAddress, 10000, { from : issuer }); 
-      
-      let template = await securityToken.selectTemplate(tempIndex, { from : issuer }); 
-      let data = await securityToken.getTokenDetails();
-      assert.strictEqual(data[0], templateAddress);
-    });
+      it("addJurisdiction: Should add the Jurisdiction in template",async()=>{
+        let template = await Template.at(templateAddress); 
+        await template.addJurisdiction(['1','0'], [true,true], { from : delegate0 });
+      });
+
+      it("addRoles: Should add the roles in alowed roles list -- fail msg.sender is not the owner of template",async()=>{
+        let template = await Template.at(templateAddress);
+        try {
+          await template.addRoles([1,2], { from : delegate1 }); 
+        } catch(error) {
+          ensureException(error);
+        }
+      });
+
+      it("addRoles: Should add the roles in alowed roles list",async()=>{
+        let template = await Template.at(templateAddress);
+        await template.addRoles([1,2], { from : delegate0 }); 
+      });
+
+      it("proposeTemplate: Should proposed the teplate successfully --fails template is not finalized",async()=>{
+        try {
+          await compliance.proposeTemplate(STAddress, templateAddress, { from : delegate0 });
+        } catch (error) {
+          ensureException(error);
+        }
+      });
+
+      it("finalizeTemplate: should finalize the template -- fails msg.sender is not owner of template", async() =>{
+        let template = await Template.at(templateAddress); 
+        try {
+          await template.finalizeTemplate({ from : delegate1 });
+        } catch(error) {
+          ensureException(error);
+        }
+      });
+  
+      it("finalizeTemplate: should finalize the template ", async() =>{
+        let template = await Template.at(templateAddress); 
+        await template.finalizeTemplate({ from : delegate0 });
+        let details = await template.getTemplateDetails.call();
+        assert.isTrue(details[1]);
+      });
+
+      it("proposeTemplate: Should proposed the teplate successfully --fails template is not finalized",async()=>{
+          await compliance.proposeTemplate(STAddress, templateAddress, { from : delegate0 });
+      });
+     
+      it("selectTemplate: should owner of token can select the template",async()=>{
+        await POLY.getTokens(100000, issuer, { from : issuer });
+        await POLY.transfer(STAddress, 10000, { from : issuer }); 
+        let template = await securityToken.selectTemplate(tempIndex, { from : issuer }); 
+        
+        let data = await securityToken.getTokenDetails();
+        assert.strictEqual(data[0], templateAddress);
+      });
 
     it("startOffering: Should not start the offering -- fail STO is not proposed yet", async()=>{
       try {  
@@ -310,7 +364,7 @@ contract('SecurityToken', accounts => {
           ensureException(error);
        }
       });
-   })
+   });
 
     //////////////////////////////////
     ////// addToWhiteList() Test Cases
@@ -318,20 +372,12 @@ contract('SecurityToken', accounts => {
 
     it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == KYC',async()=>{
       let id = await takeSnapshot();                                  // Taking the snapshot to revert the tx 
-      let template = await Template.at(templateAddress);              // Creating the instance of template contract 
-      
-      await template.addJurisdiction(['1','0'], [true,true], { from : delegate0 });
-      await template.addRoles([1,2], { from : delegate0 }); 
-      
       let status = await securityToken.addToWhitelist(investor1, { from: provider0});
       status.logs[0].args._shareholder.should.equal(investor1);
       await revertToSnapshot(id);                                     // reverting the snapshot
     });
 
     it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == issuer',async()=>{
-      let template = await Template.at(templateAddress);
-      await template.addJurisdiction(['1','0'], [true,true], { from : delegate0 });
-      await template.addRoles([1,2], { from : delegate0 }); 
       let status = await securityToken.addToWhitelist(investor1, { from : issuer });
       status.logs[0].args._shareholder.should.equal(investor1);
     });
@@ -354,29 +400,29 @@ contract('SecurityToken', accounts => {
     });
 
   
-it('updateComplianceProof:should update the new merkle root',async()=>{
-    let txReturn = await securityToken.updateComplianceProof(
-      witnessProof0,
-      witnessProof1,
-      {
-        from : issuer
-      }
-    );
-    convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
-});
-
-it('updateComplianceProof:should not update the new merkle root -- called by unauthorized msg.sender',async()=>{
-  try {
-  await securityToken.updateComplianceProof(
-    witnessProof0,
-    witnessProof1,
-    {
-      from : investor1
+    it('updateComplianceProof:should update the new merkle root',async()=>{
+        let txReturn = await securityToken.updateComplianceProof(
+          witnessProof0,
+          witnessProof1,
+          {
+            from : issuer
+          }
+        );
+        convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
     });
-  } catch(error) {
-    ensureException(error);
-}
-});
+
+    it('updateComplianceProof:should not update the new merkle root -- called by unauthorized msg.sender',async()=>{
+      try {
+      await securityToken.updateComplianceProof(
+        witnessProof0,
+        witnessProof1,
+        {
+          from : investor1
+        });
+      } catch(error) {
+        ensureException(error);
+    }
+    });
 
 });
 
@@ -384,29 +430,38 @@ it('updateComplianceProof:should not update the new merkle root -- called by una
 ///// Compliance Contract Test Cases
 /////////////////////////////////////
 
-describe("Compliance contracts functions",async()=>{
-  it("proposeTemplate: should successfully propose template", async()=>{
-    let template2 = await compliance.createTemplate(
-            offeringType,
-            issuerJurisdiction,
-            accredited,
-            provider0,
-            details,
-            expires,
-            1000,
-            quorum,
-            vestingPeriod,
-            {
-              from:delegate1
-            });
-    let templateAdd = template2.logs[0].args._template
+describe("Compliance contracts functions", async()=> {
+  it("proposeTemplate: should successfully propose template", async()=> {
+    let tx = await compliance.createTemplate(
+                  "Test",
+                  issuerJurisdiction,
+                  accredited,
+                  provider0,
+                  "This is for Test",
+                  expires,
+                  1000,
+                  quorum,
+                  vestingPeriod,
+                  {
+                    from:delegate0
+              });
+    let templateAdd = tx.logs[0].args._template
+    let template2 = await Template.at(templateAdd);
+    // add jusrisdiction and role
+    await template2.addJurisdiction(['1','0'], [true,true], { from : delegate0 });
+    await template2.addRoles([1,2], { from : delegate0 }); 
+    // finalizing the template
+    await template2.finalizeTemplate({ from : delegate0 });
+    let details = await template2.getTemplateDetails.call();
+    assert.isTrue(details[1]);
+
     let txReturn = await compliance.proposeTemplate(
       securityToken.address,
       templateAdd,
       {
-        from : delegate1
+        from : delegate0
       });
-      txReturn.logs[0].args._template.should.equal(templateAdd);
+    txReturn.logs[0].args._template.should.equal(templateAdd);
   });
 
   it("cancelTemplateProposal: Should fails in canceling template proposal -- msg.sender unauthorized", async() =>{
@@ -415,7 +470,7 @@ describe("Compliance contracts functions",async()=>{
         securityToken.address,
         1,
         {
-          from : delegate0
+          from : delegate1
         });
     } catch(error) {
         ensureException(error);
@@ -427,9 +482,22 @@ describe("Compliance contracts functions",async()=>{
       securityToken.address,
       1,
       {
-        from : delegate1
+        from : delegate0
       });
   });
+
+  it("cancelTemplateProposal: Should successfully cancel template proposal --fail because teplate is already choosen", async() =>{
+    try {
+      let txReturn = await compliance.cancelTemplateProposal(
+      securityToken.address,
+      0,
+      {
+        from : delegate0
+      });
+    } catch(error) {
+      ensureException(error);
+    }
+ });
 
   it("setSTO:Should fail in adding the new STO contract-- failed because of 0 address", async() =>{
     try {
