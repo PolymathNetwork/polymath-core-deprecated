@@ -316,8 +316,6 @@ contract SecurityToken is IERC20 {
         return (Template, delegate, merkleRoot, STO, KYC);
     }
 
-/////////////////////////////////////////////// Customized ERC20 Functions ////////////////////////////////////////////////////////////
-
     /**
      * @dev Trasfer tokens from one address to another
      * @param _to Ethereum public address to transfer tokens to
