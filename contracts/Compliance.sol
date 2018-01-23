@@ -121,11 +121,12 @@ contract Compliance is ICompliance {
         // owner of the template and that the template has been finalized
         require(templates[_template].expires > now);
         require(templates[_template].owner == msg.sender);
+        // Creating the instance of template to avail the function calling 
+        template = Template(_template);
         var (,finalized) = template.getTemplateDetails();
         require(finalized);
 
         //Get a reference of the template contract and add it to the templateProposals array
-        template = Template(_template);
         templateProposals[_securityToken].push(_template);
         LogNewTemplateProposal(_securityToken, _template, msg.sender);
         return true;

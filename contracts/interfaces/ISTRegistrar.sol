@@ -8,6 +8,7 @@ interface ISTRegistrar {
     * @param _ticker Ticker name of the security
     * @param _totalSupply Total amount of tokens being created
     * @param _owner Ethereum public key address of the security token owner
+    * @param _maxPoly Amount of maximum poly issuer want to raise
     * @param _host The host of the security token wizard
     * @param _fee Fee being requested by the wizard host
     * @param _type Type of security being tokenized
@@ -19,6 +20,7 @@ interface ISTRegistrar {
         string _ticker,
         uint256 _totalSupply,
         address _owner,
+        uint256 _maxPoly,
         address _host,
         uint256 _fee,
         uint8 _type,

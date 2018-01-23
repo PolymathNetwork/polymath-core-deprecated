@@ -14,6 +14,7 @@ contract('SecurityTokenRegistrar', accounts => {
   const name = 'Polymath Inc.';
   const ticker = 'POLY';
   const totalSupply = 1234567890;
+  const maxPoly = 100000;
   const securityType = 5;
   const numberOfSecurityTypes = 8;                                           //8 is chosen for testing,    
   const createSecurityTokenFee = 10000;
@@ -75,6 +76,7 @@ contract('SecurityTokenRegistrar', accounts => {
         ticker,
         totalSupply,
         issuer1,
+        maxPoly,
         host,
         createSecurityTokenFee,
         numberOfSecurityTypes,
@@ -117,6 +119,7 @@ contract('SecurityTokenRegistrar', accounts => {
               ticker,
               totalSupply,
               issuer1,
+              maxPoly,
               host,
               createSecurityTokenFee,
               numberOfSecurityTypes,
@@ -152,6 +155,7 @@ contract('SecurityTokenRegistrar', accounts => {
               ticker,
               totalSupply,
               issuer1,
+              maxPoly,
               host,
               createSecurityTokenFee,
               numberOfSecurityTypes,
@@ -198,6 +202,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             ticker,
                             totalSupply,
                             issuer1,
+                            maxPoly,
                             host,
                             createSecurityTokenFee,
                             numberOfSecurityTypes,
@@ -214,6 +219,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             ticker,
                             totalSupply,
                             issuer2,
+                            maxPoly,
                             host,
                             createSecurityTokenFee,
                             numberOfSecurityTypes,
@@ -246,6 +252,7 @@ contract('SecurityTokenRegistrar', accounts => {
                               ticker,
                               totalSupply,
                               issuer1,
+                              maxPoly,
                               host,
                               createSecurityTokenFee,
                               numberOfSecurityTypes,
@@ -276,6 +283,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             ticker,
                             totalSupply,
                             issuer1,
+                            maxPoly,
                             host,
                             createSecurityTokenFee,
                             numberOfSecurityTypes,

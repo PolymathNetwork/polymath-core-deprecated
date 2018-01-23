@@ -23,7 +23,6 @@ contract STOContract is STO20 {
 
     function STOContract(address _polyTokenAddres) public {
         POLY = IERC20(_polyTokenAddres);
-        maxPoly = 100000;
     }
 
     function securityTokenOffering(
