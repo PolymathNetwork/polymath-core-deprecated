@@ -56,6 +56,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum public key address of the security token owner
+     * @param _maxPoly Amount of maximum poly issuer want to raise
      * @param _host The host of the security token wizard
      * @param _fee Fee being requested by the wizard host
      * @param _type Type of security being tokenized
@@ -67,6 +68,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       string _ticker,
       uint256 _totalSupply,
       address _owner,
+      uint256 _maxPoly,
       address _host,
       uint256 _fee,
       uint8 _type,
@@ -74,7 +76,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint8 _quorum
     ) external
     {
-      require(_totalSupply > 0 && _fee > 0);
+      require(_totalSupply > 0 && _maxPoly > 0 && _fee > 0);
       require(tickers[_ticker] == 0x0);
       require(_lockupPeriod >= now);
       require(_owner != address(0) && _host != address(0));
@@ -86,6 +88,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _ticker,
         _totalSupply,
         _owner,
+        _maxPoly,
         _lockupPeriod,
         _quorum,
         polyTokenAddress,

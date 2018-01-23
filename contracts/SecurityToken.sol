@@ -55,6 +55,7 @@ contract SecurityToken is IERC20 {
     // STO
     bool public isSTOProposed = false;
     bool public hasOfferingStarted = false;
+    uint256 public maxPoly;
 
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
@@ -69,11 +70,11 @@ contract SecurityToken is IERC20 {
         uint256 yayPercent;
         bool frozen;
     }
-    mapping(address => mapping(address => bool)) voted;               // Voting mapping
-    mapping(address => Allocation) allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
+    mapping(address => mapping(address => bool)) public voted;               // Voting mapping
+    mapping(address => Allocation) public allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
 
 	// Security Token Offering statistics
-    mapping(address => uint256) contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
+    mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
     uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
@@ -116,6 +117,7 @@ contract SecurityToken is IERC20 {
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum address of the security token owner
+     * @param _maxPoly Amount of maximum poly issuer want to raise
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
      * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
@@ -127,6 +129,7 @@ contract SecurityToken is IERC20 {
         string _ticker,
         uint256 _totalSupply,
         address _owner,
+        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
@@ -138,6 +141,7 @@ contract SecurityToken is IERC20 {
         name = _name;
         symbol = _ticker;
         owner = _owner;
+        maxPoly = _maxPoly;
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
@@ -296,7 +300,7 @@ contract SecurityToken is IERC20 {
         // ST being issued can't be higher than the totalSupply
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         // POLY contributed can't be higher than maxPoly set by STO
-        require(STO.maxPoly() >= allocations[owner].amount.add(_polyContributed));
+        require(maxPoly >= allocations[owner].amount.add(_polyContributed));
         // Update ST balances (transfers ST from STO to _contributor)
         balances[STO] = balances[STO].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
