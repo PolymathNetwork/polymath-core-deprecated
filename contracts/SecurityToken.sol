@@ -230,11 +230,14 @@ contract SecurityToken is IERC20 {
 
     /**
      * @dev Add a verified address to the Security Token whitelist
+     * The Issuer can add an address to the whitelist by themselves by
+     * creating their own KYC provider and using it to verify the accounts
+     * they want to add to the whitelist.
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
      */
     function addToWhitelist(address _whitelistAddress) public returns (bool success) {
-        require(KYC == msg.sender || owner == msg.sender);
+        require(KYC == msg.sender);
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
