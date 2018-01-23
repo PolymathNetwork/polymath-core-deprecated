@@ -19,7 +19,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
 
     string public VERSION = "1";
     SecurityToken securityToken;
-    address public polyTokenAddress;                                // Address of POLY token 
+    address public polyTokenAddress;                                // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
 
@@ -50,7 +50,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       polyComplianceAddress = _polyComplianceAddress;
     }
 
-    /** 
+    /**
      * @dev Creates a new Security Token and saves it to the registry
      * @param _name Name of the security token
      * @param _ticker Ticker name of the security
@@ -60,13 +60,14 @@ contract SecurityTokenRegistrar is ISTRegistrar {
      * @param _fee Fee being requested by the wizard host
      * @param _type Type of security being tokenized
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-     * @param _quorum Percent of initial investors required to freeze POLY raise 
+     * @param _quorum Percent of initial investors required to freeze POLY raise
      */
     function createSecurityToken (
       string _name,
       string _ticker,
       uint256 _totalSupply,
       address _owner,
+      uint8 _decimals,
       address _host,
       uint256 _fee,
       uint8 _type,
@@ -86,6 +87,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _ticker,
         _totalSupply,
         _owner,
+        _decimals,
         _lockupPeriod,
         _quorum,
         polyTokenAddress,
