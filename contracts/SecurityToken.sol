@@ -127,6 +127,7 @@ contract SecurityToken is IERC20 {
         string _ticker,
         uint256 _totalSupply,
         address _owner,
+        uint8 _decimals,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
@@ -134,10 +135,10 @@ contract SecurityToken is IERC20 {
         address _polyComplianceAddress
     ) public
     {
-        decimals = 0;
         name = _name;
         symbol = _ticker;
         owner = _owner;
+        decimals = _decimals;
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
