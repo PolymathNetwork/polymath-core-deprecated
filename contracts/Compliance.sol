@@ -21,6 +21,8 @@ contract Compliance is ICompliance {
 
     string public VERSION = "1";
 
+    ITemplate template;
+
     struct TemplateReputation {                                         // Structure contains the compliance template details
         address owner;                                                  // Address of the template owner
         uint256 totalRaised;                                            // Total amount raised by the issuers that used the template
@@ -28,7 +30,7 @@ contract Compliance is ICompliance {
         uint256 expires;                                                // Timestamp when template get expire
         address[] usedBy;                                               // Array of security token addresses that used the particular template
     }
-    mapping(address => TemplateReputation) templates;                   // Mapping used for storing the template past records corresponds to template address
+    mapping(address => TemplateReputation) public templates;                   // Mapping used for storing the template past records corresponds to template address
     mapping(address => address[]) public templateProposals;             // Template proposals for a specific security token
 
     struct Offering {                                                   // Smart contract proposals for a specific security token offering
@@ -115,8 +117,15 @@ contract Compliance is ICompliance {
         address _template
     ) public returns (bool success)
     {
+        // Require that template has not expired, that the caller is the
+        // owner of the template and that the template has been finalized
         require(templates[_template].expires > now);
         require(templates[_template].owner == msg.sender);
+        var (,finalized) = template.getTemplateDetails();
+        require(finalized);
+
+        //Get a reference of the template contract and add it to the templateProposals array
+        template = Template(_template);
         templateProposals[_securityToken].push(_template);
         LogNewTemplateProposal(_securityToken, _template, msg.sender);
         return true;
@@ -154,7 +163,7 @@ contract Compliance is ICompliance {
         uint256 _vestingPeriod,
         uint8 _quorum
         ) public returns (bool success)
-    {       
+    {
             require(offerings[_STOAddress].auditor == address(0));
             require(_STOAddress != address(0));
             require(_quorum > 0 && _quorum <= 100);
@@ -238,7 +247,7 @@ contract Compliance is ICompliance {
      * @return Template struct
      */
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
-        address template
+        address _template
     ){
         return templateProposals[_securityTokenAddress][_templateIndex];
     }

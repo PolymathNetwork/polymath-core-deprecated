@@ -8,7 +8,6 @@
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum address of the security token owner
-     * @param _maxPoly Amount of POLY being raised
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
      * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
@@ -20,7 +19,6 @@
         string _ticker,
         uint256 _totalSupply,
         address _owner,
-        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
@@ -49,15 +47,17 @@
     /** 
      * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
      * @param _offeringProposalIndex Array index of the STO proposal
-     * @param _startTime Start of issuance period
-     * @param _endTime End of issuance period
      * @return bool success 
      */
     function selectOfferingProposal (
-        uint8 _offeringProposalIndex,
-        uint256 _startTime,
-        uint256 _endTime
+        uint8 _offeringProposalIndex
     ) public returns (bool success);
+
+    /**
+     * @dev Start the offering by sending all the tokens to STO contract
+     * @return bool
+     */
+    function startOffering() external returns (bool success);
 
     /**
      * @dev Add a verified address to the Security Token whitelist

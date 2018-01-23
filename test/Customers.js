@@ -40,9 +40,7 @@ contract('Customers', accounts => {
     it('An approved and active KYC provider can validate customers as being in a jurisdiction and accredit a customer', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(1000000, provider1, { from: provider1 });
-      await poly.approve(customers.address, 100000, { from: provider1 });
+    
       await customers.newProvider(
         provider1,
         providerName1,
@@ -69,9 +67,7 @@ contract('Customers', accounts => {
     it('verifyCustomer: An approved and active KYC provider can validate customers as being in a jurisdiction and accredit a customer -- fail due to expiry is less than now', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(1000000, provider1, { from: provider1 });
-      await poly.approve(customers.address, 100000, { from: provider1 });
+
       await customers.newProvider(
         provider1,
         providerName1,
@@ -100,9 +96,7 @@ contract('Customers', accounts => {
     it('VerifyCustomer: Should fail due to the msg.sender is not provider', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(1000000, provider1, { from: provider1 });
-      await poly.approve(customers.address, 100000, { from: provider1 });
+
       let providerOne = await customers.newProvider(
         provider1,
         providerName1,
@@ -134,17 +128,6 @@ contract('Customers', accounts => {
     it('newProvider: Should register the new KYC providers', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(1000000, provider1, { from: provider1 });
-      let providerBalance = await poly.balanceOf.call(provider1);
-      assert.strictEqual(providerBalance.toNumber(), 1000000);
-      await poly.approve(customers.address, 100000, { from: provider1 });
-      
-      let allowedToken = await poly.allowance.call(
-        provider1,
-        customers.address,
-      );
-      assert.strictEqual(allowedToken.toNumber(), 100000);
 
       await customers.newProvider(
         provider1,
@@ -159,17 +142,6 @@ contract('Customers', accounts => {
     it('newProvider: should kyc providers apply their data to chain -- fail because of zero address', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(1000000, provider1, { from: provider1 });
-      let providerBalance = await poly.balanceOf.call(provider1);
-      assert.strictEqual(providerBalance.toNumber(), 1000000);
-      await poly.approve(customers.address, 100000, { from: provider1 });
-      
-      let allowedToken = await poly.allowance.call(
-        provider1,
-        customers.address,
-      );
-      assert.strictEqual(allowedToken.toNumber(), 100000);
 
       try {
         await customers.newProvider(
@@ -186,17 +158,6 @@ contract('Customers', accounts => {
     it('newProvider: should kyc providers apply their data to chain -- fail because of zero details', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(1000000, provider1, { from: provider1 });
-      let providerBalance = await poly.balanceOf.call(provider1);
-      assert.strictEqual(providerBalance.toNumber(), 1000000);
-      await poly.approve(customers.address, 100000, { from: provider1 });
-
-      let allowedToken = await poly.allowance.call(
-        provider1,
-        customers.address,
-      );
-      assert.strictEqual(allowedToken.toNumber(), 100000);
 
       try {
         await customers.newProvider(
@@ -210,31 +171,6 @@ contract('Customers', accounts => {
       }
     });
 
-    it('kyc providers apply their data to chain -- fail because of less balance', async () => {
-      let poly = await POLY.new();
-      let customers = await Customers.new(poly.address);
-      // Providing allowance to the customer contract address to spend the POLY of Provider
-      await poly.getTokens(100000, provider1, { from: provider1 });
-      let providerBalance = await poly.balanceOf.call(provider1);
-      assert.strictEqual(providerBalance.toNumber(), 100000);
-      await poly.approve(customers.address, 100, { from: provider1 });
-
-      let allowedToken = await poly.allowance.call(
-        provider1,
-        customers.address,
-      );
-      assert.strictEqual(allowedToken.toNumber(), 100);
-      try {
-        await customers.newProvider(
-          provider1,
-          providerName1,
-          providerApplication1,
-          providerFee1,
-        );
-      } catch (error) {
-          ensureException(error);
-      }
-    });
   });
 
     describe("function changeFee", async () => {
@@ -242,14 +178,6 @@ contract('Customers', accounts => {
         it('changeFee: Should allow to change the fee by the provider', async () => {
             let poly = await POLY.new();
             let customers = await Customers.new(poly.address);
-            // Providing allowance to the customer contract address to spend the POLY of Provider
-            await poly.getTokens(100000, provider1, { from : provider1 });
-            let providerBalance = await poly.balanceOf.call(provider1);
-            assert.strictEqual(providerBalance.toNumber(), 100000);
-            await poly.approve(customers.address, 1000, { from : provider1 });
-            
-            let allowedToken = await poly.allowance.call(provider1, customers.address);
-            assert.strictEqual(allowedToken.toNumber(),1000);
 
             await customers.newProvider(
               provider1,
@@ -263,18 +191,10 @@ contract('Customers', accounts => {
             assert.strictEqual(providerData[3].toNumber(),10000);
     });
 
-    it("changeFee: Should verify the customer with old fee then after change verify the new customer with new fee",async()=>{
+        it("changeFee: Should verify the customer with old fee then after change verify the new customer with new fee",async()=>{
             let poly = await POLY.new();
             let customers = await Customers.new(poly.address);
-            // Providing allowance to the customer contract address to spend the POLY of Provider
-            await poly.getTokens(100000, provider1, { from : provider1 });
-            let providerBalance = await poly.balanceOf.call(provider1);
-            assert.strictEqual(providerBalance.toNumber(), 100000);
-            await poly.approve(customers.address, 1000, { from : provider1 });
             
-            let allowedToken = await poly.allowance.call(provider1, customers.address);
-            assert.strictEqual(allowedToken.toNumber(),1000);
-
             await customers.newProvider(
               provider1,
               providerName1,

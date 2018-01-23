@@ -1,4 +1,4 @@
-import { ensureException, convertHex } from './helpers/Utils.js';
+import { ensureException, convertHex } from './helpers/utils.js';
 const Template = artifacts.require('Template.sol');
 
 

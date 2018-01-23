@@ -11,7 +11,6 @@ interface ISTRegistrar {
     * @param _host The host of the security token wizard
     * @param _fee Fee being requested by the wizard host
     * @param _type Type of security being tokenized
-    * @param _maxPoly Amount of POLY being raised
     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
     * @param _quorum Percent of initial investors required to freeze POLY raise 
     */
@@ -23,7 +22,6 @@ interface ISTRegistrar {
         address _host,
         uint256 _fee,
         uint8 _type,
-        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum
     ) external;

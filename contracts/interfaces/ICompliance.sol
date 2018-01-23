@@ -114,7 +114,7 @@ interface ICompliance {
      * @return Template struct 
      */
     function getTemplateByProposal(address _securityTokenAddress, uint8 _templateIndex) view public returns (
-        address template
+        address _template
     );
 
     /** 
