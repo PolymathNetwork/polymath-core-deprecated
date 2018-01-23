@@ -8,6 +8,7 @@
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum address of the security token owner
+     * @param _maxPoly Amount of maximum poly issuer want to raise
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
      * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
@@ -19,6 +20,7 @@
         string _ticker,
         uint256 _totalSupply,
         address _owner,
+        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
