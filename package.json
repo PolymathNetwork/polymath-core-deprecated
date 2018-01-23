@@ -11,7 +11,7 @@
   },
   "main": "truffle.js",
   "scripts": {
-    "test": "testrpc -l 15000000 & truffle test",
+    "test": "scripts/test.sh",
     "compile": "truffle compile --optimize-runs 200",
     "migrate-local": "truffle migrate --network=local --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten",
