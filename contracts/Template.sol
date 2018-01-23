@@ -45,7 +45,7 @@ contract Template is ITemplate {
         uint8 _quorum,
         uint256 _vestingPeriod
     ) public
-    {   
+    {
         require(_KYC != address(0) && _owner != address(0));
         require(_fee > 0);
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);
@@ -114,19 +114,21 @@ contract Template is ITemplate {
 
     /**
      * @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
-     * @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+     * @param _countryJurisdiction The ISO-3166 code of the investors country jurisdiction
+     * @param _divisionJurisdiction The ISO-3166 code of the investors subdivision jurisdiction
      * @param _accredited Whether the investor is accredited or not
      * @param _role role of the user
      * @return allowed boolean variable
      */
     function checkTemplateRequirements(
-        bytes32 _jurisdiction,
+        bytes32 _countryJurisdiction,
+        bytes32 _divisionJurisdiction,
         bool _accredited,
         uint8 _role
     ) public constant returns (bool allowed)
     {
-        require(_jurisdiction != 0x0);
-        require(allowedJurisdictions[_jurisdiction]);
+        require(_countryJurisdiction != 0x0);
+        require(allowedJurisdictions[_countryJurisdiction] || allowedJurisdictions[_divisionJurisdiction]);
         require(allowedRoles[_role]);
         if (accredited) {
             require(_accredited);
