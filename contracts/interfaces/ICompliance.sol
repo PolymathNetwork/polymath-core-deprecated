@@ -10,6 +10,15 @@ pragma solidity ^0.4.18;
 interface ICompliance {
 
     /**
+     * @dev Used to set the address of the SecurityTokenRegistrar contract
+     * This function is only be called once 
+     * @param _STRegistrar Addres of the STR contract
+     * @return bool
+     */
+
+    function setSTRegsitrar(address _STRegistrar) public returns (bool);
+    
+    /**
      * @dev `createTemplate` is a simple function to create a new compliance template
      * @param _offeringType The name of the security being issued
      * @param _issuerJurisdiction The jurisdiction id of the issuer

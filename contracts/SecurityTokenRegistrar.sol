@@ -9,6 +9,7 @@ pragma solidity ^0.4.18;
 import './interfaces/ISTRegistrar.sol';
 import './PolyToken.sol';
 import './SecurityToken.sol';
+import './Compliance.sol';
 
 /**
  * @title SecurityTokenRegistrar
@@ -48,6 +49,10 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       polyTokenAddress = _polyTokenAddress;
       polyCustomersAddress = _polyCustomersAddress;
       polyComplianceAddress = _polyComplianceAddress;
+      // Creating the instance of the compliance contract and assign the STR contract 
+      // address (this) into the compliance contract
+      Compliance PolyCompliance = Compliance(polyComplianceAddress);
+      require(PolyCompliance.setSTRegsitrar(this));
     }
 
     /** 
@@ -103,17 +108,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _type
       );
       LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
-    }
-
-    /**
-     * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-     * @param _ticker Symbol of the security token
-     * @return bool success
-     */
-    function withdrawFunds(string _ticker) public returns (bool success) {
-      securityToken = SecurityToken(getSecurityTokenAddress(_ticker));
-      require(securityToken.withdrawPoly(msg.sender));
-      return true;
     }
 
     //////////////////////////////
