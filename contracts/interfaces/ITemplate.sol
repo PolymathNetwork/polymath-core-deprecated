@@ -10,6 +10,13 @@ interface ITemplate {
   function addJurisdiction(bytes32[] _allowedJurisdictions, bool[] _allowed) public;
 
   /**
+   * @dev `addDivisionJurisdiction` allows the adding of new jurisdictions to a template
+   * @param _blockedDivisionJurisdictions An array of jurisdictions
+   * @param _blocked An array of whether the jurisdiction is allowed to purchase the security or not
+   */
+  function addDivisionJurisdiction(bytes32[] _blockedDivisionJurisdictions, bool[] _blocked) public;
+
+  /**
    * @dev `addRole` allows the adding of new roles to be added to whitelist
    * @param _allowedRoles User roles that can purchase the security
    */
