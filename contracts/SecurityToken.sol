@@ -78,7 +78,7 @@ contract SecurityToken is IERC20 {
 	uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
-    event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
+    event LogTemplateSet(address indexed _delegateAddress, address _template);
     event LogUpdatedComplianceProof(bytes32 _merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
@@ -162,13 +162,12 @@ contract SecurityToken is IERC20 {
         address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
         require(_template != address(0));
         Template = ITemplate(_template);
-        var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
+        var (_fee, _quorum, _vestingPeriod, _delegate,) = Template.getUsageDetails();
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
-        KYC = _KYC;
         PolyCompliance.updateTemplateReputation(_template, _templateIndex);
-        LogTemplateSet(_delegate, _template, _KYC);
+        LogTemplateSet(_delegate, _template);
         return true;
     }
 
@@ -233,16 +232,16 @@ contract SecurityToken is IERC20 {
      * The Issuer can add an address to the whitelist by themselves by
      * creating their own KYC provider and using it to verify the accounts
      * they want to add to the whitelist.
-     * @param _whitelistAddress Address attempting to join ST whitelist
+     * @param _KYC address to verify the msg.sender
      * @return bool success
      */
-    function addToWhitelist(address _whitelistAddress) public returns (bool success) {
-        require(KYC == msg.sender || owner == msg.sender);
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
+    function addToWhitelist(address _KYC) public returns (bool success) {
+        require(Template.validKYC(_KYC));
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
-        shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
-        LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
+        shareholders[msg.sender] = Shareholder(_KYC, true, role);
+        LogNewWhitelistedAddress(_KYC, msg.sender, role);
         return true;
     }
 
@@ -319,8 +318,9 @@ contract SecurityToken is IERC20 {
     }
 
     // Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address, address) {
-        return (Template, delegate, merkleRoot, STO, KYC);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address[10]) {
+        var (,,,,allowedKYC) = Template.getUsageDetails();
+        return (Template, delegate, merkleRoot, STO, allowedKYC);
     }
 
 /////////////////////////////////////////////// Customized ERC20 Functions ////////////////////////////////////////////////////////////

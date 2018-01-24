@@ -23,6 +23,8 @@ contract Template is ITemplate {
     bytes32 public issuerJurisdiction;                              // Variable contains the jurisdiction of the issuer of the template
     mapping(bytes32 => bool) public allowedJurisdictions;           // Mapping that contains the allowed staus of Jurisdictions
     mapping(uint8 => bool) public allowedRoles;                     // Mapping that contains the allowed status of Roles
+    mapping(address => bool) public allowedKYC;                     // Mapping that contains the status of the kyc providers for this template
+    address[10] public allowedKYCProviders;                         // An array of addresses to store the allowed KYC providers of the template
     bool public accredited;                                         // Variable that define the required level of accrediation for the investor
     address public KYC;                                             // Address of the KYC provider
     bytes32 details;                                                // Details of the offering requirements
@@ -39,7 +41,8 @@ contract Template is ITemplate {
         string _offeringType,
         bytes32 _issuerJurisdiction,
         bool _accredited,
-        address _KYC,
+        address[10] _whiteListedKYC,
+        //address _KYC,
         bytes32 _details,
         uint256 _expires,
         uint256 _fee,
@@ -47,7 +50,7 @@ contract Template is ITemplate {
         uint256 _vestingPeriod
     ) public
     {
-        require(_KYC != address(0) && _owner != address(0));
+        require(_whiteListedKYC[0] != address(0) && _owner != address(0));
         require(_fee > 0);
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);
         require(_quorum > 0 && _quorum <= 100);
@@ -56,13 +59,28 @@ contract Template is ITemplate {
         offeringType = _offeringType;
         issuerJurisdiction = _issuerJurisdiction;
         accredited = _accredited;
-        KYC = _KYC;
         details = _details;
         finalized = false;
         expires = _expires;
         fee = _fee;
         quorum = _quorum;
         vestingPeriod = _vestingPeriod;
+        require(addAllowedKYC(_whiteListedKYC));
+
+    }
+
+    /**
+     * @dev Internal function used to add whitelisted KYC providers in the template. 
+     * @param _whiteListedKYC Array of permitted providers.
+     * @return bool
+     */
+
+    function addAllowedKYC(address[10] _whiteListedKYC) internal returns(bool) {
+            for (uint16 i; i < _whiteListedKYC.length; i++) {
+                allowedKYC[_whiteListedKYC[i]] = true;
+                allowedKYCProviders[i] = _whiteListedKYC[i];
+            }
+            return true;
     }
 
     /**
@@ -139,6 +157,15 @@ contract Template is ITemplate {
     }
 
     /**
+     * @dev check the authentication of the KYC addresses
+     * @param _KYC address need to check
+     */
+     function validKYC(address _KYC) public returns (bool) {
+         return allowedKYC[_KYC];
+     }
+
+    
+    /**
      * @dev getTemplateDetails is a constant function that gets template details
      * @return bytes32 details, bool finalized
      */
@@ -148,10 +175,10 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `getUsageFees` is a function to get all the details on template usage fees
+     * @dev `getUsageDetails` is a function to get all the details on template usage fees
      * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
      */
-    function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
-        return (fee, quorum, vestingPeriod, owner, KYC);
+    function getUsageDetails() view public returns (uint256, uint8, uint256, address, address[10]) {
+        return (fee, quorum, vestingPeriod, owner, allowedKYCProviders);
     }
 }

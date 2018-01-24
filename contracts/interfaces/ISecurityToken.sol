@@ -91,7 +91,7 @@
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public returns (bool success);
 
     /// Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address, address);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address[10]);
 
     /**
      * @dev Trasfer tokens from one address to another
