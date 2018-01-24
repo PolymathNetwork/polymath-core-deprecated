@@ -15,7 +15,7 @@ interface ICompliance {
      * @return bool
      */
 
-    function setSTRegsitrar(address _STRegistrar) public returns (bool);
+    function setRegsitrarAddress(address _STRegistrar) public returns (bool);
     
     /**
      * @dev `createTemplate` is a simple function to create a new compliance template
