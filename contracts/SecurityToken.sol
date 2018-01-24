@@ -128,6 +128,7 @@ contract SecurityToken is IERC20 {
         string _name,
         string _ticker,
         uint256 _totalSupply,
+        uint8 _decimals,
         address _owner,
         uint256 _maxPoly,
         uint256 _lockupPeriod,
@@ -137,7 +138,7 @@ contract SecurityToken is IERC20 {
         address _polyComplianceAddress
     ) public
     {
-        decimals = 0;
+        decimals = _decimals;
         name = _name;
         symbol = _ticker;
         owner = _owner;
@@ -151,6 +152,8 @@ contract SecurityToken is IERC20 {
         registrarAddress = msg.sender;
         Transfer(0x0, _owner, _totalSupply);
     }
+
+    /* function initialiseBalances(uint256) */
 
     /**
      * @dev `selectTemplate` Select a proposed template for the issuance
