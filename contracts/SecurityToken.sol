@@ -232,16 +232,19 @@ contract SecurityToken is IERC20 {
      * The Issuer can add an address to the whitelist by themselves by
      * creating their own KYC provider and using it to verify the accounts
      * they want to add to the whitelist.
-     * @param _KYC address to verify the msg.sender
+     * @param _whitelistAddress Address attempting to join ST whitelist 
+     * @param _KYC Address to verify the investor
      * @return bool success
      */
-    function addToWhitelist(address _KYC) public returns (bool success) {
+    function addToWhitelist(address _whitelistedAddress, address _KYC) public returns (bool success) {
+        require(owner == msg.sender);
+        require(_whitelistedAddress != address(0));
         require(Template.validKYC(_KYC));
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
+        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(_KYC, _whitelistedAddress);
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
-        shareholders[msg.sender] = Shareholder(_KYC, true, role);
-        LogNewWhitelistedAddress(_KYC, msg.sender, role);
+        shareholders[_whitelistedAddress] = Shareholder(_KYC, true, role);
+        LogNewWhitelistedAddress(_KYC, _whitelistedAddress, role);
         return true;
     }
 

@@ -42,7 +42,6 @@ contract Template is ITemplate {
         bytes32 _issuerJurisdiction,
         bool _accredited,
         address[10] _whiteListedKYC,
-        //address _KYC,
         bytes32 _details,
         uint256 _expires,
         uint256 _fee,
