@@ -48,8 +48,7 @@ contract Compliance is ICompliance {
 
     Customers public PolyCustomers;                                      // Instance of the Compliance contract
     uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
-    bool hasSTRAdded = false;                                            // This boolean variable use to restrict to reset the STR address again
-
+   
     // Notifications
     event LogTemplateCreated(address indexed _creator, address _template, string _offeringType);
     event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate);
@@ -67,9 +66,8 @@ contract Compliance is ICompliance {
      */
 
     function setRegsitrarAddress(address _STRegistrar) public returns (bool) {
-        require(!hasSTRAdded);
+        require(STRegistrar == address(0));
         STRegistrar = SecurityTokenRegistrar(_STRegistrar);
-        hasSTRAdded = !hasSTRAdded;
         return true;
     } 
 
