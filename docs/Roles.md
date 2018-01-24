@@ -8,14 +8,17 @@ authorized at Polymath platform.
 
 Polymath platfrom have 4 types of different roles for different actors
 
-| Role | Actor | 
+| Role | Actor |
 |------|-------|
+| 0 | Blacklist |
 | 1 | Investor|
 | 2 | Delegate |
 | 3 | Issuer |
 | 4 | MarketMaker |
 
 ## Actor Defination
+__Blacklist__ : Actors blacklisted from holding/transfering a security token.
+
 __Investor__ : Invest their capital in the security token offering at Polymath Platform.
 
 __Issuer__ : Raise funds through Polymath via Security Token Offerings.  

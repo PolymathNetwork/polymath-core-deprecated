@@ -72,15 +72,16 @@ contract SecurityToken is IERC20 {
     mapping(address => mapping(address => bool)) public voted;               // Voting mapping
     mapping(address => Allocation) public allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
 
-	// Security Token Offering statistics
+	   // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
-	uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
+	   uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 _merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
+    event LogNewBlacklistedAddress(address _KYC, address _shareholder);
     event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
     event LogTokenIssued(address indexed _contributor, uint256 _stAmount, uint256 _polyContributed, uint256 _timestamp);
 
@@ -219,7 +220,7 @@ contract SecurityToken is IERC20 {
         require(tokenAmount == totalSupply);
         balances[STO] = balances[STO].add(tokenAmount);
         balances[msg.sender] = balances[msg.sender].sub(tokenAmount);
-        hasOfferingStarted = !hasOfferingStarted;
+        hasOfferingStarted = true;
         Transfer(owner, STO, tokenAmount);
         return true;
     }
@@ -229,13 +230,24 @@ contract SecurityToken is IERC20 {
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
      */
-    function addToWhitelist(address _whitelistAddress) public returns (bool success) {
-        require(KYC == msg.sender || owner == msg.sender);
+    function addToWhitelist(address _whitelistAddress) onlyOwner public returns (bool success) {
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
         LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
+        return true;
+    }
+
+    /**
+     * @dev Add a verified address to the Security Token blacklist
+     * @param _blacklistAddress Address being added to the blacklist
+     * @return bool success
+     */
+    function addToBlacklist(address _blacklistAddress) onlyOwner public returns (bool success) {
+        require(shareholders[_blacklistAddress].allowed);
+        shareholders[_blacklistAddress] = Shareholder(msg.sender, false, 0);
+        LogNewBlacklistedAddress(msg.sender, _blacklistAddress);
         return true;
     }
 
@@ -325,7 +337,7 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to].allowed && balances[msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = balances[msg.sender].sub(_value);
             balances[_to] = balances[_to].add(_value);
             Transfer(msg.sender, _to, _value);
@@ -343,7 +355,7 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
             allowed[_from][msg.sender] = _allowance.sub(_value);
