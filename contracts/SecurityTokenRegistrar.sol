@@ -52,7 +52,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       // Creating the instance of the compliance contract and assign the STR contract 
       // address (this) into the compliance contract
       Compliance PolyCompliance = Compliance(polyComplianceAddress);
-      require(PolyCompliance.setSTRegsitrar(this));
+      require(PolyCompliance.setRegsitrarAddress(this));
     }
 
     /** 
