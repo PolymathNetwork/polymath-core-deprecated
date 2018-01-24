@@ -10,9 +10,8 @@ pragma solidity ^0.4.18;
 interface ICompliance {
 
     /**
-     * @dev Used to set the address of the SecurityTokenRegistrar contract
-     * This function is only be called once 
-     * @param _STRegistrar Addres of the STR contract
+     * @dev `setRegsitrarAddress` This function set the SecurityTokenRegistrar contract address. 
+     * @param _STRegistrar It is the `this` reference of STR contract
      * @return bool
      */
 
