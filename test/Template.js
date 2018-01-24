@@ -20,7 +20,7 @@ contract("Template",(accounts)=>{
     let owner;
 
     before(async()=>{
-        KYCAddress = accounts[0];                               // Asigining the KYC address
+        KYCAddress = [accounts[0], accounts[2], accounts[3]];                               // Asigining the KYC address
         owner = accounts[1];
     });
 
@@ -43,7 +43,6 @@ contract("Template",(accounts)=>{
         assert.strictEqual(tempData[1].toNumber(), quorum);
         assert.strictEqual(tempData[2].toNumber(), vestingPeriod);
         assert.equal(tempData[3], owner);
-        assert.equal(tempData[4], KYCAddress);
     });
 });
 

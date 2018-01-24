@@ -63,10 +63,14 @@
 
     /**
      * @dev Add a verified address to the Security Token whitelist
-     * @param _whitelistAddress Address attempting to join ST whitelist
+     * The Issuer can add an address to the whitelist by themselves by
+     * creating their own KYC provider and using it to verify the accounts
+     * they want to add to the whitelist.
+     * @param _whitelistAddress Address attempting to join ST whitelist 
+     * @param _KYC Address to verify the investor
      * @return bool success
      */
-    function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success);
+    function addToWhitelist(address _whitelistedAddress, address _KYC) public returns (bool success);
 
      /**
       * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
@@ -91,7 +95,7 @@
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public returns (bool success);
 
     /// Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address, address);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address[10]);
 
     /**
      * @dev Trasfer tokens from one address to another

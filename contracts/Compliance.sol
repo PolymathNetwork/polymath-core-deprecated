@@ -41,7 +41,7 @@ contract Compliance is ICompliance {
         address[] usedBy;
     }
     mapping(address => Offering) offerings;                             // Mapping used for storing the Offering detials corresponds to offering contract address
-    mapping(address => address[]) public offeringProposals;             // Security token contract proposals for a specific security token
+    mapping(address => address[]) public offeringProposals;             // Security token offering contract proposals for a specific security token
 
     Customers public PolyCustomers;                                      // Instance of the Compliance contract
     uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
@@ -61,7 +61,7 @@ contract Compliance is ICompliance {
      * @param _offeringType The name of the security being issued
      * @param _issuerJurisdiction The jurisdiction id of the issuer
      * @param _accredited Accreditation status required for investors
-     * @param _KYC KYC provider used by the template
+     * @param _whiteListedKYC List of KYC provider used by the template
      * @param _details Details of the offering requirements
      * @param _expires Timestamp of when the template will expire
      * @param _fee Amount of POLY to use the template (held in escrow until issuance)
@@ -72,7 +72,7 @@ contract Compliance is ICompliance {
         string _offeringType,
         bytes32 _issuerJurisdiction,
         bool _accredited,
-        address _KYC,
+        address[10] _whiteListedKYC,
         bytes32 _details,
         uint256 _expires,
         uint256 _fee,
@@ -80,8 +80,9 @@ contract Compliance is ICompliance {
         uint256 _vestingPeriod
     ) public
     {
-        require(_KYC != address(0));
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
+        require(_whiteListedKYC[0] != address(0));
+        // 0 index should be the provider addresss which verify the delegate or msg.sender 
+        var (,, role, verified, expires) = PolyCustomers.getCustomer(_whiteListedKYC[0], msg.sender);
         require(role == 2 && verified && expires > now);
         require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
         address _template = new Template(
@@ -89,7 +90,7 @@ contract Compliance is ICompliance {
             _offeringType,
             _issuerJurisdiction,
             _accredited,
-            _KYC,
+            _whiteListedKYC,
             _details,
             _expires,
             _fee,
@@ -189,13 +190,18 @@ contract Compliance is ICompliance {
     ) public returns (bool success)
     {
         var (,,,,KYC) = ISecurityToken(_securityToken).getTokenDetails();
-        var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, offerings[_stoContract].auditor);
-        require(offerings[_stoContract].auditor == msg.sender);
-        require(verified);
-        require(expires > now);
-        offeringProposals[_securityToken].push(_stoContract);
-        LogNewContractProposal(_securityToken, _stoContract, msg.sender);
-        return true;
+        for (uint16 i; i < KYC.length; i++) {
+            var (,,, verified, expires) = PolyCustomers.getCustomer(KYC[i], offerings[_stoContract].auditor);
+            if (expires != 0) {
+                require(offerings[_stoContract].auditor == msg.sender);
+                require(verified);
+                require(expires > now);
+                offeringProposals[_securityToken].push(_stoContract);
+                LogNewContractProposal(_securityToken, _stoContract, msg.sender);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -211,7 +217,7 @@ contract Compliance is ICompliance {
     {
         address proposedOffering = offeringProposals[_securityToken][_offeringProposalIndex];
         require(offerings[proposedOffering].auditor == msg.sender);
-        var (,,,,chosenOffering) = ISecurityToken(_securityToken).getTokenDetails();
+        var (,,,chosenOffering,) = ISecurityToken(_securityToken).getTokenDetails();
         require(chosenOffering != proposedOffering);
         offeringProposals[_securityToken][_offeringProposalIndex] = address(0);
         return true;

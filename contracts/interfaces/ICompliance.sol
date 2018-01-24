@@ -14,7 +14,7 @@ interface ICompliance {
      * @param _offeringType The name of the security being issued
      * @param _issuerJurisdiction The jurisdiction id of the issuer
      * @param _accredited Accreditation status required for investors
-     * @param _KYC KYC provider used by the template
+     * @param _whiteListedKYC List of KYC provider used by the template
      * @param _details Details of the offering requirements
      * @param _expires Timestamp of when the template will expire
      * @param _fee Amount of POLY to use the template (held in escrow until issuance)
@@ -25,7 +25,7 @@ interface ICompliance {
         string _offeringType,
         bytes32 _issuerJurisdiction,
         bool _accredited,
-        address _KYC,
+        address[10] _whiteListedKYC,
         bytes32 _details,
         uint256 _expires,
         uint256 _fee,

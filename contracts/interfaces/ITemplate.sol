@@ -42,6 +42,12 @@ interface ITemplate {
   ) public constant returns (bool allowed);
 
   /**
+   * @dev check the authentication of the KYC addresses
+   * @param _KYC address need to check
+   */
+  function validKYC(address _KYC) public returns (bool);
+  
+  /**
    * @dev getTemplateDetails is a constant function that gets template details
    * @return bytes32 details, bool finalized 
    */
@@ -51,5 +57,5 @@ interface ITemplate {
    * @dev `getUsageFees` is a function to get all the details on template usage fees
    * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
    */
-  function getUsageDetails() view public returns (uint256, uint8, uint256, address, address);
+  function getUsageDetails() view public returns (uint256, uint8, uint256, address, address[10]);
 }

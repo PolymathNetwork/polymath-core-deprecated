@@ -78,6 +78,7 @@ contract('SecurityToken', accounts => {
   const kyc = 0x2fe38f0b394b297bc0d86ed6b66286572f5235f9;
   const details = 'going to launch on xx-xx-xx';
   const fee = 1000;
+  let whiteListedKYC;
 
   // STO
   let mockStoContract = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
@@ -203,11 +204,13 @@ contract('SecurityToken', accounts => {
       STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
       securityToken = await SecurityToken.at(STAddress);
 
+      whiteListedKYC = [provider0, provider1];
+
       let templateCreated = await compliance.createTemplate(
           offeringType,
           issuerJurisdiction,
           accredited,
-          provider0,
+          whiteListedKYC,
           details,
           expires,
           1000,
@@ -437,7 +440,7 @@ describe("Compliance contracts functions", async()=> {
                   "Test",
                   issuerJurisdiction,
                   accredited,
-                  provider0,
+                  whiteListedKYC,
                   "This is for Test",
                   expires,
                   1000,
