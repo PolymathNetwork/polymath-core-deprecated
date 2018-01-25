@@ -16,10 +16,10 @@ contract('SecurityTokenRegistrar', accounts => {
   const totalSupply = 1234567890;
   const maxPoly = 100000;
   const securityType = 5;
-  const numberOfSecurityTypes = 8;                                           //8 is chosen for testing,    
+  const numberOfSecurityTypes = 8;                                           //8 is chosen for testing,
   const createSecurityTokenFee = 10000;
   const quorum = 3;
-  const lockupPeriod = latestTime() + duration.years(1);                      //Current time + 1 year is the locking period (Testing Only)   
+  const lockupPeriod = latestTime() + duration.years(1);                      //Current time + 1 year is the locking period (Testing Only)
   const getAmount = 1000000;
   const approvedAmount = 10000;
 
@@ -63,20 +63,21 @@ contract('SecurityTokenRegistrar', accounts => {
         polyCustomers.address,
         polyCompliance.address
       );
-      // Allowance Provided to SecurityToken Registrar contract 
+      // Allowance Provided to SecurityToken Registrar contract
       await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
       let issuerBalance = await polyToken.balanceOf(issuer1);
       assert.strictEqual(issuerBalance.toNumber(),getAmount);
       await polyToken.approve(STRegistrar.address, approvedAmount, { from : issuer1 });
-      
+
       let allowedToken = await polyToken.allowance(issuer1, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(),approvedAmount);
-      
-      // Creation of the Security Token using the SecurityTokenRegistrar contract
+
+      // Creation of the Security Token
       let ST = await STRegistrar.createSecurityToken(
         name,
         ticker,
         totalSupply,
+        0,
         issuer1,
         maxPoly,
         host,
@@ -109,7 +110,7 @@ contract('SecurityTokenRegistrar', accounts => {
           polyCompliance.address
         );
         let totalSupply = 0;
-        // Allowance Provided to SecurityToken Registrar contract 
+        // Allowance Provided to SecurityToken Registrar contract
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1 });
         let issuerBalance = await polyToken.balanceOf(issuer1);
         assert.strictEqual(issuerBalance.toNumber(), getAmount);
@@ -120,6 +121,7 @@ contract('SecurityTokenRegistrar', accounts => {
               name,
               ticker,
               totalSupply,
+              0,
               issuer1,
               maxPoly,
               host,
@@ -145,7 +147,7 @@ contract('SecurityTokenRegistrar', accounts => {
           polyCompliance.address
         );
         let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936;
-        // Allowance Provided to SecurityToken Registrar contract 
+        // Allowance Provided to SecurityToken Registrar contract
         await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
         let issuerBalance = await polyToken.balanceOf(issuer1);
         assert.strictEqual(issuerBalance.toNumber(), getAmount);
@@ -156,6 +158,7 @@ contract('SecurityTokenRegistrar', accounts => {
               name,
               ticker,
               totalSupply,
+              0,
               issuer1,
               maxPoly,
               host,
@@ -180,13 +183,13 @@ contract('SecurityTokenRegistrar', accounts => {
           polyCustomers.address,
           polyCompliance.address
         );
-        
+
         await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
         await polyToken.getTokens(getAmount, issuer2, { from : issuer2 });
 
         let issuerBalance1 = await polyToken.balanceOf(issuer1);
         let issuerBalance2 = await polyToken.balanceOf(issuer2);
-        
+
         assert.strictEqual(issuerBalance1.toNumber(), getAmount);
         assert.strictEqual(issuerBalance2.toNumber(), getAmount);
 
@@ -203,6 +206,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             name,
                             ticker,
                             totalSupply,
+                            0,
                             issuer1,
                             maxPoly,
                             host,
@@ -220,6 +224,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             name,
                             ticker,
                             totalSupply,
+                            0,
                             issuer2,
                             maxPoly,
                             host,
@@ -232,7 +237,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             });
             } catch(error){
                 ensureException(error);
-            }    
+            }
       });
 
       it('createSecurityToken:should fail when the approved quantity is less than the fee', async () => {
@@ -244,7 +249,7 @@ contract('SecurityTokenRegistrar', accounts => {
           polyCustomers.address,
           polyCompliance.address
         );
-        
+
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1 });
         await polyToken.approve(STRegistrar.address, 1000, {from:issuer1});
 
@@ -253,6 +258,7 @@ contract('SecurityTokenRegistrar', accounts => {
                               name,
                               ticker,
                               totalSupply,
+                              0,
                               issuer1,
                               maxPoly,
                               host,
@@ -277,7 +283,7 @@ contract('SecurityTokenRegistrar', accounts => {
           polyCustomers.address,
           polyCompliance.address
         );
-        
+
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1});
         try {
               let ST = await STRegistrar.createSecurityToken(
@@ -285,6 +291,7 @@ contract('SecurityTokenRegistrar', accounts => {
                             ticker,
                             totalSupply,
                             issuer1,
+                            0,
                             maxPoly,
                             host,
                             createSecurityTokenFee,
