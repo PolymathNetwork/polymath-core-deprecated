@@ -85,6 +85,22 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
       PolyToken POLY = PolyToken(polyTokenAddress);
       POLY.transferFrom(msg.sender, _host, _fee);
+      address newSecurityTokenAddress = initialiseSecurityToken(_name, _ticker, _totalSupply, _decimals, _owner, _maxPoly, _type, _lockupPeriod, _quorum);
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
+    }
+
+    function initialiseSecurityToken(
+      string _name,
+      string _ticker,
+      uint256 _totalSupply,
+      uint8 _decimals,
+      address _owner,
+      uint256 _maxPoly,
+      uint8 _type,
+      uint256 _lockupPeriod,
+      uint8 _quorum
+    ) internal returns (address)
+    {
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
@@ -105,7 +121,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _ticker,
         _type
       );
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
+      return newSecurityTokenAddress;
     }
 
     /**
