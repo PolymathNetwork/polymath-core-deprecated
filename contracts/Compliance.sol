@@ -80,30 +80,28 @@ contract Compliance is ICompliance {
         uint256 _vestingPeriod
     ) public
     {
-        require(_KYC != address(0));
-        var (,, role, verified, expires) = PolyCustomers.getCustomer(_KYC, msg.sender);
-        require(role == 2 && verified && expires > now);
-        require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
-        address _template = new Template(
-            msg.sender,
-            _offeringType,
-            _issuerJurisdiction,
-            _accredited,
-            _KYC,
-            _details,
-            _expires,
-            _fee,
-            _quorum,
-            _vestingPeriod
-        );
-        templates[_template] = TemplateReputation({
-            owner: msg.sender,
-            totalRaised: 0,
-            timesUsed: 0,
-            expires: _expires,
-            usedBy: new address[](0)
-        });
-        LogTemplateCreated(msg.sender, _template, _offeringType);
+      require(_KYC != address(0));
+      require(_vestingPeriod >= MINIMUM_VESTING_PERIOD);
+      address _template = new Template(
+          msg.sender,
+          _offeringType,
+          _issuerJurisdiction,
+          _accredited,
+          _KYC,
+          _details,
+          _expires,
+          _fee,
+          _quorum,
+          _vestingPeriod
+      );
+      templates[_template] = TemplateReputation({
+          owner: msg.sender,
+          totalRaised: 0,
+          timesUsed: 0,
+          expires: _expires,
+          usedBy: new address[](0)
+      });
+      LogTemplateCreated(msg.sender, _template, _offeringType);
     }
 
     /**
@@ -121,7 +119,7 @@ contract Compliance is ICompliance {
         // owner of the template and that the template has been finalized
         require(templates[_template].expires > now);
         require(templates[_template].owner == msg.sender);
-        // Creating the instance of template to avail the function calling 
+        // Creating the instance of template to avail the function calling
         template = Template(_template);
         var (,finalized) = template.getTemplateDetails();
         require(finalized);
