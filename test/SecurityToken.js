@@ -626,7 +626,7 @@ describe("Compliance contracts functions", async()=> {
       await increaseTime(5010);                           // timejump to make now greater than or equal to the startTime of the sto
      // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
       await POLY.approve(securityToken.address, 900, { from : investor1 });
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
       investedAmount = 900;
       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
       txReturn.logs[0].args._contributor.should.equal(investor1);
@@ -636,7 +636,7 @@ describe("Compliance contracts functions", async()=> {
       await POLY.getTokens(1000, investor2, { from : investor2});
       await POLY.approve(securityToken.address, 900, { from : investor2 });
       try {
-        let txReturn = await stoContract.buySecurityToken(1000, { from : investor2 , gas : 400000 });
+        let txReturn = await stoContract.buySecurityTokenWithPoly(1000, { from : investor2 , gas : 400000 });
       } catch(error) {
         ensureException(error);
       }
@@ -645,7 +645,7 @@ describe("Compliance contracts functions", async()=> {
   it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
   async()=>{
     try {
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
     } catch(error) {
       ensureException(error);
     }
@@ -658,28 +658,17 @@ describe("Compliance contracts functions", async()=> {
     await POLY.approve(securityToken.address, 100100, { from : investor1 });
 
     // This function call internally calls issueSecurityTokens  ( 150 extra added because auditor of STO is equal to owner of security Token)
-    let txReturn = await stoContract.buySecurityToken(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
+    let txReturn = await stoContract.buySecurityTokenWithPoly(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
 
     txReturn.logs[0].args._ployContribution.toNumber().should.equal(maxPoly - (investedAmount + 150));
     txReturn.logs[0].args._contributor.should.equal(investor1);
 
     try {
-      let txReturn = await stoContract.buySecurityToken(100, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(100, { from : investor1 , gas : 400000 });
     } catch(error) {
         ensureException(error);
     }
   });
-   it("buyTokens: Should successfully buy the security tokens using ETH", async()=>{ 
-    let txReturn = await web3
-                        .eth
-                        .sendTransaction({
-                        from: investor1,
-                        to: stoContract.address,
-                        value: web3.toWei('10', 'Ether')
-                    });
-      let wei = await stoContract.weiRaised.call() 
-      assert.strictEqual(wei.dividedBy(new BigNumber(10).pow(18)).toNumber(),10);
-   });
   });
 
     /////////////////////////////////////////////////////
