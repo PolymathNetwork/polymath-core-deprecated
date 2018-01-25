@@ -27,6 +27,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     struct SecurityTokenData {                                      // A structure that contains the specific info of each ST
       uint256 totalSupply;                                          // created ever using the Polymath platform
       address owner;
+      uint8 decimals;
       string ticker;
       uint8 securityType;
     }
@@ -118,6 +119,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       securityTokens[newSecurityTokenAddress] = SecurityTokenData(
         _totalSupply,
         _owner,
+        _decimals,
         _ticker,
         _type
       );
@@ -154,12 +156,14 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     function getSecurityTokenData(address _STAddress) public constant returns (
       uint256 totalSupply,
       address owner,
+      uint8 decimals,
       string ticker,
       uint8 securityType
     ) {
       return (
         securityTokens[_STAddress].totalSupply,
         securityTokens[_STAddress].owner,
+        securityTokens[_STAddress].decimals,
         securityTokens[_STAddress].ticker,
         securityTokens[_STAddress].securityType
       );
