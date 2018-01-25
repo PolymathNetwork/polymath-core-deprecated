@@ -188,6 +188,7 @@ contract('SecurityToken', accounts => {
           name,
           ticker,
           totalSupply,
+          0,
           issuer,
           maxPoly,
           host,
@@ -223,7 +224,7 @@ contract('SecurityToken', accounts => {
       it("Constructor verify the parameters",async()=>{
         let symbol = await securityToken.symbol();
         assert.strictEqual(symbol.toString(), ticker);
-        
+
         let securityOwner = await securityToken.owner();
         assert.equal(securityOwner, issuer);
 
@@ -802,6 +803,7 @@ describe("Compliance contracts functions", async()=> {
       "Poly Temp",
       "TPOLY",
       totalSupply,
+      0,
       issuer,
       maxPoly,
       host,
