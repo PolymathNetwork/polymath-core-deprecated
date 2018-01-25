@@ -10,13 +10,13 @@ const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const STO = artifacts.require('STOContract.sol');
-
+const BigNumber = web3.BigNumber;
 
 contract('SecurityToken', accounts => {
 
   //accounts
   //let issuer = accounts[1];
-  let stoCreater = accounts[2];
+  let stoCreator = accounts[2];
   let host = accounts[3];
   let issuer = accounts[4];
   let delegate0 = accounts[5];
@@ -308,8 +308,8 @@ contract('SecurityToken', accounts => {
      });
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
-      stoContract = await STO.new(POLY.address, { from : stoCreater, gas : 5000000 });
-      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime);
+      stoContract = await STO.new(POLY.address, { from : stoCreator, gas : 5000000 });
+      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime, { from : stoCreator });
       let isSTOAdded = await compliance.setSTO(
         stoContract.address,
         stoFee,
@@ -669,6 +669,17 @@ describe("Compliance contracts functions", async()=> {
         ensureException(error);
     }
   });
+   it("buyTokens: Should successfully buy the security tokens using ETH", async()=>{ 
+    let txReturn = await web3
+                        .eth
+                        .sendTransaction({
+                        from: investor1,
+                        to: stoContract.address,
+                        value: web3.toWei('10', 'Ether')
+                    });
+      let wei = await stoContract.weiRaised.call() 
+      assert.strictEqual(wei.dividedBy(new BigNumber(10).pow(18)).toNumber(),10);
+   });
   });
 
     /////////////////////////////////////////////////////
