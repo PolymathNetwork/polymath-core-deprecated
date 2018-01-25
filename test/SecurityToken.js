@@ -420,32 +420,13 @@ contract('SecurityToken', accounts => {
     ////// addToWhiteList() Test Cases
     //////////////////////////////////
 
-    it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == KYC',async()=>{
-      // Taking the snapshot to revert the tx
-      let id = await takeSnapshot();
-      // Stampede investor1 as the allowed personality to buy the security token                                   
-      let status = await securityToken.addToWhitelist(investor1, { from: provider0});
-      status.logs[0].args._shareholder.should.equal(investor1);
-      // Reverting the snapshot
-      await revertToSnapshot(id);                                     
-    });
-
     it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == issuer',async()=>{
       // Stampede investor1 as the allowed personality to buy the security token  
       let status = await securityToken.addToWhitelist(investor1, { from : issuer });
       status.logs[0].args._shareholder.should.equal(investor1);
     });
 
-    it("addToWhitelist: should fail because kyc is not the msg.sender",async()=>{
-      try{
-      let status = await securityToken.addToWhitelist(investor1, { from : provider1 });
-      } catch(error) {
-            ensureException(error);
-      }
-    });
-
     // Test withdrawPoly behaviour before the completion of offering 
-
     it('withdrawPoly: should fail to withdraw because of the current time is less than the endSTO + vesting periond',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
       try {
@@ -848,10 +829,10 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
     it('approve: investor1 should approve 1000 to investor2 & withdraws 200 twice fail in 3 tx when trasferring more than allowance',
     async() => {
       let currentBalance = await securityToken.balanceOf(investor1);
-      let status0 = await securityToken.addToWhitelist(investor2,{from: provider0});
+      let status0 = await securityToken.addToWhitelist(investor2,{from: issuer});
       status0.logs[0].args._shareholder.should.equal(investor2);
 
-      let status1 = await securityToken.addToWhitelist(delegate1,{from: provider0});
+      let status1 = await securityToken.addToWhitelist(delegate1,{from: issuer});
       status1.logs[0].args._shareholder.should.equal(delegate1);
 
       await securityToken.approve(investor2, 900, {from: investor1});
