@@ -78,16 +78,16 @@ contract('Customers', accounts => {
       await poly.getTokens(10000, customer1, { from: customer1 });
       await poly.approve(customers.address, 10000, { from: customer1 });
       try {
-      let isVerify = await customers.verifyCustomer.call(
-        customer1,
-        jurisdiction0,
-        customerInvestorRole,
-        true,
-        (latestTime() - duration.hours(1)), // 1 hour before current time
-        {
-          from: provider1,
-        },
-      );
+        let isVerify = await customers.verifyCustomer.call(
+          customer1,
+          jurisdiction0,
+          customerInvestorRole,
+          true,
+          (latestTime() - duration.hours(1)), // 1 hour before current time
+          {
+            from: provider1,
+          },
+        );
     } catch(error) {
         ensureException(error);
     }
