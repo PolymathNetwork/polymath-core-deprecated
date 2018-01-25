@@ -23,7 +23,7 @@ contract('SecurityTokenRegistrar', accounts => {
   const getAmount = 1000000;
   const approvedAmount = 10000;
 
-  //account
+  //accounts
   let owner = accounts[0];
   let acct1 = accounts[1];
   let acct2 = accounts[2];
@@ -41,6 +41,7 @@ contract('SecurityTokenRegistrar', accounts => {
       let polyToken = await POLY.new();
       let polyCustomers = await Customers.new(polyToken.address);
       let polyCompliance = await Compliance.new(polyCustomers.address);
+      // Creation of the new SecurityTokenRegistrar contract 
       let STRegistrar = await SecurityTokenRegistrar.new(
         polyToken.address,
         polyCustomers.address,
@@ -56,6 +57,7 @@ contract('SecurityTokenRegistrar', accounts => {
       let polyToken = await POLY.new();
       let polyCustomers = await Customers.new(polyToken.address);
       let polyCompliance = await Compliance.new(polyCustomers.address);
+      // Creation of the new SecurityTokenRegistrar contract 
       let STRegistrar = await SecurityTokenRegistrar.new(
         polyToken.address,
         polyCustomers.address,
