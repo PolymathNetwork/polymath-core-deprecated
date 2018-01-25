@@ -1,7 +1,7 @@
 require('babel-register');
 require('babel-polyfill');
 
-module.exports = {
+const config = {
   networks: {
     development: {
       host: 'localhost',
@@ -38,3 +38,23 @@ module.exports = {
     },
   },
 };
+
+// Comment line below and uncomment the lines going after it to use Infura for deployment
+module.exports = config;
+
+// const HDWalletProvider = require('truffle-hdwallet-provider');
+//
+// const mnemonic = '';
+// const infuraToken = ''; // https://infura.io/
+//
+// config.networks = {
+//   ropsten: {
+//     provider: function() {
+//       return new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/' + infuraToken)
+//     },
+//     network_id: config.networks.ropsten.network_id,
+//     gas: config.networks.ropsten.gas,
+//   }
+// };
+//
+// module.exports = config;

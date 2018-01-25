@@ -15,7 +15,7 @@ Polymath platfrom have 4 types of different roles for different actors
 | 3 | Issuer |
 | 4 | MarketMaker |
 
-## Actor Defination
+## Actor Definition
 __Investor__ : Invest their capital in the security token offering at Polymath Platform.
 
 __Issuer__ : Raise funds through Polymath via Security Token Offerings.  

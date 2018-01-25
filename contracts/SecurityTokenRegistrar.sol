@@ -9,6 +9,7 @@ pragma solidity ^0.4.18;
 import './interfaces/ISTRegistrar.sol';
 import './PolyToken.sol';
 import './SecurityToken.sol';
+import './Compliance.sol';
 
 /**
  * @title SecurityTokenRegistrar
@@ -19,7 +20,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
 
     string public VERSION = "1";
     SecurityToken securityToken;
-    address public polyTokenAddress;                                // Address of POLY token 
+    address public polyTokenAddress;                                // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
 
@@ -27,6 +28,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     struct SecurityTokenData {                                      // A structure that contains the specific info of each ST
       uint256 totalSupply;                                          // created ever using the Polymath platform
       address owner;
+      uint8 decimals;
       string ticker;
       uint8 securityType;
     }
@@ -48,25 +50,33 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       polyTokenAddress = _polyTokenAddress;
       polyCustomersAddress = _polyCustomersAddress;
       polyComplianceAddress = _polyComplianceAddress;
+      // Creating the instance of the compliance contract and assign the STR contract 
+      // address (this) into the compliance contract
+      Compliance PolyCompliance = Compliance(polyComplianceAddress);
+      require(PolyCompliance.setRegsitrarAddress(this));
     }
 
-    /** 
+    /**
      * @dev Creates a new Security Token and saves it to the registry
      * @param _name Name of the security token
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
+     * @param _decimals Decimals value for token
      * @param _owner Ethereum public key address of the security token owner
+     * @param _maxPoly Amount of maximum poly issuer want to raise
      * @param _host The host of the security token wizard
      * @param _fee Fee being requested by the wizard host
      * @param _type Type of security being tokenized
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-     * @param _quorum Percent of initial investors required to freeze POLY raise 
+     * @param _quorum Percent of initial investors required to freeze POLY raise
      */
     function createSecurityToken (
       string _name,
       string _ticker,
       uint256 _totalSupply,
+      uint8 _decimals,
       address _owner,
+      uint256 _maxPoly,
       address _host,
       uint256 _fee,
       uint8 _type,
@@ -74,18 +84,36 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint8 _quorum
     ) external
     {
-      require(_totalSupply > 0 && _fee > 0);
+      require(_totalSupply > 0 && _maxPoly > 0 && _fee > 0);
       require(tickers[_ticker] == 0x0);
       require(_lockupPeriod >= now);
       require(_owner != address(0) && _host != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
       PolyToken POLY = PolyToken(polyTokenAddress);
       POLY.transferFrom(msg.sender, _host, _fee);
+      address newSecurityTokenAddress = initialiseSecurityToken(_name, _ticker, _totalSupply, _decimals, _owner, _maxPoly, _type, _lockupPeriod, _quorum);
+      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
+    }
+
+    function initialiseSecurityToken(
+      string _name,
+      string _ticker,
+      uint256 _totalSupply,
+      uint8 _decimals,
+      address _owner,
+      uint256 _maxPoly,
+      uint8 _type,
+      uint256 _lockupPeriod,
+      uint8 _quorum
+    ) internal returns (address)
+    {
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
         _totalSupply,
+        _decimals,
         _owner,
+        _maxPoly,
         _lockupPeriod,
         _quorum,
         polyTokenAddress,
@@ -96,21 +124,11 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       securityTokens[newSecurityTokenAddress] = SecurityTokenData(
         _totalSupply,
         _owner,
+        _decimals,
         _ticker,
         _type
       );
-      LogNewSecurityToken(_ticker, newSecurityTokenAddress, _owner, _host, _fee, _type);
-    }
-
-    /**
-     * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-     * @param _ticker Symbol of the security token
-     * @return bool success
-     */
-    function withdrawFunds(string _ticker) public returns (bool success) {
-      securityToken = SecurityToken(getSecurityTokenAddress(_ticker));
-      require(securityToken.withdrawPoly(msg.sender));
-      return true;
+      return newSecurityTokenAddress;
     }
 
     //////////////////////////////
@@ -132,12 +150,14 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     function getSecurityTokenData(address _STAddress) public constant returns (
       uint256 totalSupply,
       address owner,
+      uint8 decimals,
       string ticker,
       uint8 securityType
     ) {
       return (
         securityTokens[_STAddress].totalSupply,
         securityTokens[_STAddress].owner,
+        securityTokens[_STAddress].decimals,
         securityTokens[_STAddress].ticker,
         securityTokens[_STAddress].securityType
       );

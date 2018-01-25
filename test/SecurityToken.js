@@ -9,14 +9,14 @@ const PolyToken = artifacts.require('PolyToken.sol');
 const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
-const STO = artifacts.require('STOContract.sol'); 
-
+const STO = artifacts.require('STOContract.sol');
+const BigNumber = web3.BigNumber;
 
 contract('SecurityToken', accounts => {
 
   //accounts
   //let issuer = accounts[1];
-  let stoCreater = accounts[2];
+  let stoCreator = accounts[2];
   let host = accounts[3];
   let issuer = accounts[4];
   let delegate0 = accounts[5];
@@ -37,7 +37,9 @@ contract('SecurityToken', accounts => {
 
   //newCustomer() constants
   const jurisdiction0 = '0';
+  const jurisdiction0_0 = '0_1';
   const jurisdiction1 = '1';
+  const jurisdiction1_0 = '1_1';
   const customerInvestorRole = 1;
   const customerIssuerRole = 3;
   const witnessProof0 = 'ASffjflfgffgf';
@@ -47,7 +49,7 @@ contract('SecurityToken', accounts => {
   const expcurrentTime = latestTime();                               // Current Time
   const willExpires = latestTime() + duration.days(2);               // Current time + 1 year more
   const startTime = latestTime() + duration.seconds(5000);           // Start time will be 5000 seconds more than the latest time
-  const endTime = startTime + duration.days(30);                     // Add 30 days more 
+  const endTime = startTime + duration.days(30);                     // Add 30 days more
 
   //newProvider() constants
   const providerName0 = 'KYC-Chain';
@@ -69,7 +71,7 @@ contract('SecurityToken', accounts => {
   //Bid variables
   const expires = 1602288000;
   const quorum = 10;
-  const vestingPeriod = 8888888;                                                 
+  const vestingPeriod = 8888888;
 
   //createTemplate variables
   const offeringType = "Public";
@@ -78,6 +80,9 @@ contract('SecurityToken', accounts => {
   const kyc = 0x2fe38f0b394b297bc0d86ed6b66286572f5235f9;
   const details = 'going to launch on xx-xx-xx';
   const fee = 1000;
+
+  //Compliance
+  let dummySTRegistrar = 0x2fe38f0b394b297bc0d86ed6b66286572f52335f1;
 
   // STO
   let mockStoContract = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
@@ -89,26 +94,28 @@ contract('SecurityToken', accounts => {
     before(async()=>{
       POLY = await PolyToken.new();
       customers = await Customers.new(POLY.address);
-      compliance = await Compliance.new(customers.address);  
+      compliance = await Compliance.new(customers.address);
       STRegistrar = await Registrar.new(
         POLY.address,
         customers.address,
         compliance.address
       );
-
+      // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
         provider0,
         providerName0,
         providerApplication0,
         providerFee0
-      ); 
+      );
       // Provide approval to the customer contract to register the issuer (This step is performed by the Polymath wizard)
-      await POLY.getTokens(100000, issuer, { from : issuer });  
+      await POLY.getTokens(100000, issuer, { from : issuer });
       await POLY.approve(customers.address, 10000, { from : issuer });
 
+      // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           issuer,
           jurisdiction0,
+          jurisdiction0_0,
           customerIssuerRole,                     // issuer have issuer role = 3
           true,
           willExpires,                            // 2 days more than current time
@@ -116,19 +123,22 @@ contract('SecurityToken', accounts => {
               from:provider0
       });
 
+      // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
         provider1,
         providerName1,
         providerApplication1,
         providerFee1
-      ); 
+      );
       // Provide approval to the customer contract to register the investor1 (This step is performed by the Polymath wizard)
-      await POLY.getTokens(10000, investor1, { from : investor1 });  
+      await POLY.getTokens(10000, investor1, { from : investor1 });
       await POLY.approve(customers.address, 10000, { from : investor1 });
-      
+
+      // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           investor1,
           jurisdiction1,
+          jurisdiction1_0,
           customerInvestorRole,                           // Having investor role = 1
           true,
           willExpires,                                    // 2 days more than current time
@@ -137,12 +147,14 @@ contract('SecurityToken', accounts => {
       });
 
       // Provide approval to the customer contract to register the investor2 (This step is performed by the Polymath wizard)
-      await POLY.getTokens(10000, investor2, { from : investor2 });  
+      await POLY.getTokens(10000, investor2, { from : investor2 });
       await POLY.approve(customers.address, 10000, { from : investor2 });
-      
+
+      // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           investor2,
           jurisdiction1,
+          jurisdiction1_0,
           customerInvestorRole,                           // Having investor role = 1
           true,
           willExpires,                                    // 2 days more than current time
@@ -151,12 +163,14 @@ contract('SecurityToken', accounts => {
       });
 
       // Provide approval to the customer contract to register the delegate0 (This step is performed by the Polymath wizard)
-      await POLY.getTokens(10000, delegate0, { from : delegate0 });  
+      await POLY.getTokens(10000, delegate0, { from : delegate0 });
       await POLY.approve(customers.address, 10000, { from : delegate0 });
 
+      // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           delegate0,
           jurisdiction1,
+          jurisdiction1_0,
           delegateRole,                                   // Delegate role = 2
           true,
           willExpires,                                    // 2 days more than current time
@@ -165,12 +179,14 @@ contract('SecurityToken', accounts => {
       });
 
       // Provide approval to the customer contract to register the delegate1 (This step is performed by the Polymath wizard)
-      await POLY.getTokens(10000, delegate1, { from : delegate1 });  
+      await POLY.getTokens(10000, delegate1, { from : delegate1 });
       await POLY.approve(customers.address, 10000, { from : delegate1 });
 
+      // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           delegate1,
           jurisdiction1,
+          jurisdiction1_0,
           delegateRole,                                   // Delegate role = 2
           true,
           willExpires,                                    // 2 days more than current time
@@ -178,17 +194,21 @@ contract('SecurityToken', accounts => {
               from:provider0
       });
 
-      // Provide approval to the Security Token Registrar contract to create the security token (This step is performed by the Polymath wizard)
+      // Provide approval to the Security Token Registrar contract to create the security token 
+      // (This step is performed by the Polymath wizard)
       await POLY.getTokens(100000, issuer, { from : issuer });
       await POLY.approve(STRegistrar.address, 100000, { from : issuer });
       let allowedToken = await POLY.allowance(issuer, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(), 100000);
-
+      
+      // Creation of the Security Token with the help of SecurityTokenRegistrar contract
       let st = await STRegistrar.createSecurityToken(
           name,
           ticker,
           totalSupply,
+          0,
           issuer,
+          maxPoly,
           host,
           fee,
           type,
@@ -196,12 +216,14 @@ contract('SecurityToken', accounts => {
           quorum,
           {
             from : issuer
-          });  
-      
+          });
+
       // Grep the address of the security token
       STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
+      // Accesssing the blueprint using the address of Security Token
       securityToken = await SecurityToken.at(STAddress);
-
+      
+      // Creation of the Template
       let templateCreated = await compliance.createTemplate(
           offeringType,
           issuerJurisdiction,
@@ -215,17 +237,21 @@ contract('SecurityToken', accounts => {
           {
             from:delegate0
       });
-        templateAddress = templateCreated.logs[0].args._template
       
+      // Storing the template address in the variable
+      templateAddress = templateCreated.logs[0].args._template
+
     });
+
     describe("Functions of securityToken", async() =>{
       it("Constructor verify the parameters",async()=>{
-        let symbol = await securityToken.symbol.call();
+        // Match all the constructor parmaeters 
+        let symbol = await securityToken.symbol();
         assert.strictEqual(symbol.toString(), ticker);
-        
+
         let securityOwner = await securityToken.owner();
         assert.equal(securityOwner, issuer);
-        
+
         assert.equal(await securityToken.name(), name);
 
         assert.equal((await securityToken.decimals()).toNumber(), 0);
@@ -234,7 +260,8 @@ contract('SecurityToken', accounts => {
       });
 
       it("addJurisdiction: Should add the Jurisdiction in template -- fail msg.sender is not owner of template",async()=>{
-        let template = await Template.at(templateAddress); 
+        // Accesssing the blueprint using the address of template 
+        let template = await Template.at(templateAddress);
         try {
           await template.addJurisdiction(['1','0'], [true,true], { from : delegate1 });
         } catch(error) {
@@ -243,22 +270,27 @@ contract('SecurityToken', accounts => {
       });
 
       it("addJurisdiction: Should add the Jurisdiction in template",async()=>{
-        let template = await Template.at(templateAddress); 
+        // Accesssing the blueprint using the address of template 
+        let template = await Template.at(templateAddress);
+        // Adding the valid jurisdiction and their status 
         await template.addJurisdiction(['1','0'], [true,true], { from : delegate0 });
       });
 
       it("addRoles: Should add the roles in alowed roles list -- fail msg.sender is not the owner of template",async()=>{
+        // Accesssing the blueprint using the address of template 
         let template = await Template.at(templateAddress);
         try {
-          await template.addRoles([1,2], { from : delegate1 }); 
+          await template.addRoles([1,2], { from : delegate1 });
         } catch(error) {
           ensureException(error);
         }
       });
 
       it("addRoles: Should add the roles in alowed roles list",async()=>{
+        // Accesssing the blueprint using the address of template 
         let template = await Template.at(templateAddress);
-        await template.addRoles([1,2], { from : delegate0 }); 
+        // Adding allowed roles that can paricipate in the offering of the Security Token 
+        await template.addRoles([1,2], { from : delegate0 });
       });
 
       it("proposeTemplate: Should proposed the teplate successfully --fails template is not finalized",async()=>{
@@ -270,36 +302,41 @@ contract('SecurityToken', accounts => {
       });
 
       it("finalizeTemplate: should finalize the template -- fails msg.sender is not owner of template", async() =>{
-        let template = await Template.at(templateAddress); 
+        // Accesssing the blueprint using the address of template 
+        let template = await Template.at(templateAddress);
         try {
           await template.finalizeTemplate({ from : delegate1 });
         } catch(error) {
           ensureException(error);
         }
       });
-  
+
       it("finalizeTemplate: should finalize the template ", async() =>{
-        let template = await Template.at(templateAddress); 
+        // Accesssing the blueprint using the address of template 
+        let template = await Template.at(templateAddress);
+        // Freezing the template after that no changes allowed
         await template.finalizeTemplate({ from : delegate0 });
         let details = await template.getTemplateDetails.call();
         assert.isTrue(details[1]);
       });
 
-      it("proposeTemplate: Should proposed the teplate successfully --fails template is not finalized",async()=>{
-          await compliance.proposeTemplate(STAddress, templateAddress, { from : delegate0 });
+      it("proposeTemplate: Should proposed the template successfully",async()=>{
+        // Proposing the template after finalizing it
+        await compliance.proposeTemplate(STAddress, templateAddress, { from : delegate0 });
       });
-     
+
       it("selectTemplate: should owner of token can select the template",async()=>{
         await POLY.getTokens(100000, issuer, { from : issuer });
-        await POLY.transfer(STAddress, 10000, { from : issuer }); 
-        let template = await securityToken.selectTemplate(tempIndex, { from : issuer }); 
-        
+        await POLY.transfer(STAddress, 10000, { from : issuer });
+        // Opt the template to apply jurisdicion rule on a particular Security Token
+        let template = await securityToken.selectTemplate(tempIndex, { from : issuer });
+
         let data = await securityToken.getTokenDetails();
         assert.strictEqual(data[0], templateAddress);
       });
 
     it("startOffering: Should not start the offering -- fail STO is not proposed yet", async()=>{
-      try {  
+      try {
         await securityToken.startOffering({ from : host});
       } catch (error) {
         ensureException(error);
@@ -307,58 +344,71 @@ contract('SecurityToken', accounts => {
      });
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
-      stoContract = await STO.new(POLY.address, { from : stoCreater, gas : 5000000 });
-      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime); 
+      // Creation of new offering contract to facilitate the distribution of the Security token
+      stoContract = await STO.new(POLY.address, { from : stoCreator, gas : 5000000 });
+      // Assign all the essentials of the offering contract by its owner
+      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime, { from : stoCreator });
+      // Adding the offering contract details into the Polymath platform chain data
       let isSTOAdded = await compliance.setSTO(
-        stoContract.address, 
-        stoFee, 
-        vestingPeriod, 
-        quorum, 
-        { 
-          from : issuer 
+        stoContract.address,
+        stoFee,
+        vestingPeriod,
+        quorum,
+        {
+          from : issuer
         });
+      // Propose the Offering contract to a particular Security Token
       let response = await compliance.proposeOfferingContract(
-        securityToken.address, 
-        stoContract.address, 
-        { 
-          from : issuer 
+        securityToken.address,
+        stoContract.address,
+        {
+          from : issuer
         });
+      // Greping the address of the delegate
       let delegateOfTemp = await securityToken.delegate.call();
+      // Update compliance proof hash for the issuance
       let txReturn = await securityToken.updateComplianceProof(
         witnessProof0,
-        witnessProof1, 
+        witnessProof1,
         {
-           from : issuer 
+           from : issuer
           });
       convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
 
       let issuerBalance = await securityToken.balanceOf(issuer);
+      // Opt the Offering contract to distribute the security token 
       let success = await securityToken.selectOfferingProposal(
-        0, 
+        0,
         {
-           from: delegateOfTemp 
+           from: delegateOfTemp
         });
-      success.logs[0].args._auditor.should.equal(issuer);  
+      success.logs[0].args._auditor.should.equal(issuer);
     });
+
+    /////////////////////////////////
+    ////// startOffering() Test cases
+    /////////////////////////////////
 
     describe("startOffering() Test Cases",async()=>{
       it("Should not start the offering -- fail msg.sender is not issuer", async()=>{
-       try {  
+       try {
          await securityToken.startOffering({ from : host});
        } catch (error) {
          ensureException(error);
        }
       });
-   
+
       it("Should active the offering by transferring all ST to the STO contract", async()=>{
-        let balance = await securityToken.balanceOf(issuer); 
+        let balance = await securityToken.balanceOf(issuer);
+        // After selecting the offering contract Issuer needs to start the offering contract
+        // It makes issuer to transfer the ownership of all generated security token to offering contract 
         let txReturn = await securityToken.startOffering({ from : issuer});
         txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
         assert.isTrue(await securityToken.hasOfferingStarted.call());
       });
-   
+
       it("Should not start the offering -- fail offering already active", async()=>{
-       try {  
+       try {
          await securityToken.startOffering({ from : issuer});
        } catch (error) {
           ensureException(error);
@@ -371,13 +421,17 @@ contract('SecurityToken', accounts => {
     //////////////////////////////////
 
     it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == KYC',async()=>{
-      let id = await takeSnapshot();                                  // Taking the snapshot to revert the tx 
+      // Taking the snapshot to revert the tx
+      let id = await takeSnapshot();
+      // Stampede investor1 as the allowed personality to buy the security token                                   
       let status = await securityToken.addToWhitelist(investor1, { from: provider0});
       status.logs[0].args._shareholder.should.equal(investor1);
-      await revertToSnapshot(id);                                     // reverting the snapshot
+      // Reverting the snapshot
+      await revertToSnapshot(id);                                     
     });
 
     it('addToWhitelist: should add the customer address into the whitelist -- msg.sender == issuer',async()=>{
+      // Stampede investor1 as the allowed personality to buy the security token  
       let status = await securityToken.addToWhitelist(investor1, { from : issuer });
       status.logs[0].args._shareholder.should.equal(investor1);
     });
@@ -390,18 +444,24 @@ contract('SecurityToken', accounts => {
       }
     });
 
+    // Test withdrawPoly behaviour before the completion of offering 
+
     it('withdrawPoly: should fail to withdraw because of the current time is less than the endSTO + vesting periond',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
       try {
-          await STRegistrar.withdrawFunds(ticker, { from : delegateOfTemp });
+          await securityToken.withdrawPoly({ from : delegateOfTemp });
       } catch(error) {
           ensureException(error);
       }
     });
 
-  
+    /////////////////////////////////////////
+    ///// updateComplianceProof() Test Cases
+    ////////////////////////////////////////
+
     it('updateComplianceProof:should update the new merkle root',async()=>{
-        let txReturn = await securityToken.updateComplianceProof(
+      // Update compliance proof hash for the issuance  
+      let txReturn = await securityToken.updateComplianceProof(
           witnessProof0,
           witnessProof1,
           {
@@ -431,7 +491,20 @@ contract('SecurityToken', accounts => {
 /////////////////////////////////////
 
 describe("Compliance contracts functions", async()=> {
+  it("setSTRegsitrar: Should fail to set registrar address because it is already set", async()=>{
+    try {
+      await compliance.setRegsitrarAddress(dummySTRegistrar);
+    } catch (error) {
+        ensureException(error);
+    }
+  });
+
+  //////////////////////////////////
+  //// proposeTemplate() Test Case
+  /////////////////////////////////
+
   it("proposeTemplate: should successfully propose template", async()=> {
+    // Creation of a template to hold complianced or Jurisdictional permissions for trade of Security Token 
     let tx = await compliance.createTemplate(
                   "Test",
                   issuerJurisdiction,
@@ -446,15 +519,19 @@ describe("Compliance contracts functions", async()=> {
                     from:delegate0
               });
     let templateAdd = tx.logs[0].args._template
+    // Accesssing the blueprint using the address of template 
     let template2 = await Template.at(templateAdd);
-    // add jusrisdiction and role
+
+    // Add jusrisdiction and role
     await template2.addJurisdiction(['1','0'], [true,true], { from : delegate0 });
-    await template2.addRoles([1,2], { from : delegate0 }); 
-    // finalizing the template
+    await template2.addRoles([1,2], { from : delegate0 });
+    
+    // Finalizing the template 
     await template2.finalizeTemplate({ from : delegate0 });
     let details = await template2.getTemplateDetails.call();
     assert.isTrue(details[1]);
 
+    // Proposing the finalize template to facilitate the trade of particular security token
     let txReturn = await compliance.proposeTemplate(
       securityToken.address,
       templateAdd,
@@ -463,6 +540,38 @@ describe("Compliance contracts functions", async()=> {
       });
     txReturn.logs[0].args._template.should.equal(templateAdd);
   });
+
+  it("proposeTemplate: Should fail in proposing the template -- securityToken is not generated by STR",async()=>{
+    // Creation of the false Security Token
+    let falseST = await SecurityToken.new(
+                        name,
+                        ticker,
+                        totalSupply,
+                        issuer,
+                        maxPoly,
+                        lockupPeriod,
+                        quorum,
+                        POLY.address,
+                        customers.address,
+                        compliance.address,
+                        {
+                          from : issuer
+                    });
+    try {
+      let txReturn = await compliance.proposeTemplate(
+        falseST.address,
+        templateAddress,
+        {
+          from : issuer
+        });
+    } catch(error) {
+        ensureException(error);
+    }
+  });
+
+  /////////////////////////////////////////
+  //// cancelTemplateProposal() Test Cases
+  /////////////////////////////////////////
 
   it("cancelTemplateProposal: Should fails in canceling template proposal -- msg.sender unauthorized", async() =>{
     try {
@@ -478,7 +587,8 @@ describe("Compliance contracts functions", async()=> {
  });
 
   it("cancelTemplateProposal: Should successfully cancel template proposal", async() =>{
-     let txReturn = await compliance.cancelTemplateProposal(
+    // Cancelling the Proposed template  
+    let txReturn = await compliance.cancelTemplateProposal(
       securityToken.address,
       1,
       {
@@ -498,6 +608,10 @@ describe("Compliance contracts functions", async()=> {
       ensureException(error);
     }
  });
+
+ //////////////////////////
+ /// setSTO() Test Cases
+ /////////////////////////
 
   it("setSTO:Should fail in adding the new STO contract-- failed because of 0 address", async() =>{
     try {
@@ -545,7 +659,8 @@ describe("Compliance contracts functions", async()=> {
   });
 
   it("setSTO:Should successfully add the new sto contract", async() =>{
-      let txReturn = await compliance.setSTO(
+    // Adding the Offering contract details into the Polymath platform chain data  
+    let txReturn = await compliance.setSTO(
         mockStoContract,
         fee,
         vestingPeriod,
@@ -554,6 +669,10 @@ describe("Compliance contracts functions", async()=> {
           from : issuer
         });
   });
+
+  /////////////////////////////////////////
+  //// proposeOfferingContract() Test Cases
+  /////////////////////////////////////////
 
   it("proposeOfferingContract: Should fail in proposing the contract -- msg.sender is unauthorized", async() =>{
     try {
@@ -569,6 +688,7 @@ describe("Compliance contracts functions", async()=> {
   });
 
   it("proposeOfferingContract: Should successfully propose the contract", async() =>{
+    // Propose the Offering contract to a particular Security Token
     let txReturn = await compliance.proposeOfferingContract(
       securityToken.address,
       mockStoContract,
@@ -578,7 +698,39 @@ describe("Compliance contracts functions", async()=> {
       txReturn.logs[0].args._offeringContract.should.equal(mockStoContract);
   });
 
-  it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender unauthorized",async() =>{
+  it("proposeOfferingContract: Should fail in proposing the contract -- securityToken is not generated by STR",async()=>{
+    // Creation of the false Security Token  
+    let falseST = await SecurityToken.new(
+                        name,
+                        ticker,
+                        totalSupply,
+                        issuer,
+                        maxPoly,
+                        lockupPeriod,
+                        quorum,
+                        POLY.address,
+                        customers.address,
+                        compliance.address,
+                        {
+                          from : issuer
+                    });
+      try {
+        let txReturn = await compliance.proposeOfferingContract(
+          falseST.address,
+          mockStoContract,
+          {
+            from : issuer
+          });
+      } catch(error) {
+          ensureException(error);
+      }
+    });
+
+////////////////////////////////////////
+/// cancelOfferingProposal() Test cases
+////////////////////////////////////////
+
+it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender unauthorized",async() =>{
     try {
     let txReturn = await compliance.cancelOfferingProposal(
       securityToken.address,
@@ -592,6 +744,7 @@ describe("Compliance contracts functions", async()=> {
   });
 
   it("cancelOfferingProposal: Should successfully cancel the proposal",async() =>{
+    // Remove the offering proposal from the list of proposed contracts to a particular Security Token
     let txReturn = await compliance.cancelOfferingProposal(
       securityToken.address,
       1,
@@ -620,36 +773,38 @@ describe("Compliance contracts functions", async()=> {
     ///// issueSecurityToken() Test Cases
     /////////////////////////////////////
 
-    describe("issueSecurityTokens() Test Cases",async()=>{
+  describe("issueSecurityTokens() Test Cases",async()=>{
     it('issueSecurityTokens: Should successfully allocate the security token to contributor',async()=>{
-      await increaseTime(5010);                           // timejump to make now greater than or equal to the startTime of the sto
-     // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
+      // Timejump to make now greater than or equal to the startTime of the sto
+      await increaseTime(5010);                           
+      // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
       await POLY.approve(securityToken.address, 900, { from : investor1 });
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
-      investedAmount = 900; 
+      // Buy SecurityToken
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
+      investedAmount = 900;
       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
       txReturn.logs[0].args._contributor.should.equal(investor1);
   });
-  
+
   it('issueSecurityTokens: Should not successfully allocate the security token to contributor -- less allowance',async()=>{
       await POLY.getTokens(1000, investor2, { from : investor2});
       await POLY.approve(securityToken.address, 900, { from : investor2 });
       try {
-        let txReturn = await stoContract.buySecurityToken(1000, { from : investor2 , gas : 400000 });
+        let txReturn = await stoContract.buySecurityTokenWithPoly(1000, { from : investor2 , gas : 400000 });
       } catch(error) {
         ensureException(error);
       }
   });
-  
+
   it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
   async()=>{
     try {
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
     } catch(error) {
       ensureException(error);
-    } 
+    }
   });
-  
+
   it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to maxpoly limit is reached',
   async()=>{
     // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
@@ -657,21 +812,21 @@ describe("Compliance contracts functions", async()=> {
     await POLY.approve(securityToken.address, 100100, { from : investor1 });
 
     // This function call internally calls issueSecurityTokens  ( 150 extra added because auditor of STO is equal to owner of security Token)
-    let txReturn = await stoContract.buySecurityToken(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
-    
+    let txReturn = await stoContract.buySecurityTokenWithPoly(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
+
     txReturn.logs[0].args._ployContribution.toNumber().should.equal(maxPoly - (investedAmount + 150));
     txReturn.logs[0].args._contributor.should.equal(investor1);
-    
+
     try {
-      let txReturn = await stoContract.buySecurityToken(100, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(100, { from : investor1 , gas : 400000 });
     } catch(error) {
         ensureException(error);
-    } 
+    }
   });
   });
 
     /////////////////////////////////////////////////////
-    ////////// Test Suite SecurityToken ERC20 functions 
+    ////////// Test Suite SecurityToken ERC20 functions
     ////////////////////////////////////////////////////
 
     describe("Test Suite for ERC20 Functions", async()=>{
@@ -690,7 +845,7 @@ describe("Compliance contracts functions", async()=> {
     });
 
 
-    it('approve: msg.sender should approve 1000 to accounts[7] & withdraws 200 twice fail in 3 tx when trasferring more than allowance', 
+    it('approve: investor1 should approve 1000 to investor2 & withdraws 200 twice fail in 3 tx when trasferring more than allowance',
     async() => {
       let currentBalance = await securityToken.balanceOf(investor1);
       let status0 = await securityToken.addToWhitelist(investor2,{from: provider0});
@@ -730,7 +885,7 @@ describe("Compliance contracts functions", async()=> {
           .balanceOf
           .call(investor1);
       assert.strictEqual(_balance4.toNumber(), currentBalance - 400);
-    
+
       let txReturn = await securityToken.transferFrom.call(investor1, delegate1, 800, {from: investor2});
       assert.isFalse(txReturn);
     });
@@ -747,28 +902,29 @@ describe("Compliance contracts functions", async()=> {
   });
 
 
-    describe("Test to check the vote to freeze functionality ",async()=>{
-      it('voteToFreeze: Should successfully freeze the fee of network participant',async()=>{
-        await increaseTime(2592000);                                // difference between startTime and endTime                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  describe("Test to check the vote to freeze functionality ",async()=>{
+    it('voteToFreeze: Should successfully freeze the fee of network participant',async()=>{
+        // difference between startTime and endTime
+        await increaseTime(2592000);                                
         let txRetrun = await securityToken.voteToFreeze(issuer, { from : investor1 });;
         txRetrun.logs[0].args._recipient.should.equal(issuer);
         assert.isTrue(txRetrun.logs[0].args._frozen);
       });
     });
-    
+
 
     /////////////////////////////////
     ///// withdrawPoly() Test Cases
     ////////////////////////////////
 
-    describe("withdrawPoly() Test Cases with different variations",async()=>{
+  describe("withdrawPoly() Test Cases with different variations",async()=>{
     it('withdrawPoly: should successfully withdraw poly by delegate',async()=>{
       let delegateOfTemp = await securityToken.delegate.call();
       // Time jump of now + vesting period
-      await increaseTime(vestingPeriod);  
+      await increaseTime(vestingPeriod);
       let balance = await POLY.balanceOf(securityToken.address);
 
-      let txReturn = await STRegistrar.withdrawFunds(ticker, { from : delegateOfTemp , gas : 3000000 });
+      let txReturn = await securityToken.withdrawPoly({ from : delegateOfTemp , gas : 3000000 });
       let delegateBalance = await POLY.balanceOf(delegateOfTemp);
 
       assert.strictEqual(delegateBalance.toNumber(),10000);
@@ -777,9 +933,9 @@ describe("Compliance contracts functions", async()=> {
   it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
     let balance = await POLY.balanceOf(securityToken.address);
     try {
-    let success = await STRegistrar.withdrawFunds(ticker, { 
+    let success = await securityToken.withdrawPoly({
               from : issuer,
-              gas : 3000000 
+              gas : 3000000
     });
     } catch(error) {
         ensureException(error);
@@ -789,7 +945,7 @@ describe("Compliance contracts functions", async()=> {
 
   it('withdrawPoly: should fail in withdrawing the poly for direct interaction of customer',async()=>{
     try {
-      let success = await STRegistrar.withdrawFunds(ticker, {from:investor1});
+      let success = await securityToken.withdrawPoly({from:investor1});
     } catch(error) {
         ensureException(error);
     }
@@ -797,11 +953,14 @@ describe("Compliance contracts functions", async()=> {
 
   it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
     let balanceBefore = await POLY.balanceOf(issuer);
+    // Creation of the temporary Security Token
     let tempST = await STRegistrar.createSecurityToken(
       "Poly Temp",
       "TPOLY",
       totalSupply,
+      0,
       issuer,
+      maxPoly,
       host,
       fee,
       type,
@@ -810,14 +969,14 @@ describe("Compliance contracts functions", async()=> {
       {
         from : issuer
       }
-  );  
+  );
 
   let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
   let TempSecurityToken = await SecurityToken.at(tempSTAddress);
   let balanceAfter = await POLY.balanceOf(issuer);
   assert.strictEqual( (balanceBefore - balanceAfter), fee);
 
-  let txReturn = await STRegistrar.withdrawFunds('TPOLY', { from : issuer});
+  let txReturn = await TempSecurityToken.withdrawPoly({ from : issuer});
   let ballast = await POLY.balanceOf(tempSTAddress);
   assert.strictEqual(ballast.toNumber(),0);
   });

@@ -49,12 +49,13 @@ contract SecurityToken is IERC20 {
         bool allowed;                                                 // allowed - whether the shareholder is allowed to transfer or recieve the security token
         uint8 role;                                                   // role - role of the shareholder {1,2,3,4}
     }
-    address public registrarAddress;                                  // SecurityTokenRegistrar contract address
+
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
     // STO
     bool public isSTOProposed = false;
     bool public hasOfferingStarted = false;
+    uint256 public maxPoly;
 
     // The start and end time of the STO
     uint256 public startSTO;                                          // Timestamp when Security Token Offering will be start
@@ -74,7 +75,7 @@ contract SecurityToken is IERC20 {
 
 	   // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
-	   uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
+    uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
@@ -117,6 +118,7 @@ contract SecurityToken is IERC20 {
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum address of the security token owner
+     * @param _maxPoly Amount of maximum poly issuer want to raise
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
      * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
@@ -127,7 +129,9 @@ contract SecurityToken is IERC20 {
         string _name,
         string _ticker,
         uint256 _totalSupply,
+        uint8 _decimals,
         address _owner,
+        uint256 _maxPoly,
         uint256 _lockupPeriod,
         uint8 _quorum,
         address _polyTokenAddress,
@@ -135,19 +139,21 @@ contract SecurityToken is IERC20 {
         address _polyComplianceAddress
     ) public
     {
-        decimals = 0;
+        decimals = _decimals;
         name = _name;
         symbol = _ticker;
         owner = _owner;
+        maxPoly = _maxPoly;
         totalSupply = _totalSupply;
         balances[_owner] = _totalSupply;
         POLY = IERC20(_polyTokenAddress);
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
-        registrarAddress = msg.sender;
         Transfer(0x0, _owner, _totalSupply);
     }
+
+    /* function initialiseBalances(uint256) */
 
     /**
      * @dev `selectTemplate` Select a proposed template for the issuance
@@ -227,13 +233,16 @@ contract SecurityToken is IERC20 {
 
     /**
      * @dev Add a verified address to the Security Token whitelist
+     * The Issuer can add an address to the whitelist by themselves by
+     * creating their own KYC provider and using it to verify the accounts
+     * they want to add to the whitelist.
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
      */
     function addToWhitelist(address _whitelistAddress) onlyOwner public returns (bool success) {
         var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
         require(verified && expires > now);
-        require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
+        require(Template.checkTemplateRequirements(countryJurisdiction, divisionJurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
         LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
         return true;
@@ -253,20 +262,17 @@ contract SecurityToken is IERC20 {
 
     /**
      * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-     * @param _to Address of the recipient
      * @return bool success
      */
-    function withdrawPoly(address _to) public returns (bool success) {
-        require(msg.sender == registrarAddress);
-        require(_to != address(0));
+    function withdrawPoly() public returns (bool success) {
   	    if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         }
-        require(now > endSTO + allocations[_to].vestingPeriod);
-        require(!allocations[_to].frozen);
-        require(allocations[_to].amount > 0);
-        require(POLY.transfer(_to, allocations[_to].amount));
-        allocations[_to].amount = 0;
+        require(now > endSTO + allocations[msg.sender].vestingPeriod);
+        require(!allocations[msg.sender].frozen);
+        require(allocations[msg.sender].amount > 0);
+        require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+        allocations[msg.sender].amount = 0;
         return true;
     }
 
@@ -308,7 +314,7 @@ contract SecurityToken is IERC20 {
         // ST being issued can't be higher than the totalSupply
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         // POLY contributed can't be higher than maxPoly set by STO
-        require(STO.maxPoly() >= allocations[owner].amount.add(_polyContributed));
+        require(maxPoly >= allocations[owner].amount.add(_polyContributed));
         // Update ST balances (transfers ST from STO to _contributor)
         balances[STO] = balances[STO].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
