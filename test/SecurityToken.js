@@ -10,13 +10,13 @@ const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const STO = artifacts.require('STOContract.sol');
-
+const BigNumber = web3.BigNumber;
 
 contract('SecurityToken', accounts => {
 
   //accounts
   //let issuer = accounts[1];
-  let stoCreater = accounts[2];
+  let stoCreator = accounts[2];
   let host = accounts[3];
   let issuer = accounts[4];
   let delegate0 = accounts[5];
@@ -345,9 +345,9 @@ contract('SecurityToken', accounts => {
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
       // Creation of new offering contract to facilitate the distribution of the Security token
-      stoContract = await STO.new(POLY.address, { from : stoCreater, gas : 5000000 });
+      stoContract = await STO.new(POLY.address, { from : stoCreator, gas : 5000000 });
       // Assign all the essentials of the offering contract by its owner
-      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime);
+      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime, { from : stoCreator });
       // Adding the offering contract details into the Polymath platform chain data
       let isSTOAdded = await compliance.setSTO(
         stoContract.address,
@@ -780,7 +780,7 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
       // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
       await POLY.approve(securityToken.address, 900, { from : investor1 });
       // Buy SecurityToken
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
       investedAmount = 900;
       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
       txReturn.logs[0].args._contributor.should.equal(investor1);
@@ -790,7 +790,7 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
       await POLY.getTokens(1000, investor2, { from : investor2});
       await POLY.approve(securityToken.address, 900, { from : investor2 });
       try {
-        let txReturn = await stoContract.buySecurityToken(1000, { from : investor2 , gas : 400000 });
+        let txReturn = await stoContract.buySecurityTokenWithPoly(1000, { from : investor2 , gas : 400000 });
       } catch(error) {
         ensureException(error);
       }
@@ -799,7 +799,7 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
   it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
   async()=>{
     try {
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
     } catch(error) {
       ensureException(error);
     }
@@ -812,13 +812,13 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
     await POLY.approve(securityToken.address, 100100, { from : investor1 });
 
     // This function call internally calls issueSecurityTokens  ( 150 extra added because auditor of STO is equal to owner of security Token)
-    let txReturn = await stoContract.buySecurityToken(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
+    let txReturn = await stoContract.buySecurityTokenWithPoly(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
 
     txReturn.logs[0].args._ployContribution.toNumber().should.equal(maxPoly - (investedAmount + 150));
     txReturn.logs[0].args._contributor.should.equal(investor1);
 
     try {
-      let txReturn = await stoContract.buySecurityToken(100, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(100, { from : investor1 , gas : 400000 });
     } catch(error) {
         ensureException(error);
     }
