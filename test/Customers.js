@@ -8,7 +8,7 @@ const BigNumber = require('bignumber.js');
 
 
 contract('Customers', accounts => {
- 
+
   //accounts
   let owner = accounts[0];
   let customer1 = accounts[1];
@@ -20,7 +20,9 @@ contract('Customers', accounts => {
 
   //newCustomer() constants
   const jurisdiction0 = '0';
+  const jurisdiction0_0 = '0_1';
   const jurisdiction1 = '1';
+  const jurisdiction1_0 = '1_1';
   const customerInvestorRole = 1;
   const customerIssuerRole = 2;
 
@@ -40,7 +42,7 @@ contract('Customers', accounts => {
     it('An approved and active KYC provider can validate customers as being in a jurisdiction and accredit a customer', async () => {
       let poly = await POLY.new();
       let customers = await Customers.new(poly.address);
-    
+
       await customers.newProvider(
         provider1,
         providerName1,
@@ -54,6 +56,7 @@ contract('Customers', accounts => {
       let isVerify = await customers.verifyCustomer.call(
         customer1,
         jurisdiction0,
+        jurisdiction0_0,
         customerInvestorRole,
         true,
         willExipres, // 2 days more than current time
@@ -81,6 +84,7 @@ contract('Customers', accounts => {
       let isVerify = await customers.verifyCustomer.call(
         customer1,
         jurisdiction0,
+        jurisdiction0_0,
         customerInvestorRole,
         true,
         (latestTime() - duration.hours(1)), // 1 hour before current time
@@ -111,6 +115,7 @@ contract('Customers', accounts => {
         let isVerify = await customers.verifyCustomer(
           customer1,
           jurisdiction0,
+          jurisdiction0_0,
           customerInvestorRole,
           true,
           willExipres, // 2 days more than current time
@@ -145,7 +150,7 @@ contract('Customers', accounts => {
 
       try {
         await customers.newProvider(
-          0x0,                              // fail because of the 0x0 address instead of the provider address 
+          0x0,                              // fail because of the 0x0 address instead of the provider address
           providerName1,
           providerApplication1,
           providerFee1,
@@ -163,7 +168,7 @@ contract('Customers', accounts => {
         await customers.newProvider(
           provider1,
           providerName1,
-          0x0,                                              // Failed because details are zero 
+          0x0,                                              // Failed because details are zero
           providerFee1,
         );
       } catch (error) {
@@ -194,7 +199,7 @@ contract('Customers', accounts => {
         it("changeFee: Should verify the customer with old fee then after change verify the new customer with new fee",async()=>{
             let poly = await POLY.new();
             let customers = await Customers.new(poly.address);
-            
+
             await customers.newProvider(
               provider1,
               providerName1,
@@ -209,6 +214,7 @@ contract('Customers', accounts => {
             let isVerifyTry1 = await customers.verifyCustomer(
               customer1,
               jurisdiction0,
+              jurisdiction0_0,
               customerInvestorRole,
               true,
               willExipres, // 2 days more than current time
@@ -216,12 +222,12 @@ contract('Customers', accounts => {
                 from: provider1,
               },
             );
-            
+
             assert.strictEqual(isVerifyTry1.logs[0].args.customer, customer1);
             // Providing allowance to the customer contract address to spend the POLY of Customer2
             await poly.getTokens(10000, customer2, { from: customer2 });
             await poly.approve(customers.address, 10000, { from: customer2 });
-            // Change fee that is charged by the provider 
+            // Change fee that is charged by the provider
             await customers.changeFee(10000,{ from : provider1 });
             let providerData = await customers.getProvider(provider1);
             assert.strictEqual(providerData[3].toNumber(),10000);
@@ -229,6 +235,7 @@ contract('Customers', accounts => {
             let isVerifyTry2 = await customers.verifyCustomer(
               customer2,
               jurisdiction0,
+              jurisdiction0_0,
               customerInvestorRole,
               true,
               willExipres, // 2 days more than current time

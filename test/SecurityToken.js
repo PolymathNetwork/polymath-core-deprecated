@@ -37,7 +37,9 @@ contract('SecurityToken', accounts => {
 
   //newCustomer() constants
   const jurisdiction0 = '0';
+  const jurisdiction0_0 = '0_1';
   const jurisdiction1 = '1';
+  const jurisdiction1_0 = '1_1';
   const customerInvestorRole = 1;
   const customerIssuerRole = 3;
   const witnessProof0 = 'ASffjflfgffgf';
@@ -109,6 +111,7 @@ contract('SecurityToken', accounts => {
       await customers.verifyCustomer(
           issuer,
           jurisdiction0,
+          jurisdiction0_0,
           customerIssuerRole,                     // issuer have issuer role = 3
           true,
           willExpires,                            // 2 days more than current time
@@ -129,6 +132,7 @@ contract('SecurityToken', accounts => {
       await customers.verifyCustomer(
           investor1,
           jurisdiction1,
+          jurisdiction1_0,
           customerInvestorRole,                           // Having investor role = 1
           true,
           willExpires,                                    // 2 days more than current time
@@ -143,6 +147,7 @@ contract('SecurityToken', accounts => {
       await customers.verifyCustomer(
           investor2,
           jurisdiction1,
+          jurisdiction1_0,
           customerInvestorRole,                           // Having investor role = 1
           true,
           willExpires,                                    // 2 days more than current time
@@ -157,6 +162,7 @@ contract('SecurityToken', accounts => {
       await customers.verifyCustomer(
           delegate0,
           jurisdiction1,
+          jurisdiction1_0,
           delegateRole,                                   // Delegate role = 2
           true,
           willExpires,                                    // 2 days more than current time
@@ -171,6 +177,7 @@ contract('SecurityToken', accounts => {
       await customers.verifyCustomer(
           delegate1,
           jurisdiction1,
+          jurisdiction1_0,
           delegateRole,                                   // Delegate role = 2
           true,
           willExpires,                                    // 2 days more than current time
@@ -223,7 +230,7 @@ contract('SecurityToken', accounts => {
       it("Constructor verify the parameters",async()=>{
         let symbol = await securityToken.symbol();
         assert.strictEqual(symbol.toString(), ticker);
-        
+
         let securityOwner = await securityToken.owner();
         assert.equal(securityOwner, issuer);
 

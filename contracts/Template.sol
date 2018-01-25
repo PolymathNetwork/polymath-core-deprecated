@@ -22,6 +22,7 @@ contract Template is ITemplate {
     string public offeringType;                                     // Name of the security being issued
     bytes32 public issuerJurisdiction;                              // Variable contains the jurisdiction of the issuer of the template
     mapping(bytes32 => bool) public allowedJurisdictions;           // Mapping that contains the allowed staus of Jurisdictions
+    mapping(bytes32 => bool) public blockedDivisionJurisdictions;   // Mapping that contains the allowed staus of Jurisdictions
     mapping(uint8 => bool) public allowedRoles;                     // Mapping that contains the allowed status of Roles
     bool public accredited;                                         // Variable that define the required level of accrediation for the investor
     address public KYC;                                             // Address of the KYC provider
@@ -80,6 +81,20 @@ contract Template is ITemplate {
     }
 
     /**
+     * @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+     * @param _blockedDivisionJurisdictions An array of subdivision jurisdictions
+     * @param _blocked An array of whether the subdivision jurisdiction is blocked to purchase the security or not
+     */
+    function addDivisionJurisdiction(bytes32[] _blockedDivisionJurisdictions, bool[] _blocked) public {
+        require(owner == msg.sender);
+        require(_blockedDivisionJurisdictions.length == _blocked.length);
+        require(!finalized);
+        for (uint i = 0; i < _blockedDivisionJurisdictions.length; ++i) {
+            blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] = _blocked[i];
+        }
+    }
+
+    /**
      * @dev `addRole` allows the adding of new roles to be added to whitelist
      * @param _allowedRoles User roles that can purchase the security
      */
@@ -118,19 +133,21 @@ contract Template is ITemplate {
 
     /**
      * @dev `checkTemplateRequirements` is a constant function that checks if templates requirements are met
-     * @param _jurisdiction The ISO-3166 code of the investors jurisdiction
+     * @param _countryJurisdiction The ISO-3166 code of the investors country jurisdiction
+     * @param _divisionJurisdiction The ISO-3166 code of the investors subdivision jurisdiction
      * @param _accredited Whether the investor is accredited or not
      * @param _role role of the user
      * @return allowed boolean variable
      */
     function checkTemplateRequirements(
-        bytes32 _jurisdiction,
+        bytes32 _countryJurisdiction,
+        bytes32 _divisionJurisdiction,
         bool _accredited,
         uint8 _role
     ) public constant returns (bool allowed)
     {
-        require(_jurisdiction != 0x0);
-        require(allowedJurisdictions[_jurisdiction]);
+        require(_countryJurisdiction != 0x0);
+        require(allowedJurisdictions[_countryJurisdiction] || !blockedDivisionJurisdictions[_divisionJurisdiction]);
         require(allowedRoles[_role]);
         if (accredited) {
             require(_accredited);
