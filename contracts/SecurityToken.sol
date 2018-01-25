@@ -49,7 +49,7 @@ contract SecurityToken is IERC20 {
         bool allowed;                                                 // allowed - whether the shareholder is allowed to transfer or recieve the security token
         uint8 role;                                                   // role - role of the shareholder {1,2,3,4}
     }
-    address public registrarAddress;                                  // SecurityTokenRegistrar contract address
+
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
     // STO
@@ -149,7 +149,6 @@ contract SecurityToken is IERC20 {
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
-        registrarAddress = msg.sender;
         Transfer(0x0, _owner, _totalSupply);
     }
 
@@ -251,20 +250,17 @@ contract SecurityToken is IERC20 {
 
     /**
      * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-     * @param _to Address of the recipient
      * @return bool success
      */
-    function withdrawPoly(address _to) public returns (bool success) {
-        require(msg.sender == registrarAddress);
-        require(_to != address(0));
+    function withdrawPoly() public returns (bool success) {
   	    if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         }
-        require(now > endSTO + allocations[_to].vestingPeriod);
-        require(!allocations[_to].frozen);
-        require(allocations[_to].amount > 0);
-        require(POLY.transfer(_to, allocations[_to].amount));
-        allocations[_to].amount = 0;
+        require(now > endSTO + allocations[msg.sender].vestingPeriod);
+        require(!allocations[msg.sender].frozen);
+        require(allocations[msg.sender].amount > 0);
+        require(POLY.transfer(msg.sender, allocations[msg.sender].amount));
+        allocations[msg.sender].amount = 0;
         return true;
     }
 

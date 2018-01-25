@@ -72,10 +72,9 @@
 
      /**
       * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-      * @param _to Address of the recipient
-      * @return bool success
+      * @return bool success 
       */
-    function withdrawPoly(address _to) public returns (bool success);
+    function withdrawPoly() public returns (bool success);
 
     /**
      * @dev Vote to freeze the fee of a certain network participant
