@@ -75,7 +75,7 @@ contract SecurityToken is IERC20 {
 
 	// Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
-	uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
+    uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
@@ -128,6 +128,7 @@ contract SecurityToken is IERC20 {
         string _name,
         string _ticker,
         uint256 _totalSupply,
+        uint8 _decimals,
         address _owner,
         uint256 _maxPoly,
         uint256 _lockupPeriod,
@@ -137,7 +138,7 @@ contract SecurityToken is IERC20 {
         address _polyComplianceAddress
     ) public
     {
-        decimals = 0;
+        decimals = _decimals;
         name = _name;
         symbol = _ticker;
         owner = _owner;
@@ -151,6 +152,8 @@ contract SecurityToken is IERC20 {
         registrarAddress = msg.sender;
         Transfer(0x0, _owner, _totalSupply);
     }
+
+    /* function initialiseBalances(uint256) */
 
     /**
      * @dev `selectTemplate` Select a proposed template for the issuance
@@ -238,9 +241,9 @@ contract SecurityToken is IERC20 {
      */
     function addToWhitelist(address _whitelistAddress) public returns (bool success) {
         require(KYC == msg.sender || owner == msg.sender);
-        var (jurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
+        var (countryJurisdiction, divisionJurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
         require(verified && expires > now);
-        require(Template.checkTemplateRequirements(jurisdiction, accredited, role));
+        require(Template.checkTemplateRequirements(countryJurisdiction, divisionJurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
         LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
         return true;
