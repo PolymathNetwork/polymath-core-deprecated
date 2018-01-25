@@ -116,7 +116,6 @@ contract Template is ITemplate {
         require(owner == msg.sender);
         bytes32 prevDetails = details;
         details = _details;
-
         DetailsUpdated(prevDetails, details, now);
         return true;
     }

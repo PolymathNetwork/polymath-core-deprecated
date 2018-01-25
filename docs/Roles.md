@@ -8,7 +8,7 @@ authorized at Polymath platform.
 
 Polymath platfrom have 4 types of different roles for different actors
 
-| Role | Actor | 
+| Role | Actor |
 |------|-------|
 | 1 | Investor|
 | 2 | Delegate |
