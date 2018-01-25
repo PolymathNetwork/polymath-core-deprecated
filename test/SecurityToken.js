@@ -342,9 +342,9 @@ contract('SecurityToken', accounts => {
 
     it("selectOfferingProposal: select the offering proposal for the template",async()=>{
       // Creation of new offering contract to facilitate the distribution of the Security token
-      stoContract = await STO.new(POLY.address, { from : stoCreater, gas : 5000000 });
+      stoContract = await STO.new(POLY.address, { from : stoCreator, gas : 5000000 });
       // Assign all the essentials of the offering contract by its owner
-      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime);
+      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime, { from : stoCreator });
       // Adding the offering contract details into the Polymath platform chain data
       let isSTOAdded = await compliance.setSTO(
         stoContract.address,
@@ -709,7 +709,7 @@ describe("Compliance contracts functions", async()=> {
       // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
       await POLY.approve(securityToken.address, 900, { from : investor1 });
       // Buy SecurityToken
-      let txReturn = await stoContract.buySecurityToken(900, { from : investor1 , gas : 400000 });
+      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
       investedAmount = 900;
       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
       txReturn.logs[0].args._contributor.should.equal(investor1);
