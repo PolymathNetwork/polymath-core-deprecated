@@ -72,12 +72,7 @@
 
      /**
       * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-<<<<<<< HEAD
       * @return bool success 
-=======
-      * @param _to Address of the recipient
-      * @return bool success
->>>>>>> master
       */
     function withdrawPoly() public returns (bool success);
 
