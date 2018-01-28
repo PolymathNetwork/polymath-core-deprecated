@@ -16,10 +16,10 @@ compliant securities tokens on a decentralized blockchain.
 
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [PolyToken](./contracts/PolyToken.sol)                           | [0x17073ed7259d368ced101acdb2ab7eae51b26041](https://ropsten.etherscan.io/address/0x17073ed7259d368ced101acdb2ab7eae51b26041) |
-| [Compliance](./contracts/Compliance.sol)                         | [0x522b29bc815ea7c6c881d817f0ae22310bae33e1](https://ropsten.etherscan.io/address/0x522b29bc815ea7c6c881d817f0ae22310bae33e1) |
-| [Customers](./contracts/Customers.sol)                           | [0xdc67f93a667d64dbf5ae0d4a7c7758c76346e572](https://ropsten.etherscan.io/address/0xdc67f93a667d64dbf5ae0d4a7c7758c76346e572) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x81ac3d04f6c19673737ea22813e716d41411678e](https://ropsten.etherscan.io/address/0x81ac3d04f6c19673737ea22813e716d41411678e) |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0x96a62428509002a7ae5f6ad29e4750d852a3f3d7](https://ropsten.etherscan.io/address/0x96a62428509002a7ae5f6ad29e4750d852a3f3d7) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x5c94b177c6f6f9e1ed8a8741c7e56bfea950efa9](https://ropsten.etherscan.io/address/0x5c94b177c6f6f9e1ed8a8741c7e56bfea950efa9) |
+| [Customers](./contracts/Customers.sol)                           | [0x67adc2715bf03c1f0c5f68f0c97e786226f5a72d](https://ropsten.etherscan.io/address/0x67adc2715bf03c1f0c5f68f0c97e786226f5a72d) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0xece288e3cd0086c7bb988142f386f14d963dfd03](https://ropsten.etherscan.io/address/0xece288e3cd0086c7bb988142f386f14d963dfd03) |
 
 ## Setup
 

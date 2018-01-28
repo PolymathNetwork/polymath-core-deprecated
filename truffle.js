@@ -12,10 +12,11 @@ const config = {
     },
     ropsten: {
       host: 'localhost',
-      port: 1337,
-      network_id: '3',
-      from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
+      port: 8545,
+      network_id: '*',
+      from: '0x00F13d5bCA2E8A4E58fD8018a7b1e8D286dD135A',
       gas: 4.612e6,
+      gasPrice: 130000000000,
     },
     coverage: {
       host: 'localhost',
