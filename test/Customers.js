@@ -1,9 +1,9 @@
 import {ensureException, duration}  from './helpers/utils.js';
 import latestTime from './helpers/latestTime';
 
-const Compliance = artifacts.require('../contracts/Customers.sol');
-const POLY = artifacts.require('../contracts/PolyToken.sol');
-const Customers = artifacts.require('../contracts/Customers.sol');
+const Compliance = artifacts.require('Customers.sol');
+const POLY = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol');
+const Customers = artifacts.require('Customers.sol');
 const BigNumber = require('bignumber.js');
 
 
