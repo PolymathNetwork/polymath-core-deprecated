@@ -1,14 +1,14 @@
 pragma solidity ^0.4.18;
 
+import '../../../contracts/SafeMath.sol';
+import '../../../contracts/interfaces/IERC20.sol';
+
 /*
  POLY token faucet is only used on testnet for testing purposes
  !!!! NOT INTENDED TO BE USED ON MAINNET !!!
 */
 
-import './SafeMath.sol';
-import './interfaces/IERC20.sol';
-
-contract PolyToken is IERC20 {
+contract PolyTokenMock is IERC20 {
 
     using SafeMath for uint256;
     uint256 public totalSupply = 1000000;
@@ -92,3 +92,4 @@ contract PolyToken is IERC20 {
     }
 
 }
+

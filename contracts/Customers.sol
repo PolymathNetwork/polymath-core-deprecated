@@ -7,7 +7,7 @@ pragma solidity ^0.4.18;
   tokens based on their verifications by providers.
 */
 
-import './PolyToken.sol';
+import './interfaces/IERC20.sol';
 import './interfaces/ICustomers.sol';
 
 /**
@@ -19,7 +19,7 @@ contract Customers is ICustomers {
 
     string public VERSION = "1";
 
-    PolyToken POLY;                                                     // Instance of the POLY token
+    IERC20 POLY;                                                        // Instance of the POLY token
 
     struct Customer {                                                   // Structure use to store the details of the customers
         bytes32 countryJurisdiction;                                    // Customers country jurisdiction as ex - ISO3166
@@ -57,7 +57,7 @@ contract Customers is ICustomers {
      * @dev Constructor
      */
     function Customers(address _polyTokenAddress) public {
-        POLY = PolyToken(_polyTokenAddress);
+        POLY = IERC20(_polyTokenAddress);
     }
 
     /**

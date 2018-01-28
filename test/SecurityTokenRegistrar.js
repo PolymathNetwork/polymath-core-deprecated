@@ -3,7 +3,7 @@ import latestTime from './helpers/latestTime';
 
 const SecurityTokenRegistrar = artifacts.require('./SecurityTokenRegistrar.sol');
 const SecurityToken = artifacts.require('./SecurityToken.sol');
-const POLY = artifacts.require('./PolyToken.sol');
+const POLY = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol');
 const Compliance = artifacts.require('./Compliance.sol');
 const Customers = artifacts.require('./Customers.sol');
 

@@ -5,7 +5,7 @@ import { ensureException, convertHex, duration } from './helpers/utils';
 
 const SecurityToken = artifacts.require('SecurityToken.sol');
 const Template = artifacts.require('Template.sol');
-const PolyToken = artifacts.require('PolyToken.sol');
+const PolyToken = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol');
 const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
