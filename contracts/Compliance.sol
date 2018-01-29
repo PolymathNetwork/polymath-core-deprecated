@@ -311,4 +311,13 @@ contract Compliance is ICompliance {
         );
     }
 
+    /**
+     * @dev Get an array containing the address of all offering proposals for a given ST
+     * @param _securityTokenAddress The security token ethereum address
+     * @return Offering proposals array
+     */
+    function getAllOfferingProposals(address _securityTokenAddress) view public returns (address[]){
+        return offeringProposals[_securityTokenAddress];
+    }
+
 }
