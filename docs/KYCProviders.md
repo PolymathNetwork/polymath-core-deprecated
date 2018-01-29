@@ -10,7 +10,7 @@ reputation extrinsically by being reused on different compliance templates.
 
 ## How do I verify an investor?
 
-1. Become a KYC provider by calling `Compliance.newProvider()` and pay the
+1. Become a KYC provider by calling `Customers.newProvider()` and pay the
    required fee to join as a KYC provider (to prevent spam). A KYC provider can
    create multiple providers to represent different types of verification
    'packages' for different fees.
