@@ -36,7 +36,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     mapping(string => address) tickers;                             // Mapping of ticker name to Security Token
 
     event LogNewSecurityToken(string ticker, address securityTokenAddress, address owner, address host, uint256 fee, uint8 _type);
-    event LogSecurityToken(address securityToken);
     /**
      * @dev Constructor use to set the essentials addresses to facilitate
      * the creation of the security token
