@@ -30,7 +30,7 @@ contract('SecurityTokenRegistrar', accounts => {
   let issuer2 = accounts[3];
   let issuer1 = accounts[4];
   let polyCustomerAddress = accounts[5];
-  let host = accounts[6];
+  let polyFeeAddress = accounts[6];
 
   //newSecurityTokenOfferingcontract variables
   const stoContractAddress = ''; //need to fill this in
@@ -41,11 +41,13 @@ contract('SecurityTokenRegistrar', accounts => {
       let polyToken = await POLY.new();
       let polyCustomers = await Customers.new(polyToken.address);
       let polyCompliance = await Compliance.new(polyCustomers.address);
-      // Creation of the new SecurityTokenRegistrar contract 
+      // Creation of the new SecurityTokenRegistrar contract
       let STRegistrar = await SecurityTokenRegistrar.new(
         polyToken.address,
         polyCustomers.address,
         polyCompliance.address,
+        polyFeeAddress,
+        createSecurityTokenFee
       );
       let PTAddress = await STRegistrar.polyTokenAddress.call();
       assert.strictEqual(PTAddress, polyToken.address);
@@ -57,11 +59,13 @@ contract('SecurityTokenRegistrar', accounts => {
       let polyToken = await POLY.new();
       let polyCustomers = await Customers.new(polyToken.address);
       let polyCompliance = await Compliance.new(polyCustomers.address);
-      // Creation of the new SecurityTokenRegistrar contract 
+      // Creation of the new SecurityTokenRegistrar contract
       let STRegistrar = await SecurityTokenRegistrar.new(
         polyToken.address,
         polyCustomers.address,
-        polyCompliance.address
+        polyCompliance.address,
+        polyFeeAddress,
+        createSecurityTokenFee
       );
       // Allowance Provided to SecurityToken Registrar contract
       await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
@@ -80,8 +84,6 @@ contract('SecurityTokenRegistrar', accounts => {
         0,
         issuer1,
         maxPoly,
-        host,
-        createSecurityTokenFee,
         numberOfSecurityTypes,
         lockupPeriod,
         quorum,
@@ -107,7 +109,9 @@ contract('SecurityTokenRegistrar', accounts => {
         let STRegistrar = await SecurityTokenRegistrar.new(
           polyToken.address,
           polyCustomers.address,
-          polyCompliance.address
+          polyCompliance.address,
+          polyFeeAddress,
+          createSecurityTokenFee
         );
         let totalSupply = 0;
         // Allowance Provided to SecurityToken Registrar contract
@@ -124,8 +128,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer1,
               maxPoly,
-              host,
-              createSecurityTokenFee,
               numberOfSecurityTypes,
               lockupPeriod,
               quorum,
@@ -144,7 +146,9 @@ contract('SecurityTokenRegistrar', accounts => {
         let STRegistrar = await SecurityTokenRegistrar.new(
           polyToken.address,
           polyCustomers.address,
-          polyCompliance.address
+          polyCompliance.address,
+          polyFeeAddress,
+          createSecurityTokenFee
         );
         let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936;
         // Allowance Provided to SecurityToken Registrar contract
@@ -161,8 +165,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer1,
               maxPoly,
-              host,
-              createSecurityTokenFee,
               numberOfSecurityTypes,
               lockupPeriod,
               quorum,
@@ -181,7 +183,9 @@ contract('SecurityTokenRegistrar', accounts => {
         let STRegistrar = await SecurityTokenRegistrar.new(
           polyToken.address,
           polyCustomers.address,
-          polyCompliance.address
+          polyCompliance.address,
+          polyFeeAddress,
+          createSecurityTokenFee
         );
 
         await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
@@ -209,8 +213,6 @@ contract('SecurityTokenRegistrar', accounts => {
                             0,
                             issuer1,
                             maxPoly,
-                            host,
-                            createSecurityTokenFee,
                             numberOfSecurityTypes,
                             lockupPeriod,
                             quorum,
@@ -227,8 +229,6 @@ contract('SecurityTokenRegistrar', accounts => {
                             0,
                             issuer2,
                             maxPoly,
-                            host,
-                            createSecurityTokenFee,
                             numberOfSecurityTypes,
                             lockupPeriod,
                             quorum,
@@ -247,7 +247,9 @@ contract('SecurityTokenRegistrar', accounts => {
         let STRegistrar = await SecurityTokenRegistrar.new(
           polyToken.address,
           polyCustomers.address,
-          polyCompliance.address
+          polyCompliance.address,
+          polyFeeAddress,
+          createSecurityTokenFee
         );
 
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1 });
@@ -261,8 +263,6 @@ contract('SecurityTokenRegistrar', accounts => {
                               0,
                               issuer1,
                               maxPoly,
-                              host,
-                              createSecurityTokenFee,
                               numberOfSecurityTypes,
                               lockupPeriod,
                               quorum,
@@ -281,7 +281,9 @@ contract('SecurityTokenRegistrar', accounts => {
         let STRegistrar = await SecurityTokenRegistrar.new(
           polyToken.address,
           polyCustomers.address,
-          polyCompliance.address
+          polyCompliance.address,
+          polyFeeAddress,
+          createSecurityTokenFee
         );
 
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1});
@@ -293,8 +295,6 @@ contract('SecurityTokenRegistrar', accounts => {
                             issuer1,
                             0,
                             maxPoly,
-                            host,
-                            createSecurityTokenFee,
                             numberOfSecurityTypes,
                             lockupPeriod,
                             quorum,
