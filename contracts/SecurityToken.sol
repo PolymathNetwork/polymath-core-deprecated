@@ -54,6 +54,7 @@ contract SecurityToken is IERC20 {
 
     // STO
     bool public isSTOProposed = false;
+    bool public isTemplateSet = false;
     bool public hasOfferingStarted = false;
     uint256 public maxPoly;
 
@@ -161,7 +162,8 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
-        require(!isSTOProposed);
+        require(!isTemplateSet);
+        isTemplateSet = true;
         address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
         require(_template != address(0));
         Template = ITemplate(_template);

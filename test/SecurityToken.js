@@ -25,6 +25,9 @@ contract('SecurityToken', accounts => {
   let investor1 = accounts[8];
   let provider0 = accounts[9];
   let provider1 = accounts[0];
+  let polyFeeAddress = accounts[6];
+  // let fee = 10000;
+
 
   //roles
   const delegateRole = 2;
@@ -98,7 +101,9 @@ contract('SecurityToken', accounts => {
       STRegistrar = await Registrar.new(
         POLY.address,
         customers.address,
-        compliance.address
+        compliance.address,
+        polyFeeAddress,
+        fee
       );
       // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
@@ -209,8 +214,6 @@ contract('SecurityToken', accounts => {
           0,
           issuer,
           maxPoly,
-          host,
-          fee,
           type,
           lockupPeriod,
           quorum,
@@ -942,8 +945,6 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
       0,
       issuer,
       maxPoly,
-      host,
-      fee,
       type,
       lockupPeriod,
       quorum,
