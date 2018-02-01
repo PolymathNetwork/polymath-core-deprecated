@@ -62,7 +62,7 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev `setRegsitrarAddress` This function set the SecurityTokenRegistrar contract address.
+     * @dev `setRegistrarAddress` This function set the SecurityTokenRegistrar contract address.
      * @param _STRegistrar It is the `this` reference of STR contract
      * @return bool
      */
@@ -250,7 +250,7 @@ contract Compliance is ICompliance {
      * @param _template The unique template id
      * @param _templateIndex The array index of the template proposal
      */
-    function updateTemplateReputation(address _template, uint8 _templateIndex) public returns (bool success) {
+    function updateTemplateReputation(address _template, uint8 _templateIndex) external returns (bool success) {
         require(templateProposals[msg.sender][_templateIndex] == _template);
         templates[_template].usedBy.push(msg.sender);
         return true;
@@ -262,7 +262,7 @@ contract Compliance is ICompliance {
      * @param _stoContract The smart contract address of the STO contract
      * @param _offeringProposalIndex The array index of the security token offering proposal
      */
-    function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) public returns (bool success) {
+    function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success) {
         require(offeringProposals[msg.sender][_offeringProposalIndex] == _stoContract);
         offerings[_stoContract].usedBy.push(msg.sender);
         return true;
