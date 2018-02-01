@@ -38,7 +38,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
     mapping(address => SecurityTokenData) securityTokens;           // Array contains the details of security token corresponds to security token address
     mapping(string => address) tickers;                             // Mapping of ticker name to Security Token
 
-    event LogNewSecurityToken(string _ticker, address _securityTokenAddress, address _owner, address _polyFeeAddress, uint256 _fee, uint8 _type);
+    event LogNewSecurityToken(string _ticker, address indexed _securityTokenAddress, address indexed _owner, address _polyFeeAddress, uint256 _fee, uint8 _type);
     event LogFeeChange(uint256 _newFee);
     event LogPolyFeeAddressChange(address _newPolyFeeAddress);
 
@@ -72,7 +72,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       // Creating the instance of the compliance contract and assign the STR contract
       // address (this) into the compliance contract
       Compliance PolyCompliance = Compliance(polyComplianceAddress);
-      require(PolyCompliance.setRegsitrarAddress(this));
+      require(PolyCompliance.setRegistrarAddress(this));
     }
 
     /**

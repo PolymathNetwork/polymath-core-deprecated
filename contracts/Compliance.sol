@@ -28,12 +28,12 @@ contract Compliance is ICompliance {
 
     struct TemplateReputation {                                         // Structure contains the compliance template details
         address owner;                                                  // Address of the template owner
-        uint256 totalRaised;                                            // Total amount raised by the issuers that used the template
-        uint256 timesUsed;                                              // How many times template will be used as the compliance regulator for different security token
-        uint256 expires;                                                // Timestamp when template get expire
-        address[] usedBy;                                               // Array of security token addresses that used the particular template
+        uint256 totalRaised;                                            // Total amount raised by issuers that used the template
+        uint256 timesUsed;                                              // How many times template has been used as the compliance regulator for different security tokens
+        uint256 expires;                                                // Timestamp when template expires
+        address[] usedBy;                                               // Array of security token addresses that used this particular template
     }
-    mapping(address => TemplateReputation) public templates;                   // Mapping used for storing the template past records corresponds to template address
+    mapping(address => TemplateReputation) public templates;            // Mapping used for storing the template past records corresponds to template address
     mapping(address => address[]) public templateProposals;             // Template proposals for a specific security token
 
     struct Offering {                                                   // Smart contract proposals for a specific security token offering
@@ -43,18 +43,18 @@ contract Compliance is ICompliance {
         uint8 quorum;
         address[] usedBy;
     }
-    mapping(address => Offering) offerings;                             // Mapping used for storing the Offering detials corresponds to offering contract address
+    mapping(address => Offering) offerings;                             // Mapping used for storing the Offering details corresponds to offering contract address
     mapping(address => address[]) public offeringProposals;             // Security token contract proposals for a specific security token
 
     Customers public PolyCustomers;                                      // Instance of the Compliance contract
     uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
 
     // Notifications
-    event LogTemplateCreated(address indexed _creator, address _template, string _offeringType);
-    event LogNewTemplateProposal(address indexed _securityToken, address _template, address _delegate, uint _templateProposalIndex);
-    event LogCancelTemplateProposal(address indexed _securityToken, address _template, uint _templateProposalIndex);
-    event LogNewContractProposal(address indexed _securityToken, address _offeringContract, address _delegate, uint _offeringProposalIndex);
-    event LogCancelContractProposal(address indexed _securityToken, address _offeringContract, uint _offeringProposalIndex);
+    event LogTemplateCreated(address indexed _creator, address indexed _template, string _offeringType);
+    event LogNewTemplateProposal(address indexed _securityToken, address indexed _template, address indexed _delegate, uint _templateProposalIndex);
+    event LogCancelTemplateProposal(address indexed _securityToken, address indexed _template, uint _templateProposalIndex);
+    event LogNewContractProposal(address indexed _securityToken, address indexed _offeringContract, address indexed _auditor, uint _offeringProposalIndex);
+    event LogCancelContractProposal(address indexed _securityToken, address indexed _offeringContract, uint _offeringProposalIndex);
 
     /* @param _polyCustomersAddress The address of the Polymath Customers contract */
     function Compliance(address _polyCustomersAddress) public {
@@ -62,12 +62,13 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev `setRegsitrarAddress` This function set the SecurityTokenRegistrar contract address.
+     * @dev `setRegistrarAddress` This function set the SecurityTokenRegistrar contract address.
      * @param _STRegistrar It is the `this` reference of STR contract
      * @return bool
      */
 
-    function setRegsitrarAddress(address _STRegistrar) public returns (bool) {
+    function setRegistrarAddress(address _STRegistrar) public returns (bool) {
+        require(_STRegistrar != address(0));
         require(STRegistrar == address(0));
         STRegistrar = SecurityTokenRegistrar(_STRegistrar);
         return true;
@@ -218,7 +219,7 @@ contract Compliance is ICompliance {
         require(verified);
         require(expires > now);
         offeringProposals[_securityToken].push(_stoContract);
-        LogNewContractProposal(_securityToken, _stoContract, msg.sender,offeringProposals[_securityToken].length -1);
+        LogNewContractProposal(_securityToken, _stoContract, msg.sender, offeringProposals[_securityToken].length - 1);
         return true;
     }
 
@@ -249,7 +250,7 @@ contract Compliance is ICompliance {
      * @param _template The unique template id
      * @param _templateIndex The array index of the template proposal
      */
-    function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success) {
+    function updateTemplateReputation(address _template, uint8 _templateIndex) external returns (bool success) {
         require(templateProposals[msg.sender][_templateIndex] == _template);
         templates[_template].usedBy.push(msg.sender);
         return true;

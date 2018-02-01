@@ -79,12 +79,12 @@ contract SecurityToken is IERC20 {
     uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
 
     // Notifications
-    event LogTemplateSet(address indexed _delegateAddress, address _template, address indexed _KYC);
+    event LogTemplateSet(address indexed _delegateAddress, address indexed _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 _merkleRoot, bytes32 _complianceProofHash);
-    event LogSetSTOContract(address _STO, address indexed _STOtemplate, address indexed _auditor, uint256 _startTime, uint256 _endTime);
-    event LogNewWhitelistedAddress(address _KYC, address _shareholder, uint8 _role);
-    event LogNewBlacklistedAddress(address _KYC, address _shareholder);
-    event LogVoteToFreeze(address _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
+    event LogSetSTOContract(address indexed _STO, address indexed _auditor, uint256 _startTime, uint256 _endTime);
+    event LogNewWhitelistedAddress(address indexed _KYC, address indexed _shareholder, uint8 _role);
+    event LogNewBlacklistedAddress(address indexed _shareholder);
+    event LogVoteToFreeze(address indexed _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
     event LogTokenIssued(address indexed _contributor, uint256 _stAmount, uint256 _polyContributed, uint256 _timestamp);
 
     //Modifiers
@@ -208,12 +208,12 @@ contract SecurityToken is IERC20 {
         STO = STO20(_stoContract);
         require(STO.startTime() > now && STO.endTime() > STO.startTime());
         allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
-        shareholders[address(STO)] = Shareholder(this, true, 5);
+        shareholders[_stoContract] = Shareholder(this, true, 5);
         startSTO = STO.startTime();
         endSTO = STO.endTime();
-        isSTOProposed = !isSTOProposed;
+        isSTOProposed = true;
         PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
-        LogSetSTOContract(STO, _stoContract, _auditor, startSTO, endSTO);
+        LogSetSTOContract(_stoContract, _auditor, startSTO, endSTO);
         return true;
     }
 
@@ -246,7 +246,7 @@ contract SecurityToken is IERC20 {
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(countryJurisdiction, divisionJurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
-        LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
+        LogNewWhitelistedAddress(KYC, _whitelistAddress, role);
         return true;
     }
 
@@ -258,7 +258,7 @@ contract SecurityToken is IERC20 {
     function addToBlacklist(address _blacklistAddress) onlyOwner public returns (bool success) {
         require(shareholders[_blacklistAddress].allowed);
         shareholders[_blacklistAddress].allowed = false;
-        LogNewBlacklistedAddress(msg.sender, _blacklistAddress);
+        LogNewBlacklistedAddress(_blacklistAddress);
         return true;
     }
 
@@ -270,7 +270,7 @@ contract SecurityToken is IERC20 {
   	    if (delegate == address(0)) {
           return POLY.transfer(owner, POLY.balanceOf(this));
         }
-        require(now > endSTO + allocations[msg.sender].vestingPeriod);
+        require(now > endSTO.add(allocations[msg.sender].vestingPeriod));
         require(!allocations[msg.sender].frozen);
         require(allocations[msg.sender].amount > 0);
         require(POLY.transfer(msg.sender, allocations[msg.sender].amount));

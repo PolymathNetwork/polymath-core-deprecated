@@ -477,7 +477,7 @@ contract('SecurityToken', accounts => {
 describe("Compliance contracts functions", async()=> {
   it("setSTRegsitrar: Should fail to set registrar address because it is already set", async()=>{
     try {
-      await compliance.setRegsitrarAddress(dummySTRegistrar);
+      await compliance.setRegistrarAddress(dummySTRegistrar);
     } catch (error) {
         ensureException(error);
     }
