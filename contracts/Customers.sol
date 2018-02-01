@@ -44,8 +44,8 @@ contract Customers is ICustomers {
     mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
 
     // Notifications
-    event LogNewProvider(address providerAddress, string name, bytes32 details);
-    event LogCustomerVerified(address customer, address provider, uint8 role);
+    event LogNewProvider(address indexed providerAddress, string name, bytes32 details);
+    event LogCustomerVerified(address indexed customer, address indexed provider, uint8 role);
 
     // Modifier
     modifier onlyProvider() {
