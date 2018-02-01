@@ -82,7 +82,7 @@ contract SecurityToken is IERC20 {
     event LogUpdatedComplianceProof(bytes32 _merkleRoot, bytes32 _complianceProofHash);
     event LogSetSTOContract(address indexed _STO, address indexed _auditor, uint256 _startTime, uint256 _endTime);
     event LogNewWhitelistedAddress(address indexed _KYC, address indexed _shareholder, uint8 _role);
-    event LogNewBlacklistedAddress(address indexed _KYC, address indexed _shareholder);
+    event LogNewBlacklistedAddress(address indexed _shareholder);
     event LogVoteToFreeze(address indexed _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
     event LogTokenIssued(address indexed _contributor, uint256 _stAmount, uint256 _polyContributed, uint256 _timestamp);
 
@@ -244,7 +244,7 @@ contract SecurityToken is IERC20 {
         require(verified && expires > now);
         require(Template.checkTemplateRequirements(countryJurisdiction, divisionJurisdiction, accredited, role));
         shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
-        LogNewWhitelistedAddress(msg.sender, _whitelistAddress, role);
+        LogNewWhitelistedAddress(KYC, _whitelistAddress, role);
         return true;
     }
 
@@ -256,7 +256,7 @@ contract SecurityToken is IERC20 {
     function addToBlacklist(address _blacklistAddress) onlyOwner public returns (bool success) {
         require(shareholders[_blacklistAddress].allowed);
         shareholders[_blacklistAddress].allowed = false;
-        LogNewBlacklistedAddress(msg.sender, _blacklistAddress);
+        LogNewBlacklistedAddress(_blacklistAddress);
         return true;
     }
 
