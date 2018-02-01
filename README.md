@@ -12,6 +12,16 @@ compliant securities tokens on a decentralized blockchain.
 
 [Read the whitepaper](whitepaper.pdf)
 
+## Live on Ethereum Mainnet
+
+| Contract                                                         | Address                                                                                                                       |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [PolyToken](./contracts/PolyToken.sol)                           | [0x9992eC3cF6A55b00978cdDF2b27BC6882d88D1eC](https://ropsten.etherscan.io/address/0x9992eC3cF6A55b00978cdDF2b27BC6882d88D1eC) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x076719c05961a0c3398e558e2199085d32717ca6](https://ropsten.etherscan.io/address/0x076719c05961a0c3398e558e2199085d32717ca6) |
+| [Customers](./contracts/Customers.sol)                           | [0xeb30a60c199664ab84dec3f8b72de3badf1837f5](https://ropsten.etherscan.io/address/0xeb30a60c199664ab84dec3f8b72de3badf1837f5) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x56e30b617c8b4798955b6be6fec706de91352ed0](https://ropsten.etherscan.io/address/0x56e30b617c8b4798955b6be6fec706de91352ed0) |
+
+
 ## Live on Ropsten testnet
 
 | Contract                                                         | Address                                                                                                                       |
