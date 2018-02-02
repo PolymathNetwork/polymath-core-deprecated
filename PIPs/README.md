@@ -1,4 +1,4 @@
-# PIPs (Under construction) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/????utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# PIPs (Under construction) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/polymath-PIPs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 Polymath Improvement Proposals (PIPs) describe standards for the Polymath platform, including core protocol specifications and Security Token Offerings standards.
 
 # Contributing
