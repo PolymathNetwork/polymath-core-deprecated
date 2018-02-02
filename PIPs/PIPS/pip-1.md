@@ -1,9 +1,9 @@
-  PIP: 1
-  Title: PIP Purpose and Guidelines
-  Status: Active
-  Type: Core
-  Author: Pablo Ruiz <pablo@polymath.network>, Satyam Agrawal <Satyam@polymath.network>
-  Created: 2018-02-02
+    PIP: 1
+    Title: PIP Purpose and Guidelines
+    Status: Active
+    Type: Core
+    Author: Pablo Ruiz <pablo@polymath.network>, Satyam Agrawal <Satyam@polymath.network>
+    Created: 2018-02-02
 
 What is a PIP?
 --------------
