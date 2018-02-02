@@ -28,6 +28,9 @@ contract('SecurityToken', accounts => {
   let polyFeeAddress = accounts[6];
   // let fee = 10000;
 
+  const nameSpace = "TestNameSpace";
+  const nameSpaceFee = 10000;
+  const nameSpaceOwner = accounts[6];
 
   //roles
   const delegateRole = 2;
@@ -101,9 +104,7 @@ contract('SecurityToken', accounts => {
       STRegistrar = await Registrar.new(
         POLY.address,
         customers.address,
-        compliance.address,
-        polyFeeAddress,
-        fee
+        compliance.address
       );
       // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
@@ -206,8 +207,15 @@ contract('SecurityToken', accounts => {
       let allowedToken = await POLY.allowance(issuer, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(), 100000);
 
+      // Create name space
+      await STRegistrar.createNameSpace(
+        nameSpace,
+        nameSpaceOwner,
+        nameSpaceFee
+      )
       // Creation of the Security Token with the help of SecurityTokenRegistrar contract
       let st = await STRegistrar.createSecurityToken(
+          nameSpace,
           name,
           ticker,
           totalSupply,
@@ -222,7 +230,7 @@ contract('SecurityToken', accounts => {
           });
 
       // Grep the address of the security token
-      STAddress = await STRegistrar.getSecurityTokenAddress.call(ticker);
+      STAddress = await STRegistrar.getSecurityTokenAddress.call(nameSpace, ticker);
       // Accesssing the blueprint using the address of Security Token
       securityToken = await SecurityToken.at(STAddress);
 
@@ -937,8 +945,10 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
 
   it("withdrawPoly: Should transfer all poly to the owner when their is no delegate",async()=>{
     let balanceBefore = await POLY.balanceOf(issuer);
+
     // Creation of the temporary Security Token
     let tempST = await STRegistrar.createSecurityToken(
+      nameSpace,
       "Poly Temp",
       "TPOLY",
       totalSupply,
@@ -953,10 +963,10 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
       }
   );
 
-  let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call('TPOLY');
+  let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call(nameSpace, 'TPOLY');
   let TempSecurityToken = await SecurityToken.at(tempSTAddress);
   let balanceAfter = await POLY.balanceOf(issuer);
-  assert.strictEqual( (balanceBefore - balanceAfter), fee);
+  assert.strictEqual( (balanceBefore - balanceAfter), nameSpaceFee);
 
   let txReturn = await TempSecurityToken.withdrawPoly({ from : issuer});
   let ballast = await POLY.balanceOf(tempSTAddress);
