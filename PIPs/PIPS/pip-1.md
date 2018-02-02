@@ -1,4 +1,4 @@
-PIP: 1
+  PIP: 1
   Title: PIP Purpose and Guidelines
   Status: Active
   Type: Core
@@ -111,7 +111,7 @@ The editors don't pass judgment on PIPs. We merely do the administrative & edito
 History
 -------
 
-This document was derived heavily from [Ethereum's EIP-1] which in turn was derived heavily from [Bitcoin's BIP-0001] written by Amir Taaki which in turn was derived from [Python's PEP-0001]. In many places text was simply copied and modified. 
+This document was derived heavily from [Ethereum's EIP-1] which in turn was derived heavily from [Bitcoin's BIP-0001] written by Amir Taaki which in turn was derived from [Python's PEP-0001]. In many places text was simply copied and modified.
 
 Copyright
 ---------
