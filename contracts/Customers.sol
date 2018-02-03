@@ -26,7 +26,6 @@ contract Customers is ICustomers {
         bytes32 divisionJurisdiction;                                   // Customers sub-division jurisdiction as ex - ISO3166
         uint256 joined;                                                 // Timestamp when customer register
         uint8 role;                                                     // role of the customer
-        bool verified;                                                  // Boolean variable to check the status of the customer whether it is verified or not
         bool accredited;                                                // Accrediation status of the customer
         bytes32 proof;                                                  // Proof for customer
         uint256 expires;                                                // Timestamp when customer verification expires
@@ -80,8 +79,7 @@ contract Customers is ICustomers {
      * @dev Change a providers fee
      * @param _newFee The new fee of the provider
      */
-    function changeFee(uint256 _newFee) public returns (bool success) {
-        require(providers[msg.sender].details != 0x0);
+    function changeFee(uint256 _newFee) onlyProvider public returns (bool success) {
         providers[msg.sender].fee = _newFee;
         return true;
     }
@@ -111,7 +109,6 @@ contract Customers is ICustomers {
         customers[msg.sender][_customer].role = _role;
         customers[msg.sender][_customer].accredited = _accredited;
         customers[msg.sender][_customer].expires = _expires;
-        customers[msg.sender][_customer].verified = true;
         LogCustomerVerified(_customer, msg.sender, _role);
         return true;
     }
@@ -125,12 +122,11 @@ contract Customers is ICustomers {
      * @param _provider Address of the KYC provider.
      * @param _customer Address of the customer ethereum address
      */
-    function getCustomer(address _provider, address _customer) public constant returns (
+    function getCustomer(address _provider, address _customer) public view returns (
         bytes32,
         bytes32,
         bool,
         uint8,
-        bool,
         uint256
     ) {
       return (
@@ -138,7 +134,6 @@ contract Customers is ICustomers {
         customers[_provider][_customer].divisionJurisdiction,
         customers[_provider][_customer].accredited,
         customers[_provider][_customer].role,
-        customers[_provider][_customer].verified,
         customers[_provider][_customer].expires
       );
     }
@@ -147,7 +142,7 @@ contract Customers is ICustomers {
      * Get provider details and fee by ethereum address
      * @param _providerAddress Address of the KYC provider
      */
-    function getProvider(address _providerAddress) public constant returns (
+    function getProvider(address _providerAddress) public view returns (
         string name,
         uint256 joined,
         bytes32 details,

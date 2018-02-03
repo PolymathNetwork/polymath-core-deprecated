@@ -143,7 +143,7 @@ contract Template is ITemplate {
         bytes32 _divisionJurisdiction,
         bool _accredited,
         uint8 _role
-    ) public constant returns (bool allowed)
+    ) public view returns (bool allowed)
     {
         require(_countryJurisdiction != 0x0);
         require(allowedJurisdictions[_countryJurisdiction] || !blockedDivisionJurisdictions[_divisionJurisdiction]);
