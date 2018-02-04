@@ -2,7 +2,7 @@
     Title: PIP Purpose and Guidelines
     Status: Active
     Type: Core
-    Author: Pablo Ruiz <pablo@polymath.network>, Satyam Agrawal <Satyam@polymath.network>
+    Author: Pablo Ruiz <pablo@polymath.network>, Satyam Agrawal <satyam@polymath.network>
     Created: 2018-02-02
 
 What is a PIP?
