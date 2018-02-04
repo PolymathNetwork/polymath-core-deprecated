@@ -88,8 +88,6 @@ contract Customers is ICustomers {
     }
 
 
-    event LoggerAddr(address _log);
-    event Logger(bytes32 _log);
     /**
      * @dev Verify an investor
      * @param _customer The customer's public key address
