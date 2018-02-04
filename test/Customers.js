@@ -1,11 +1,15 @@
 import {ensureException, duration}  from './helpers/utils.js';
 import latestTime from './helpers/latestTime';
+import {web3StringToBytes32, signData} from './helpers/signData';
 
 const Compliance = artifacts.require('Customers.sol');
 const POLY = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol');
 const Customers = artifacts.require('Customers.sol');
 const BigNumber = require('bignumber.js');
 
+const ethers = require('ethers');
+const utils = ethers.utils;
+const ethUtil = require('ethereumjs-util');
 
 contract('Customers', accounts => {
 
@@ -49,22 +53,166 @@ contract('Customers', accounts => {
         providerApplication1,
         providerFee1,
       );
+
       // Providing allowance to the customer contract address to spend the POLY of Customer
       await poly.getTokens(10000, customer1, { from: customer1 });
       await poly.approve(customers.address, 10000, { from: customer1 });
 
-      let isVerify = await customers.verifyCustomer.call(
+      let nonce = 1;
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+      const r = `0x${sig.r.toString('hex')}`;
+      const s = `0x${sig.s.toString('hex')}`;
+      const v = sig.v;
+
+      let isVerify = await customers.verifyCustomer(
         customer1,
-        jurisdiction0,
-        jurisdiction0_0,
+        web3StringToBytes32(jurisdiction0),
+        web3StringToBytes32(jurisdiction0_0),
         customerInvestorRole,
         true,
         willExipres, // 2 days more than current time
+        nonce,
+        v,
+        r,
+        s,
         {
           from: provider1,
         },
       );
-      assert.isTrue(isVerify);
+
+    });
+
+    it('An approved and active KYC provider can validate customers twice with nonce increment', async () => {
+      let poly = await POLY.new();
+      let customers = await Customers.new(poly.address);
+
+      await customers.newProvider(
+        provider1,
+        providerName1,
+        providerApplication1,
+        providerFee1,
+      );
+
+      // Providing allowance to the customer contract address to spend the POLY of Customer
+      await poly.getTokens(10000, customer1, { from: customer1 });
+      await poly.approve(customers.address, 10000, { from: customer1 });
+
+      let nonce = 1;
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+      const r = `0x${sig.r.toString('hex')}`;
+      const s = `0x${sig.s.toString('hex')}`;
+      const v = sig.v;
+
+      let isVerify = await customers.verifyCustomer(
+        customer1,
+        web3StringToBytes32(jurisdiction0),
+        web3StringToBytes32(jurisdiction0_0),
+        customerInvestorRole,
+        true,
+        willExipres, // 2 days more than current time
+        nonce,
+        v,
+        r,
+        s,
+        {
+          from: provider1,
+        },
+      );
+
+      let nonce2 = 2;
+      const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce2, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+      const r2 = `0x${sig2.r.toString('hex')}`;
+      const s2 = `0x${sig2.s.toString('hex')}`;
+      const v2 = sig2.v;
+
+      let isVerify2 = await customers.verifyCustomer(
+        customer1,
+        web3StringToBytes32(jurisdiction0),
+        web3StringToBytes32(jurisdiction0_0),
+        customerInvestorRole,
+        true,
+        willExipres, // 2 days more than current time
+        nonce2,
+        v2,
+        r2,
+        s2,
+        {
+          from: provider1,
+        },
+      );
+
+    });
+
+    it('An approved and active KYC provider cannot reuse nonce signature', async () => {
+      let poly = await POLY.new();
+      let customers = await Customers.new(poly.address);
+
+      await customers.newProvider(
+        provider1,
+        providerName1,
+        providerApplication1,
+        providerFee1,
+      );
+
+      // Providing allowance to the customer contract address to spend the POLY of Customer
+      await poly.getTokens(10000, customer1, { from: customer1 });
+      await poly.approve(customers.address, 10000, { from: customer1 });
+
+      let nonce = 1;
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+      const r = `0x${sig.r.toString('hex')}`;
+      const s = `0x${sig.s.toString('hex')}`;
+      const v = sig.v;
+
+      let isVerify = await customers.verifyCustomer(
+        customer1,
+        web3StringToBytes32(jurisdiction0),
+        web3StringToBytes32(jurisdiction0_0),
+        customerInvestorRole,
+        true,
+        willExipres, // 2 days more than current time
+        nonce,
+        v,
+        r,
+        s,
+        {
+          from: provider1,
+        },
+      );
+
+      // let nonce2 = 1;
+      // const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      //
+      // const r2 = `0x${sig2.r.toString('hex')}`;
+      // const s2 = `0x${sig2.s.toString('hex')}`;
+      // const v2 = sig.v;
+
+      try {
+
+        let isVerify = await customers.verifyCustomer(
+          customer1,
+          web3StringToBytes32(jurisdiction0),
+          web3StringToBytes32(jurisdiction0_0),
+          customerInvestorRole,
+          true,
+          willExipres, // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
+          {
+            from: provider1,
+          },
+        );
+      } catch(error) {
+          ensureException(error);
+      }
+
+
     });
 
     it('verifyCustomer: An approved and active KYC provider can validate customers as being in a jurisdiction and accredit a customer -- fail due to expiry is less than now', async () => {
@@ -80,21 +228,33 @@ contract('Customers', accounts => {
       // Providing allowance to the customer contract address to spend the POLY of Customer
       await poly.getTokens(10000, customer1, { from: customer1 });
       await poly.approve(customers.address, 10000, { from: customer1 });
+
+      let nonce = 1;
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+      const r = `0x${sig.r.toString('hex')}`;
+      const s = `0x${sig.s.toString('hex')}`;
+      const v = sig.v;
+
       try {
-      let isVerify = await customers.verifyCustomer.call(
-        customer1,
-        jurisdiction0,
-        jurisdiction0_0,
-        customerInvestorRole,
-        true,
-        (latestTime() - duration.hours(1)), // 1 hour before current time
-        {
-          from: provider1,
-        },
-      );
-    } catch(error) {
-        ensureException(error);
-    }
+        let isVerify = await customers.verifyCustomer.call(
+          customer1,
+          web3StringToBytes32(jurisdiction0),
+          web3StringToBytes32(jurisdiction0_0),
+          customerInvestorRole,
+          true,
+          (latestTime() - duration.hours(1)), // 1 hour before current time
+          nonce,
+          v,
+          r,
+          s,
+          {
+            from: provider1,
+          },
+        );
+      } catch(error) {
+          ensureException(error);
+      }
     });
 
     it('VerifyCustomer: Should fail due to the msg.sender is not provider', async () => {
@@ -111,14 +271,25 @@ contract('Customers', accounts => {
       await poly.getTokens(10000, customer1, { from: customer1 });
       await poly.approve(customers.address, 10000, { from: customer1 });
 
+      let nonce = 1;
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+      const r = `0x${sig.r.toString('hex')}`;
+      const s = `0x${sig.s.toString('hex')}`;
+      const v = sig.v;
+
       try {
         let isVerify = await customers.verifyCustomer(
           customer1,
-          jurisdiction0,
-          jurisdiction0_0,
+          web3StringToBytes32(jurisdiction0),
+          web3StringToBytes32(jurisdiction0_0),
           customerInvestorRole,
           true,
           willExipres, // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
           {
             from: customer2,
           },
@@ -211,18 +382,28 @@ contract('Customers', accounts => {
             await poly.getTokens(10000, customer1, { from: customer1 });
             await poly.approve(customers.address, 10000, { from: customer1 });
 
+            let nonce = 1;
+            const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+
+            const r = `0x${sig.r.toString('hex')}`;
+            const s = `0x${sig.s.toString('hex')}`;
+            const v = sig.v;
+
             let isVerifyTry1 = await customers.verifyCustomer(
               customer1,
-              jurisdiction0,
-              jurisdiction0_0,
+              web3StringToBytes32(jurisdiction0),
+              web3StringToBytes32(jurisdiction0_0),
               customerInvestorRole,
               true,
               willExipres, // 2 days more than current time
+              nonce,
+              v,
+              r,
+              s,
               {
                 from: provider1,
               },
             );
-
             assert.strictEqual(isVerifyTry1.logs[0].args.customer, customer1);
             // Providing allowance to the customer contract address to spend the POLY of Customer2
             await poly.getTokens(10000, customer2, { from: customer2 });
@@ -232,13 +413,23 @@ contract('Customers', accounts => {
             let providerData = await customers.getProvider(provider1);
             assert.strictEqual(providerData[3].toNumber(),10000);
 
+            const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202');
+
+            const r2 = `0x${sig2.r.toString('hex')}`;
+            const s2 = `0x${sig2.s.toString('hex')}`;
+            const v2 = sig2.v;
+
             let isVerifyTry2 = await customers.verifyCustomer(
               customer2,
-              jurisdiction0,
-              jurisdiction0_0,
+              web3StringToBytes32(jurisdiction0),
+              web3StringToBytes32(jurisdiction0_0),
               customerInvestorRole,
               true,
               willExipres, // 2 days more than current time
+              nonce,
+              v2,
+              r2,
+              s2,
               {
                 from: provider1,
               },

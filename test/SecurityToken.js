@@ -2,6 +2,7 @@ import should from 'should';
 import { increaseTime, takeSnapshot, revertToSnapshot } from './helpers/time';
 import latestTime from './helpers/latestTime';
 import { ensureException, convertHex, duration } from './helpers/utils';
+import {web3StringToBytes32, signData} from './helpers/signData';
 
 const SecurityToken = artifacts.require('SecurityToken.sol');
 const Template = artifacts.require('Template.sol');
@@ -11,6 +12,11 @@ const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const STO = artifacts.require('STOContract.sol');
 const BigNumber = web3.BigNumber;
+
+
+const ethers = require('ethers');
+const utils = ethers.utils;
+const ethUtil = require('ethereumjs-util');
 
 contract('SecurityToken', accounts => {
 
@@ -117,14 +123,25 @@ contract('SecurityToken', accounts => {
       await POLY.getTokens(100000, issuer, { from : issuer });
       await POLY.approve(customers.address, 10000, { from : issuer });
 
+      let nonce = 1;
+      let sig = signData(customers.address, provider0, jurisdiction0, jurisdiction0_0, customerIssuerRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204');
+
+      let r = `0x${sig.r.toString('hex')}`;
+      let s = `0x${sig.s.toString('hex')}`;
+      let v = sig.v;
+
       // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           issuer,
-          jurisdiction0,
-          jurisdiction0_0,
+          web3StringToBytes32(jurisdiction0),
+          web3StringToBytes32(jurisdiction0_0),
           customerIssuerRole,                     // issuer have issuer role = 3
           true,
           willExpires,                            // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
           {
               from:provider0
       });
@@ -140,14 +157,25 @@ contract('SecurityToken', accounts => {
       await POLY.getTokens(10000, investor1, { from : investor1 });
       await POLY.approve(customers.address, 10000, { from : investor1 });
 
+      nonce = 1;
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208');
+
+      r = `0x${sig.r.toString('hex')}`;
+      s = `0x${sig.s.toString('hex')}`;
+      v = sig.v;
+
       // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           investor1,
-          jurisdiction1,
-          jurisdiction1_0,
+          web3StringToBytes32(jurisdiction1),
+          web3StringToBytes32(jurisdiction1_0),
           customerInvestorRole,                           // Having investor role = 1
           true,
           willExpires,                                    // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
           {
               from:provider0
       });
@@ -156,14 +184,25 @@ contract('SecurityToken', accounts => {
       await POLY.getTokens(10000, investor2, { from : investor2 });
       await POLY.approve(customers.address, 10000, { from : investor2 });
 
+      nonce = 1;
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207');
+
+      r = `0x${sig.r.toString('hex')}`;
+      s = `0x${sig.s.toString('hex')}`;
+      v = sig.v;
+
       // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           investor2,
-          jurisdiction1,
-          jurisdiction1_0,
+          web3StringToBytes32(jurisdiction1),
+          web3StringToBytes32(jurisdiction1_0),
           customerInvestorRole,                           // Having investor role = 1
           true,
           willExpires,                                    // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
           {
               from:provider0
       });
@@ -172,14 +211,25 @@ contract('SecurityToken', accounts => {
       await POLY.getTokens(10000, delegate0, { from : delegate0 });
       await POLY.approve(customers.address, 10000, { from : delegate0 });
 
+      nonce = 1;
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, delegateRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205');
+
+      r = `0x${sig.r.toString('hex')}`;
+      s = `0x${sig.s.toString('hex')}`;
+      v = sig.v;
+
       // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           delegate0,
-          jurisdiction1,
-          jurisdiction1_0,
+          web3StringToBytes32(jurisdiction1),
+          web3StringToBytes32(jurisdiction1_0),
           delegateRole,                                   // Delegate role = 2
           true,
           willExpires,                                    // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
           {
               from:provider0
       });
@@ -188,14 +238,26 @@ contract('SecurityToken', accounts => {
       await POLY.getTokens(10000, delegate1, { from : delegate1 });
       await POLY.approve(customers.address, 10000, { from : delegate1 });
 
+      nonce = 1;
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, delegateRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206');
+
+      r = `0x${sig.r.toString('hex')}`;
+      s = `0x${sig.s.toString('hex')}`;
+      v = sig.v;
+
+
       // Adding the new customer in to the Polymath Platform chain data
       await customers.verifyCustomer(
           delegate1,
-          jurisdiction1,
-          jurisdiction1_0,
+          web3StringToBytes32(jurisdiction1),
+          web3StringToBytes32(jurisdiction1_0),
           delegateRole,                                   // Delegate role = 2
           true,
           willExpires,                                    // 2 days more than current time
+          nonce,
+          v,
+          r,
+          s,
           {
               from:provider0
       });

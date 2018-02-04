@@ -33,6 +33,7 @@ contract Customers is ICustomers {
     }
 
     mapping(address => mapping(address => Customer)) public customers;  // Customers (kyc provider address => customer address)
+    mapping(address => mapping(uint256 => bool)) public nonceMap;       // Map of used nonces by customer
 
     struct Provider {                                                   // KYC/Accreditation Provider
         string name;                                                    // Name of the provider
@@ -86,6 +87,9 @@ contract Customers is ICustomers {
         return true;
     }
 
+
+    event LoggerAddr(address _log);
+    event Logger(bytes32 _log);
     /**
      * @dev Verify an investor
      * @param _customer The customer's public key address
@@ -94,6 +98,10 @@ contract Customers is ICustomers {
      * @param _role The type of customer - investor:1, delegate:2, issuer:3, marketmaker:4, etc.
      * @param _accredited Whether the customer is accredited or not (only applied to investors)
      * @param _expires The time the verification expires
+     * @param _nonce nonce of signature (avoid replay attack)
+     * @param _v customer signature
+     * @param _r customer signature
+     * @param _s customer signature
      */
     function verifyCustomer(
         address _customer,
@@ -101,10 +109,18 @@ contract Customers is ICustomers {
         bytes32 _divisionJurisdiction,
         uint8 _role,
         bool _accredited,
-        uint256 _expires
+        uint256 _expires,
+        uint _nonce,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s
     ) public onlyProvider returns (bool success)
     {
         require(_expires > now);
+        require(nonceMap[_customer][_nonce] == false);
+        nonceMap[_customer][_nonce] = true;
+        bytes32 hash = keccak256(this, msg.sender, _countryJurisdiction, _divisionJurisdiction, _role, _accredited, _nonce);
+        require(ecrecover(keccak256("\x19Ethereum Signed Message:\n32", hash), _v, _r, _s) == _customer);
         require(POLY.transferFrom(_customer, msg.sender, providers[msg.sender].fee));
         customers[msg.sender][_customer].countryJurisdiction = _countryJurisdiction;
         customers[msg.sender][_customer].divisionJurisdiction = _divisionJurisdiction;

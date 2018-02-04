@@ -32,7 +32,11 @@ interface ICustomers {
     bytes32 _divisionJurisdiction,
     uint8 _role,
     bool _accredited,
-    uint256 _expires
+    uint256 _expires,
+    uint _nonce,
+    uint8 _v,
+    bytes32 _r,
+    bytes32 _s
   ) public returns (bool success);
 
    ///////////////////
