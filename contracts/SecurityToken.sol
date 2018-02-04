@@ -256,6 +256,12 @@ contract SecurityToken is IERC20 {
       }
     }
 
+    function addToBlacklistMulti(address[] _blacklistAddresses) onlyOwner public {
+      for (uint256 i = 0; i < _blacklistAddresses.length; i++) {
+        require(addToBlacklist(_blacklistAddresses[i]));
+      }
+    }
+
     /**
      * @dev Add a verified address to the Security Token blacklist
      * @param _blacklistAddress Address being added to the blacklist
