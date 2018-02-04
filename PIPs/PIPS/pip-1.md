@@ -59,7 +59,7 @@ Some Informational and Process PIPs may also have a status of “Active” if th
 What belongs in a successful PIP?
 ---------------------------------
 
-Each PIP parts are explained in pip-X.md template file.
+Each PIP parts are explained in [pip-X.md](https://github.com/PolymathNetwork/polymath-core/pull/126/pip-X.md) template file.
 
 Transferring PIP Ownership
 --------------------------
