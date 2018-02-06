@@ -214,9 +214,8 @@ contract Compliance is ICompliance {
         require(totalSupply > 0 && owner != address(0));
 
         var (,,,,KYC) = ISecurityToken(_securityToken).getTokenDetails();
-        var (,,, verified, expires) = PolyCustomers.getCustomer(KYC, offerings[_stoContract].auditor);
+        var (,,, expires) = PolyCustomers.getCustomer(KYC, offerings[_stoContract].auditor);
         require(offerings[_stoContract].auditor == msg.sender);
-        require(verified);
         require(expires > now);
         offeringProposals[_securityToken].push(_stoContract);
         LogNewContractProposal(_securityToken, _stoContract, msg.sender, offeringProposals[_securityToken].length - 1);

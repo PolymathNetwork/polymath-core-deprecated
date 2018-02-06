@@ -242,12 +242,24 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function addToWhitelist(address _whitelistAddress) onlyOwner public returns (bool success) {
-        var (countryJurisdiction, divisionJurisdiction, accredited, role, verified, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
-        require(verified && expires > now);
+        var (countryJurisdiction, divisionJurisdiction, accredited, role, expires) = PolyCustomers.getCustomer(KYC, _whitelistAddress);
+        require(expires > now);
         require(Template.checkTemplateRequirements(countryJurisdiction, divisionJurisdiction, accredited, role));
-        shareholders[_whitelistAddress] = Shareholder(msg.sender, true, role);
+        shareholders[_whitelistAddress] = Shareholder(KYC, true, role);
         LogNewWhitelistedAddress(KYC, _whitelistAddress, role);
         return true;
+    }
+
+    function addToWhitelistMulti(address[] _whitelistAddresses) onlyOwner public {
+      for (uint256 i = 0; i < _whitelistAddresses.length; i++) {
+        require(addToWhitelist(_whitelistAddresses[i]));
+      }
+    }
+
+    function addToBlacklistMulti(address[] _blacklistAddresses) onlyOwner public {
+      for (uint256 i = 0; i < _blacklistAddresses.length; i++) {
+        require(addToBlacklist(_blacklistAddresses[i]));
+      }
     }
 
     /**
@@ -345,7 +357,7 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && shareholders[msg.sender].allowed && balances[msg.sender] >= _value) {
             balances[msg.sender] = balances[msg.sender].sub(_value);
             balances[_to] = balances[_to].add(_value);
             Transfer(msg.sender, _to, _value);
@@ -363,7 +375,7 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        if (shareholders[_to].allowed && shareholders[_from].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+        if (shareholders[_to].allowed && shareholders[_from].allowed && balances[_from] >= _value && allowed[_from][msg.sender] >= _value) {
             uint256 _allowance = allowed[_from][msg.sender];
             balances[_from] = balances[_from].sub(_value);
             allowed[_from][msg.sender] = _allowance.sub(_value);
@@ -391,7 +403,6 @@ contract SecurityToken is IERC20 {
      * @return bool success
      */
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        require(_value != 0);
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;

@@ -48,7 +48,7 @@ interface ITemplate {
       bytes32 _divisionJurisdiction,
       bool _accredited,
       uint8 _role
-  ) public constant returns (bool allowed);
+  ) public view returns (bool allowed);
 
   /**
    * @dev getTemplateDetails is a constant function that gets template details

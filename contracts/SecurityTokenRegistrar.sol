@@ -201,7 +201,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
      * @param _ticker Symbol of the Scurity token
      * @return address _ticker
      */
-    function getSecurityTokenAddress(string _nameSpace, string _ticker) public constant returns (address) {
+    function getSecurityTokenAddress(string _nameSpace, string _ticker) public view returns (address) {
       return tickers[_nameSpace][_ticker];
     }
 
@@ -209,7 +209,7 @@ contract SecurityTokenRegistrar is ISTRegistrar {
      * @dev Get Security token details by its ethereum address
      * @param _STAddress Security token address
      */
-    function getSecurityTokenData(address _STAddress) public constant returns (
+    function getSecurityTokenData(address _STAddress) public view returns (
       string,
       uint256,
       address,
