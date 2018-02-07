@@ -332,6 +332,22 @@ contract('SecurityToken', accounts => {
         assert.equal((await securityToken.balanceOf(issuer)).toNumber(), totalSupply);
       });
 
+      it("Change parameters",async()=>{
+
+        await securityToken.changeName("New Name", {from: issuer});
+        assert.equal(await securityToken.name(), "New Name");
+        await securityToken.changeName(name, {from: issuer});
+
+        await securityToken.changeDecimals(12, {from: issuer});
+        assert.equal((await securityToken.decimals()).toNumber(), 12);
+        await securityToken.changeDecimals(0, {from: issuer});
+
+        await securityToken.changeTotalSupply(100, {from: issuer});
+        assert.equal((await securityToken.totalSupply()).toNumber(), 100);
+        assert.equal((await securityToken.balanceOf(issuer)).toNumber(), 100);
+        await securityToken.changeTotalSupply(totalSupply, {from: issuer});
+      });
+
       it("addJurisdiction: Should add the Jurisdiction in template -- fail msg.sender is not owner of template",async()=>{
         // Accesssing the blueprint using the address of template
         let template = await Template.at(templateAddress);
@@ -478,6 +494,25 @@ contract('SecurityToken', accounts => {
         let txReturn = await securityToken.startOffering({ from : issuer});
         txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
         assert.isTrue(await securityToken.hasOfferingStarted.call());
+      });
+
+      it("Can no longer change details", async()=>{
+        try {
+          await securityToken.changeName("New Name", {from: issuer});
+        } catch (error) {
+           ensureException(error);
+        }
+        try {
+          await securityToken.changeDecimals(18, {from: issuer});
+        } catch (error) {
+           ensureException(error);
+        }
+        try {
+          await securityToken.changeTotalSupply(100, {from: issuer});
+        } catch (error) {
+           ensureException(error);
+        }
+
       });
 
       it("Should not start the offering -- fail offering already active", async()=>{
