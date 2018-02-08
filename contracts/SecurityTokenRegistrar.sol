@@ -6,7 +6,7 @@ pragma solidity ^0.4.18;
   registrar.
 */
 
-import './interfaces/ISTRegistrar.sol';
+import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
 import './Compliance.sol';
@@ -16,7 +16,7 @@ import './Compliance.sol';
  * @dev Contract use to register the security token on Polymath platform
  */
 
-contract SecurityTokenRegistrar is ISTRegistrar {
+contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
 
     string public VERSION = "2";
     SecurityToken securityToken;
@@ -111,7 +111,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
      * @param _totalSupply Total amount of tokens being created
      * @param _decimals Decimals value for token
      * @param _owner Ethereum public key address of the security token owner
-     * @param _maxPoly Amount of maximum poly issuer want to raise
      * @param _type Type of security being tokenized
      * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
      * @param _quorum Percent of initial investors required to freeze POLY raise
@@ -123,20 +122,19 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint256 _totalSupply,
       uint8 _decimals,
       address _owner,
-      uint256 _maxPoly,
       uint8 _type,
       uint256 _lockupPeriod,
       uint8 _quorum
     ) external
     {
       require(nameSpaceData[_nameSpace].owner != 0x0);
-      require(_totalSupply > 0 && _maxPoly > 0);
+      require(_totalSupply > 0);
       require(tickers[_nameSpace][_ticker] == 0x0);
       require(_lockupPeriod >= now);
       require(_owner != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
       transferFee(_nameSpace);
-      address securityTokenAddress = initialiseSecurityToken(_nameSpace, _name, _ticker, _totalSupply, _decimals, _owner, _maxPoly, _type, _lockupPeriod, _quorum);
+      address securityTokenAddress = initialiseSecurityToken(_nameSpace, _name, _ticker, _totalSupply, _decimals, _owner, _type, _lockupPeriod, _quorum);
       logSecurityToken(_nameSpace, _ticker, securityTokenAddress, _owner, _type);
     }
 
@@ -161,7 +159,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
       uint256 _totalSupply,
       uint8 _decimals,
       address _owner,
-      uint256 _maxPoly,
       uint8 _type,
       uint256 _lockupPeriod,
       uint8 _quorum
@@ -173,7 +170,6 @@ contract SecurityTokenRegistrar is ISTRegistrar {
         _totalSupply,
         _decimals,
         _owner,
-        _maxPoly,
         _lockupPeriod,
         _quorum,
         PolyToken,
