@@ -7,7 +7,7 @@ import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/ISecurityToken.sol';
 import './interfaces/ICompliance.sol';
 import './interfaces/ITemplate.sol';
-import './STO20.sol';
+import './interfaces/IOfferingFactory.sol';
 
 /**
  * @title SecurityToken
@@ -26,9 +26,11 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     ITemplate public Template;                                        // Instance of the Template contract
 
-    ICustomers public PolyCustomers;                                  // Instance of the Customers contract
+    IOfferingFactory public OfferingFactory;                          // Instance of the offering factory
 
-    STO20 public STO;
+    address public offering;                                          // Address of generated offering contract
+
+    ICustomers public PolyCustomers;                                  // Instance of the Customers contract
 
     // ERC20 Fields
     string public name;                                               // Name of the security token
@@ -54,7 +56,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
     mapping(address => Shareholder) public shareholders;              // Mapping that holds the data of the shareholder corresponding to investor address
 
     // STO
-    bool public isSTOProposed = false;
+    bool public isOfferingFactorySet = false;
     bool public isTemplateSet = false;
     bool public hasOfferingStarted = false;
     uint256 public offeringStartTime = 0;
@@ -78,7 +80,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address indexed _template, address indexed _KYC);
     event LogUpdatedComplianceProof(bytes32 _merkleRoot, bytes32 _complianceProofHash);
-    event LogSetSTOContract(address indexed _STO, address indexed _auditor, uint256 _startTime, uint256 _endTime);
+    event LogOfferingFactorySet(address indexed _offeringFactory, address indexed _owner, bytes32 _description);
+    event LogOfferingStarted(address indexed _offeringFactory, address indexed _owner, uint256 _startTime, uint256 _endTime, uint256 _fxPolyToken);
     event LogNewWhitelistedAddress(address indexed _KYC, address indexed _shareholder, uint8 _role);
     event LogNewBlacklistedAddress(address indexed _shareholder);
     event LogVoteToFreeze(address indexed _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
@@ -100,8 +103,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
         _;
     }
 
-    modifier onlySTO() {
-        require (msg.sender == address(STO));
+    modifier onlyOffering() {
+        require (msg.sender == offering);
         _;
     }
 
@@ -158,16 +161,16 @@ contract SecurityToken is ISecurityToken, IERC20 {
     function selectTemplate(uint8 _templateIndex) public onlyOwner returns (bool success) {
         require(!isTemplateSet);
         isTemplateSet = true;
-        address _template = PolyCompliance.getTemplateByProposal(this, _templateIndex);
-        require(_template != address(0));
-        Template = ITemplate(_template);
+        address template = ITemplate(PolyCompliance.getTemplateByProposal(this, _templateIndex));
+        require(template != address(0));
+        Template = ITemplate(template);
         var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
         delegate = _delegate;
         KYC = _KYC;
-        PolyCompliance.updateTemplateReputation(_template, _templateIndex);
-        LogTemplateSet(_delegate, _template, _KYC);
+        PolyCompliance.updateTemplateReputation(template, 0);
+        LogTemplateSet(_delegate, template, _KYC);
         return true;
     }
 
@@ -189,25 +192,23 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     /**
      * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
-     * @param _offeringProposalIndex Array index of the STO proposal
+     * @param _offeringFactoryProposalIndex Array index of the STO proposal
      * @return bool success
      */
-    function selectOfferingProposal (uint8 _offeringProposalIndex) public onlyDelegate returns (bool success) {
-        require(!isSTOProposed);
-        isSTOProposed = true;
-        var (_stoContract, _auditor, _vestingPeriod, _quorum, _fee) = PolyCompliance.getOfferingByProposal(this, _offeringProposalIndex);
-        require(_stoContract != address(0));
+    function selectOfferingFactory(uint8 _offeringFactoryProposalIndex) public onlyDelegate returns (bool success) {
+        require(!isOfferingFactorySet);
         require(merkleRoot != 0x0);
+        isOfferingFactorySet = true;
+        address offeringFactory = PolyCompliance.getOfferingFactoryByProposal(this, _offeringFactoryProposalIndex);
+        require(offeringFactory != address(0));
+
+        OfferingFactory = IOfferingFactory(offeringFactory);
+        var (_fee, _quorum, _vestingPeriod, _owner, _description) = OfferingFactory.getUsageDetails();
         require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
-        STO = STO20(_stoContract);
-        uint256 startTime = STO.startTime();
-        uint256 endTime = STO.endTime();
-        offeringStartTime = startTime;
-        require(startTime > now && endTime > startTime);
-        allocations[_auditor] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
-        shareholders[_stoContract] = Shareholder(this, true, 5);
-        PolyCompliance.updateOfferingReputation(_stoContract, _offeringProposalIndex);
-        LogSetSTOContract(_stoContract, _auditor, startTime, endTime);
+        allocations[_owner] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+
+        PolyCompliance.updateOfferingFactoryReputation(offeringFactory, 0);
+        LogOfferingFactorySet(offeringFactory, _owner, _description);
         return true;
     }
 
@@ -215,15 +216,20 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @dev Start the offering by sending all the tokens to STO contract
      * @return bool
      */
-    function startOffering() onlyOwner external returns (bool success) {
-        require(isSTOProposed);
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate) onlyOwner external returns (bool success) {
+        require(isOfferingFactorySet);
         require(!hasOfferingStarted);
         hasOfferingStarted = true;
+        offeringStartTime = _startTime;
+        require(_startTime > now && _endTime > _startTime);
+
+        offering = OfferingFactory.createOffering(_startTime, _endTime, _polyTokenRate, this);
+        shareholders[offering] = Shareholder(this, true, 5);
         uint256 tokenAmount = this.balanceOf(msg.sender);
         require(tokenAmount == totalSupply);
-        balances[STO] = balances[STO].add(tokenAmount);
+        balances[offering] = balances[offering].add(tokenAmount);
         balances[msg.sender] = balances[msg.sender].sub(tokenAmount);
-        Transfer(owner, STO, tokenAmount);
+        Transfer(owner, offering, tokenAmount);
         return true;
     }
 
@@ -314,7 +320,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @param _amountOfSecurityTokens The amount of ST to pay out.
      * @param _polyContributed The amount of POLY paid for the security tokens.
      */
-    function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlySTO returns (bool success) {
+    function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlyOffering returns (bool success) {
         // Check whether the offering active or not
         require(hasOfferingStarted);
         // The _contributor being issued tokens must be in the whitelist
@@ -324,10 +330,13 @@ contract SecurityToken is ISecurityToken, IERC20 {
         // ST being issued can't be higher than the totalSupply
         require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         // Update ST balances (transfers ST from STO to _contributor)
-        balances[STO] = balances[STO].sub(_amountOfSecurityTokens);
+        balances[offering] = balances[offering].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
+        // Update Reputations
+        PolyCompliance.updateOfferingFactoryReputation(address(OfferingFactory), _polyContributed);
+        PolyCompliance.updateTemplateReputation(address(Template), _polyContributed);
         // ERC20 Transfer event
-        Transfer(STO, _contributor, _amountOfSecurityTokens);
+        Transfer(offering, _contributor, _amountOfSecurityTokens);
         // Update the amount of tokens issued by STO
         tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         // Update the amount of POLY a contributor has contributed and allocated to the owner
@@ -338,8 +347,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
     }
 
     // Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address, address) {
-        return (Template, delegate, merkleRoot, STO, KYC);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address, address) {
+        return (Template, delegate, merkleRoot, OfferingFactory, KYC, offering);
     }
 
 /////////////////////////////////////////////// Customized ERC20 Functions ////////////////////////////////////////////////////////////

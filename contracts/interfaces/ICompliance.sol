@@ -55,12 +55,12 @@ interface ICompliance {
     /**
      * @dev Propose a Security Token Offering Contract for an issuance
      * @param _securityToken The security token being bid on
-     * @param _stoContract The security token offering contract address
+     * @param _factoryAddress The security token offering contract address
      * @return bool success
      */
-    function proposeOfferingContract(
+    function proposeOfferingFactory(
         address _securityToken,
-        address _stoContract
+        address _factoryAddress
     ) public returns (bool success);
 
     /**
@@ -76,44 +76,38 @@ interface ICompliance {
 
     /**
      * @dev Set the STO contract by the issuer.
-     * @param _STOAddress address of the STO contract deployed over the network.
-     * @param _fee fee to be paid in poly to use that contract
-     * @param _vestingPeriod no. of days investor binded to hold the Security token
-     * @param _quorum Minimum percent of shareholders which need to vote to freeze
+     * @param _factoryAddress address of the offering factory
      */
-    function setSTO (
-        address _STOAddress,
-        uint256 _fee,
-        uint256 _vestingPeriod,
-        uint8 _quorum
+    function registerOfferingFactory (
+        address _factoryAddress
     ) public returns (bool success);
 
     /**
      * @dev Cancel a STO contract proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
-     * @param _offeringProposalIndex The offering proposal array index
+     * @param _offeringFactoryProposalIndex The offering proposal array index
      * @return bool success
      */
-    function cancelOfferingProposal(
+    function cancelOfferingFactoryProposal(
         address _securityToken,
-        uint256 _offeringProposalIndex
+        uint256 _offeringFactoryProposalIndex
     ) public returns (bool success);
 
     /**
      * @dev `updateTemplateReputation` is a constant function that updates the
        history of a security token template usage to keep track of previous uses
-     * @param _template The unique template id
-     * @param _templateIndex The array index of the template proposal
+     * @param _template The unique template address
+     * @param _polyRaised Poly raised by template
      */
-    function updateTemplateReputation (address _template, uint8 _templateIndex) external returns (bool success);
+    function updateTemplateReputation (address _template, uint256 _polyRaised) external returns (bool success);
 
     /**
      * @dev `updateOfferingReputation` is a constant function that updates the
        history of a security token offering contract to keep track of previous uses
-     * @param _stoContract The smart contract address of the STO contract
-     * @param _offeringProposalIndex The array index of the security token offering proposal
+     * @param _offeringFactory The smart contract address of the STO contract
+     * @param _polyRaised Poly raised by template
      */
-    function updateOfferingReputation (address _stoContract, uint8 _offeringProposalIndex) external returns (bool success);
+    function updateOfferingFactoryReputation (address _offeringFactory, uint256 _polyRaised) external returns (bool success);
 
     /**
      * @dev Get template details by the proposal index
@@ -128,14 +122,10 @@ interface ICompliance {
     /**
      * @dev Get security token offering smart contract details by the proposal index
      * @param _securityTokenAddress The security token ethereum address
-     * @param _offeringProposalIndex The array index of the STO contract being checked
+     * @param _offeringFactoryProposalIndex The array index of the STO contract being checked
      * @return Contract struct
      */
-    function getOfferingByProposal(address _securityTokenAddress, uint8 _offeringProposalIndex) view public returns (
-        address stoContract,
-        address auditor,
-        uint256 vestingPeriod,
-        uint8 quorum,
-        uint256 fee
+    function getOfferingFactoryByProposal(address _securityTokenAddress, uint8 _offeringFactoryProposalIndex) view public returns (
+        address _offeringFactoryAddress
     );
 }

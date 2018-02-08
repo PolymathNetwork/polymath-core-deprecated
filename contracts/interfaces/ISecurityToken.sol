@@ -1,7 +1,7 @@
   pragma solidity ^0.4.18;
 
   interface ISecurityToken {
-    
+
    /**
      * @dev `selectTemplate` Select a proposed template for the issuance
      * @param _templateIndex Array index of the delegates proposed template
@@ -21,19 +21,19 @@
     ) public returns (bool success);
 
     /**
-     * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
-     * @param _offeringProposalIndex Array index of the STO proposal
+     * @dev `selectOfferingFactory` Select an security token offering proposal for the issuance
+     * @param _offeringFactoryProposalIndex Array index of the STO proposal
      * @return bool success
      */
-    function selectOfferingProposal (
-        uint8 _offeringProposalIndex
+    function selectOfferingFactory (
+        uint8 _offeringFactoryProposalIndex
     ) public returns (bool success);
 
     /**
      * @dev Start the offering by sending all the tokens to STO contract
      * @return bool
      */
-    function startOffering() external returns (bool success);
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate) external returns (bool success);
 
     /**
      * @dev Add a verified address to the Security Token whitelist
@@ -85,6 +85,6 @@
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public returns (bool success);
 
     /// Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address, address);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address, address);
 
   }
