@@ -10,9 +10,8 @@ const PolyToken = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol')
 const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
-const STO = artifacts.require('STOContract.sol');
+const SimpleCappedOfferingFactory = artifacts.require('SimpleCappedOfferingFactory.sol');
 const BigNumber = web3.BigNumber;
-
 
 const ethers = require('ethers');
 const utils = ethers.utils;
@@ -101,7 +100,7 @@ contract('SecurityToken', accounts => {
   let stoFee = 150;
   let investedAmount;
   let POLY, customers, compliance, STRegistrar, securityToken;
-  let STAddress, templateAddress, stoContract;
+  let STAddress, templateAddress, offeringFactory;
 
     before(async()=>{
       POLY = await PolyToken.new();
@@ -407,32 +406,29 @@ contract('SecurityToken', accounts => {
         assert.strictEqual(data[0], templateAddress);
       });
 
-    it("startOffering: Should not start the offering -- fail STO is not proposed yet", async()=>{
+    it("startOffering: Should not start the offering -- fail offering contract is not selected yet", async()=>{
       try {
-        await securityToken.startOffering({ from : host});
+        await securityToken.initialiseOffering(startTime, endTime, 100, { from : host});
       } catch (error) {
         ensureException(error);
       }
      });
 
-    it("selectOfferingProposal: select the offering proposal for the template",async()=>{
+    it("selectOfferingFactory: select the offering factory for the security token",async()=>{
       // Creation of new offering contract to facilitate the distribution of the Security token
-      stoContract = await STO.new(POLY.address, { from : stoCreator, gas : 5000000 });
+      offeringFactory = await SimpleCappedOfferingFactory.new({ from : issuer, gas : 5000000 });
       // Assign all the essentials of the offering contract by its owner
-      await stoContract.securityTokenOffering(securityToken.address, startTime, endTime, { from : stoCreator });
+      // await stoContract.securityTokenOffering(securityToken.address, startTime, endTime, { from : stoCreator });
       // Adding the offering contract details into the Polymath platform chain data
-      let isSTOAdded = await compliance.setSTO(
-        stoContract.address,
-        stoFee,
-        vestingPeriod,
-        quorum,
+      let isOfferingFactoryAdded = await compliance.registerOfferingFactory(
+        offeringFactory.address,
         {
           from : issuer
         });
       // Propose the Offering contract to a particular Security Token
-      let response = await compliance.proposeOfferingContract(
+      let response = await compliance.proposeOfferingFactory(
         securityToken.address,
-        stoContract.address,
+        offeringFactory.address,
         {
           from : issuer
         });
@@ -449,7 +445,7 @@ contract('SecurityToken', accounts => {
 
       let issuerBalance = await securityToken.balanceOf(issuer);
       // Opt the Offering contract to distribute the security token
-      let success = await securityToken.selectOfferingProposal(
+      let success = await securityToken.selectOfferingFactory(
         0,
         {
            from: delegateOfTemp

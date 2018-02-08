@@ -14,9 +14,10 @@ contract SimpleCappedOfferingFactory is IOfferingFactory {
 
     ISecurityToken public SecurityToken;
 
-    uint256 public maxPoly;
-    uint256 public startTime;
-    uint256 public endTime;
+    uint256 public fee = 100;
+    uint8 public quorum = 10;
+    uint256 public vestingPeriod = 8888888;
+    bytes32 public description = "Capped";
     uint256 public fxPolyToken;
 
     address public owner;
@@ -29,5 +30,8 @@ contract SimpleCappedOfferingFactory is IOfferingFactory {
       return new SimpleCappedOffering(_startTime, _endTime, _polyTokenRate, _securityToken);
     }
 
+    function getUsageDetails() view public returns (uint256, uint8, uint256, address, bytes32) {
+      return (fee, quorum, vestingPeriod, owner, description);
+    }
 
 }
