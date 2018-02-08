@@ -450,7 +450,7 @@ contract('SecurityToken', accounts => {
         {
            from: delegateOfTemp
         });
-      success.logs[0].args._auditor.should.equal(issuer);
+      success.logs[0].args._owner.should.equal(issuer);
     });
 
     /////////////////////////////////

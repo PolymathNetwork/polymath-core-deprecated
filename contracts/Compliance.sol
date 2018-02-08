@@ -166,7 +166,7 @@ contract Compliance is ICompliance {
         var (,,, owner,) = template.getUsageDetails();
 
         require(owner == msg.sender);
-        var (chosenTemplate,,,,) = ISecurityToken(_securityToken).getTokenDetails();
+        var (chosenTemplate,,,,,) = ISecurityToken(_securityToken).getTokenDetails();
         require(chosenTemplate != proposedTemplate);
         templateProposals[_securityToken][_templateProposalIndex] = address(0);
         LogCancelTemplateProposal(_securityToken, proposedTemplate, _templateProposalIndex);
@@ -196,6 +196,10 @@ contract Compliance is ICompliance {
       return true;
     }
 
+    event Logger(uint256 _log);
+    event LoggerA(address _log);
+    event LoggerB(uint8 _log);
+
     /**
      * @dev Propose a Security Token Offering Factory for an issuance
      * @param _securityToken The security token being bid on
@@ -214,12 +218,13 @@ contract Compliance is ICompliance {
         IOfferingFactory offeringFactory = IOfferingFactory(_factoryAddress);
         var (,,, owner,) = offeringFactory.getUsageDetails();
 
-        var (,,,,KYC) = ISecurityToken(_securityToken).getTokenDetails();
+        var (,,,,KYC,) = ISecurityToken(_securityToken).getTokenDetails();
         var (,,, expires) = PolyCustomers.getCustomer(KYC, owner);
 
         require(owner == msg.sender);
         require(expires > now);
-
+        Logger(expires);
+        Logger(now);
         offeringFactoryProposals[_securityToken].push(_factoryAddress);
         LogNewOfferingFactoryProposal(_securityToken, _factoryAddress, owner, offeringFactoryProposals[_securityToken].length - 1);
         return true;
@@ -241,7 +246,7 @@ contract Compliance is ICompliance {
         var (,,, owner,) = offeringFactory.getUsageDetails();
 
         require(owner == msg.sender);
-        var (,,,,chosenOfferingFactory) = ISecurityToken(_securityToken).getTokenDetails();
+        var (,,,,,chosenOfferingFactory) = ISecurityToken(_securityToken).getTokenDetails();
         require(chosenOfferingFactory != proposedOfferingFactory);
         offeringFactoryProposals[_securityToken][_offeringFactoryProposalIndex] = address(0);
 
