@@ -11,11 +11,11 @@ contract SimpleCappedOffering {
 
     ISecurityToken public SecurityToken;
 
-    uint256 public maxPoly;
-    uint256 public polyRaised;
-    uint256 public startTime;
-    uint256 public endTime;
-    uint256 public fxPolyToken;
+    uint256 public maxPoly;                                                 // Maximum Poly limit raised by the offering contract
+    uint256 public polyRaised;                                              // Variable to track the poly raised
+    uint256 public startTime;                                               // Unix timestamp to start the offering
+    uint256 public endTime;                                                 // Unix timestamp to end the offering
+    uint256 public fxPolyToken;                                             // Fix rate of 1 security token in terms of POLY
 
     // Notifications
     event LogBoughtSecurityToken(address indexed _contributor, uint256 _ployContribution, uint256 _timestamp);
@@ -57,6 +57,13 @@ contract SimpleCappedOffering {
         return true;
     }
 
+    /**
+     * @dev Use to validate the poly contribution
+     * If issuer sets the capping over the offering contract then raised amount should
+     * always less than or equal to the maximum amount set (maxPoly)
+     * @param _polyContributed Amount of POLY contributor want to invest
+     * @return bool
+     */
     function validPurchase(uint256 _polyContributed) internal view returns(bool) {
         if (maxPoly > 0 && maxPoly < (polyRaised + _polyContributed)) {
             return false;

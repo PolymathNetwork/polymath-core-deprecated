@@ -20,7 +20,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
 
     string public VERSION = "2";
     SecurityToken securityToken;
-    IERC20 public PolyToken;                                // Address of POLY token
+    IERC20 public PolyToken;                                        // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
 
@@ -39,7 +39,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 securityType;
     }
 
-    mapping (string => NameSpaceData) nameSpaceData;                     // Mapping from nameSpace to owner / fee of nameSpace
+    mapping (string => NameSpaceData) nameSpaceData;                 // Mapping from nameSpace to owner / fee of nameSpace
     mapping (address => SecurityTokenData) securityTokens;           // Mapping from securityToken address to data about the securityToken
     mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
 
@@ -138,9 +138,18 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       logSecurityToken(_nameSpace, _ticker, securityTokenAddress, _owner, _type);
     }
 
+    /**
+     * @dev transferFee Transfer the fee to owner of name space
+     * @param _nameSpace Name space string
+    */  
+
     function transferFee(string _nameSpace) internal {
       require(PolyToken.transferFrom(msg.sender, nameSpaceData[_nameSpace].owner, nameSpaceData[_nameSpace].fee));
     }
+
+    /**
+     * @dev It is used to log the creation of security token 
+     */
 
     function logSecurityToken(
       string _nameSpace,
@@ -148,9 +157,15 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       address _securityTokenAddress,
       address _owner,
       uint8 _type
-    ) internal {
+    ) internal 
+    {
       LogNewSecurityToken(_nameSpace, _ticker, _securityTokenAddress, _owner, nameSpaceData[_nameSpace].owner, nameSpaceData[_nameSpace].fee, _type);
     }
+
+    /**
+     * @dev Used to create the new instance of the securityToken
+     * The newley created instance of ST add into the available list of securityToken
+     */
 
     function initialiseSecurityToken(
       string _nameSpace,

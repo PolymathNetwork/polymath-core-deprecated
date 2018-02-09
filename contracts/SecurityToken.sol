@@ -43,7 +43,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     // Template
     address public delegate;                                          // Address who create the template
-    bytes32 public merkleRoot;                                        //
+    bytes32 public merkleRoot;                                        
     address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template
 
     // Security token shareholders
@@ -75,7 +75,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
 	   // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
-    uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
+    uint256 public tokensIssuedBySTO = 0;                                    // Flag variable to track the security token issued by the offering contract
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address indexed _template, address indexed _KYC);
@@ -151,8 +151,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
         Transfer(0x0, _owner, _totalSupply);
     }
 
-    /* function initialiseBalances(uint256) */
-
     /**
      * @dev `selectTemplate` Select a proposed template for the issuance
      * @param _templateIndex Array index of the delegates proposed template
@@ -226,7 +224,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         hasOfferingStarted = true;
         offeringStartTime = _startTime;
         require(_startTime > now && _endTime > _startTime);
-
+        // Creation of the new instance of the offering contract to facilitate the offering of this security token
         offering = OfferingFactory.createOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, this);
         shareholders[offering] = Shareholder(this, true, 5);
         uint256 tokenAmount = this.balanceOf(msg.sender);

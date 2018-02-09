@@ -230,9 +230,9 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev Cancel a STO contract proposal if the bid hasn't been accepted
+     * @dev Cancel a STO factory proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
-     * @param _offeringFactoryProposalIndex The offering proposal array index
+     * @param _offeringFactoryProposalIndex The offeringFactory proposal array index
      * @return bool success
      */
     function cancelOfferingFactoryProposal(
@@ -271,7 +271,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev `updateOfferingReputation` is a constant function that updates the
-       history of a security token offering contract to keep track of previous uses
+       history of a security token offeringFactory contract to keep track of previous uses
      * @param _offeringFactory The address of the offering factory
      * @param _polyRaised The amount of poly raised
      */
@@ -323,7 +323,7 @@ contract Compliance is ICompliance {
      * @param _securityTokenAddress The security token ethereum address
      * @return Offering proposals array
      */
-    function getAllOfferingFactoryProposals(address _securityTokenAddress) view public returns (address[]){
+    function getAllOfferingFactoryProposals(address _securityTokenAddress) view public returns (address[]) {
         return offeringFactoryProposals[_securityTokenAddress];
     }
 
