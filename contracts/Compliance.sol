@@ -190,7 +190,6 @@ contract Compliance is ICompliance {
       //Validate Offering Factory details
       require(quorum > 0 && quorum <= 100);
       require(vestingPeriod >= MINIMUM_VESTING_PERIOD);
-      require(fee > 0);
       require(owner != address(0));
       // Add the factory in the available list of factory addresses
       offeringFactories[_factoryAddress] = Reputation({
