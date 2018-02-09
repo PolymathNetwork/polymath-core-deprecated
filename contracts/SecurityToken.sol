@@ -88,6 +88,11 @@ contract SecurityToken is ISecurityToken, IERC20 {
     event LogVoteToFreeze(address indexed _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
     event LogTokenIssued(address indexed _contributor, uint256 _stAmount, uint256 _polyContributed, uint256 _timestamp);
 
+    //Change token details, except for SYMBOL
+    event ChangeName(string _oldName, string _newName);
+    event ChangeDecimals(uint8 _oldDecimals, uint8 _newDecimals);
+    event ChangeTotalSupply(uint256 _oldTotalSupply, uint256 _newTotalSupply);
+
     //Modifiers
     modifier onlyOwner() {
         require (msg.sender == owner);
@@ -150,6 +155,43 @@ contract SecurityToken is ISecurityToken, IERC20 {
         PolyCompliance = ICompliance(_polyComplianceAddress);
         allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
         Transfer(0x0, _owner, _totalSupply);
+    }
+
+    /**
+     * @dev `changeTotalSupply` change the total supply of the token
+     * @param _newTotalSupply New total supply
+     * @return bool success
+     */
+    function changeTotalSupply(uint256 _newTotalSupply) public onlyOwner returns (bool success) {
+      require(!hasOfferingStarted);
+      ChangeTotalSupply(totalSupply, _newTotalSupply);
+      totalSupply = _newTotalSupply;
+      balances[owner] = _newTotalSupply;
+      return true;
+    }
+
+    /**
+     * @dev `changeDecimals` change the total supply of the token
+     * @param _newDecimals New decimals
+     * @return bool success
+     */
+    function changeDecimals(uint8 _newDecimals) public onlyOwner returns (bool success) {
+      require(!hasOfferingStarted);
+      ChangeDecimals(decimals, _newDecimals);
+      decimals = _newDecimals;
+      return true;
+    }
+
+    /**
+     * @dev `changeName` change the total supply of the token
+     * @param _newName New name
+     * @return bool success
+     */
+    function changeName(string _newName) public onlyOwner returns (bool success) {
+      require(!hasOfferingStarted);
+      ChangeName(name, _newName);
+      name = _newName;
+      return true;
     }
 
     /**
