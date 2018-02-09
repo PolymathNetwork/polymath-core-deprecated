@@ -1,6 +1,7 @@
 import {ensureException, duration}  from './helpers/utils.js';
 import latestTime from './helpers/latestTime';
 import {web3StringToBytes32, signData} from './helpers/signData';
+import { pk }  from './helpers/testprivateKey';
 
 const Compliance = artifacts.require('Customers.sol');
 const POLY = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol');
@@ -21,7 +22,9 @@ contract('Customers', accounts => {
   let provider2 = accounts[4];
   let attestor1 = accounts[5];
   let attestor2 = accounts[6];
-
+  let pk_customer1 = pk.account_1;
+  let pk_customer2 = pk.account_2;
+  
   //newCustomer() constants
   const jurisdiction0 = '0';
   const jurisdiction0_0 = '0_1';
@@ -59,12 +62,12 @@ contract('Customers', accounts => {
       await poly.approve(customers.address, 10000, { from: customer1 });
 
       let nonce = 1;
-      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
 
       const r = `0x${sig.r.toString('hex')}`;
       const s = `0x${sig.s.toString('hex')}`;
       const v = sig.v;
-
+      
       let isVerify = await customers.verifyCustomer(
         customer1,
         web3StringToBytes32(jurisdiction0),
@@ -80,7 +83,6 @@ contract('Customers', accounts => {
           from: provider1,
         },
       );
-
     });
 
     it('An approved and active KYC provider can validate customers twice with nonce increment', async () => {
@@ -99,7 +101,7 @@ contract('Customers', accounts => {
       await poly.approve(customers.address, 10000, { from: customer1 });
 
       let nonce = 1;
-      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
 
       const r = `0x${sig.r.toString('hex')}`;
       const s = `0x${sig.s.toString('hex')}`;
@@ -122,7 +124,7 @@ contract('Customers', accounts => {
       );
 
       let nonce2 = 2;
-      const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce2, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce2, pk_customer1);
 
       const r2 = `0x${sig2.r.toString('hex')}`;
       const s2 = `0x${sig2.s.toString('hex')}`;
@@ -162,7 +164,7 @@ contract('Customers', accounts => {
       await poly.approve(customers.address, 10000, { from: customer1 });
 
       let nonce = 1;
-      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
 
       const r = `0x${sig.r.toString('hex')}`;
       const s = `0x${sig.s.toString('hex')}`;
@@ -230,7 +232,7 @@ contract('Customers', accounts => {
       await poly.approve(customers.address, 10000, { from: customer1 });
 
       let nonce = 1;
-      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
 
       const r = `0x${sig.r.toString('hex')}`;
       const s = `0x${sig.s.toString('hex')}`;
@@ -272,7 +274,7 @@ contract('Customers', accounts => {
       await poly.approve(customers.address, 10000, { from: customer1 });
 
       let nonce = 1;
-      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+      const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
 
       const r = `0x${sig.r.toString('hex')}`;
       const s = `0x${sig.s.toString('hex')}`;
@@ -383,7 +385,7 @@ contract('Customers', accounts => {
             await poly.approve(customers.address, 10000, { from: customer1 });
 
             let nonce = 1;
-            const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201');
+            const sig = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer1);
 
             const r = `0x${sig.r.toString('hex')}`;
             const s = `0x${sig.s.toString('hex')}`;
@@ -413,7 +415,7 @@ contract('Customers', accounts => {
             let providerData = await customers.getProvider(provider1);
             assert.strictEqual(providerData[3].toNumber(),10000);
 
-            const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202');
+            const sig2 = signData(customers.address, provider1, jurisdiction0, jurisdiction0_0, customerInvestorRole, true, nonce, pk_customer2);
 
             const r2 = `0x${sig2.r.toString('hex')}`;
             const s2 = `0x${sig2.s.toString('hex')}`;

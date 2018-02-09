@@ -216,14 +216,14 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @dev Start the offering by sending all the tokens to STO contract
      * @return bool
      */
-    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate) onlyOwner external returns (bool success) {
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) onlyOwner external returns (bool success) {
         require(isOfferingFactorySet);
         require(!hasOfferingStarted);
         hasOfferingStarted = true;
         offeringStartTime = _startTime;
         require(_startTime > now && _endTime > _startTime);
 
-        offering = OfferingFactory.createOffering(_startTime, _endTime, _polyTokenRate, this);
+        offering = OfferingFactory.createOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, this);
         shareholders[offering] = Shareholder(this, true, 5);
         uint256 tokenAmount = this.balanceOf(msg.sender);
         require(tokenAmount == totalSupply);
@@ -257,13 +257,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
       return true;
     }
 
-    function addToBlacklistMulti(address[] _blacklistAddresses) onlyOwner public returns (bool success) {
-      for (uint256 i = 0; i < _blacklistAddresses.length; i++) {
-        require(addToBlacklist(_blacklistAddresses[i]));
-      }
-      return true;
-    }
-
     /**
      * @dev Add a verified address to the Security Token blacklist
      * @param _blacklistAddress Address being added to the blacklist
@@ -274,6 +267,13 @@ contract SecurityToken is ISecurityToken, IERC20 {
         shareholders[_blacklistAddress].allowed = false;
         LogNewBlacklistedAddress(_blacklistAddress);
         return true;
+    }
+
+    function addToBlacklistMulti(address[] _blacklistAddresses) onlyOwner public returns (bool success) {
+      for (uint256 i = 0; i < _blacklistAddresses.length; i++) {
+        require(addToBlacklist(_blacklistAddresses[i]));
+      }
+      return true;
     }
 
     /**

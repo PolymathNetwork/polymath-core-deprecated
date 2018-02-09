@@ -5,7 +5,7 @@ interface IOfferingFactory {
   /**
    * @dev `createOffering` creates a new Offering contract from the factory
    */
-  function createOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, address _securityToken) public returns (address);
+  function createOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly, address _securityToken) public returns (address);
 
   /**
    * @dev `getUsageDetails` is a function to get all the details on template usage fees

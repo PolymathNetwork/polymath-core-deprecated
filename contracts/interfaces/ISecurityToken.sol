@@ -33,7 +33,7 @@
      * @dev Start the offering by sending all the tokens to STO contract
      * @return bool
      */
-    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate) external returns (bool success);
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) external returns (bool success);
 
     /**
      * @dev Add a verified address to the Security Token whitelist

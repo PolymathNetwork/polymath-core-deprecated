@@ -3,6 +3,7 @@ import { increaseTime, takeSnapshot, revertToSnapshot } from './helpers/time';
 import latestTime from './helpers/latestTime';
 import { ensureException, convertHex, duration } from './helpers/utils';
 import {web3StringToBytes32, signData} from './helpers/signData';
+import { pk }  from './helpers/testprivateKey';
 
 const SecurityToken = artifacts.require('SecurityToken.sol');
 const Template = artifacts.require('Template.sol');
@@ -11,6 +12,7 @@ const Customers = artifacts.require('Customers.sol');
 const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const SimpleCappedOfferingFactory = artifacts.require('SimpleCappedOfferingFactory.sol');
+const SimpleCappedOffering = artifacts.require('SimpleCappedOffering.sol');
 const BigNumber = web3.BigNumber;
 
 const ethers = require('ethers');
@@ -31,6 +33,13 @@ contract('SecurityToken', accounts => {
   let provider0 = accounts[9];
   let provider1 = accounts[0];
   let polyFeeAddress = accounts[6];
+  const pk_issuer = pk.account_4;
+  const pk_delegate0 = pk.account_5;
+  const pk_delegate1 = pk.account_6;
+  const pk_investor2 = pk.account_7;
+  const pk_investor1 = pk.account_8;
+  const pk_provider0 = pk.account_9;
+  const pk_provider1 = pk.account_0;
   // let fee = 10000;
 
   const nameSpace = "TestNameSpace";
@@ -96,11 +105,12 @@ contract('SecurityToken', accounts => {
   let dummySTRegistrar = 0x2fe38f0b394b297bc0d86ed6b66286572f52335f1;
 
   // STO
-  let mockStoContract = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
+  let mockStoFactory = "0x81399dd18c7985a016eb2bb0a1f6aabf0745d667";
   let stoFee = 150;
+  let polyTokenRate = 100;
   let investedAmount;
   let POLY, customers, compliance, STRegistrar, securityToken;
-  let STAddress, templateAddress, offeringFactory;
+  let STAddress, templateAddress, offeringFactory, offeringFactory_2, offeringContract;
 
     before(async()=>{
       POLY = await PolyToken.new();
@@ -123,7 +133,7 @@ contract('SecurityToken', accounts => {
       await POLY.approve(customers.address, 10000, { from : issuer });
 
       let nonce = 1;
-      let sig = signData(customers.address, provider0, jurisdiction0, jurisdiction0_0, customerIssuerRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204');
+      let sig = signData(customers.address, provider0, jurisdiction0, jurisdiction0_0, customerIssuerRole, true, nonce, pk_issuer);
 
       let r = `0x${sig.r.toString('hex')}`;
       let s = `0x${sig.s.toString('hex')}`;
@@ -157,7 +167,7 @@ contract('SecurityToken', accounts => {
       await POLY.approve(customers.address, 10000, { from : investor1 });
 
       nonce = 1;
-      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208');
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, customerInvestorRole, true, nonce, pk_investor1);
 
       r = `0x${sig.r.toString('hex')}`;
       s = `0x${sig.s.toString('hex')}`;
@@ -184,7 +194,7 @@ contract('SecurityToken', accounts => {
       await POLY.approve(customers.address, 10000, { from : investor2 });
 
       nonce = 1;
-      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, customerInvestorRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207');
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, customerInvestorRole, true, nonce, pk_investor2);
 
       r = `0x${sig.r.toString('hex')}`;
       s = `0x${sig.s.toString('hex')}`;
@@ -211,7 +221,7 @@ contract('SecurityToken', accounts => {
       await POLY.approve(customers.address, 10000, { from : delegate0 });
 
       nonce = 1;
-      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, delegateRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205');
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, delegateRole, true, nonce, pk_delegate0);
 
       r = `0x${sig.r.toString('hex')}`;
       s = `0x${sig.s.toString('hex')}`;
@@ -238,7 +248,7 @@ contract('SecurityToken', accounts => {
       await POLY.approve(customers.address, 10000, { from : delegate1 });
 
       nonce = 1;
-      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, delegateRole, true, nonce, '2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206');
+      sig = signData(customers.address, provider0, jurisdiction1, jurisdiction1_0, delegateRole, true, nonce, pk_delegate1);
 
       r = `0x${sig.r.toString('hex')}`;
       s = `0x${sig.s.toString('hex')}`;
@@ -406,9 +416,9 @@ contract('SecurityToken', accounts => {
         assert.strictEqual(data[0], templateAddress);
       });
 
-    it("startOffering: Should not start the offering -- fail offering contract is not selected yet", async()=>{
+    it("initialiseOffering: Should not start the offering -- fail offering contract is not selected yet", async()=>{
       try {
-        await securityToken.initialiseOffering(startTime, endTime, 100, { from : host});
+        await securityToken.initialiseOffering(startTime, endTime, 100, maxPoly, { from : host});
       } catch (error) {
         ensureException(error);
       }
@@ -442,7 +452,6 @@ contract('SecurityToken', accounts => {
            from : issuer
           });
       convertHex(txReturn.logs[0].args._merkleRoot).should.equal(witnessProof0);
-
       let issuerBalance = await securityToken.balanceOf(issuer);
       // Opt the Offering contract to distribute the security token
       let success = await securityToken.selectOfferingFactory(
@@ -454,13 +463,13 @@ contract('SecurityToken', accounts => {
     });
 
     /////////////////////////////////
-    ////// startOffering() Test cases
+    ////// initialiseOffering() Test cases
     /////////////////////////////////
 
-    describe("startOffering() Test Cases",async()=>{
+    describe("initialiseOffering() Test Cases",async()=>{
       it("Should not start the offering -- fail msg.sender is not issuer", async()=>{
        try {
-         await securityToken.startOffering({ from : host});
+         await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, { from : host});
        } catch (error) {
          ensureException(error);
        }
@@ -470,14 +479,16 @@ contract('SecurityToken', accounts => {
         let balance = await securityToken.balanceOf(issuer);
         // After selecting the offering contract Issuer needs to start the offering contract
         // It makes issuer to transfer the ownership of all generated security token to offering contract
-        let txReturn = await securityToken.startOffering({ from : issuer});
+        let txReturn = await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, { from : issuer});
         txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
+        // Storing the offering contract imstance to the variable
+        offeringContract = await SimpleCappedOffering.at(txReturn.logs[0].args._to);
         assert.isTrue(await securityToken.hasOfferingStarted.call());
       });
 
       it("Should not start the offering -- fail offering already active", async()=>{
        try {
-         await securityToken.startOffering({ from : issuer});
+         await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, { from : issuer});
        } catch (error) {
           ensureException(error);
        }
@@ -658,75 +669,34 @@ describe("Compliance contracts functions", async()=> {
  });
 
  //////////////////////////
- /// setSTO() Test Cases
+ /// registerOfferingFactory() Test Cases
  /////////////////////////
 
-  it("setSTO:Should fail in adding the new STO contract-- failed because of 0 address", async() =>{
+  it("registerOfferingFactory: Should fail in adding the new STO factory -- failed because of 0 address", async() =>{
     try {
-      let txReturn = await compliance.setSTO(
-        0x0,
-        fee,
-        vestingPeriod,
-        quorum,
-        {
-          from : issuer
-        });
+      let txReturn = await compliance.registerOfferingFactory(0x0);
     } catch(error) {
         ensureException(error);
     }
   });
 
-  it("setSTO:Should fail in adding the new STO contract-- failed because of quorum is greator than 100", async() =>{
-    try {
-      let txReturn = await compliance.setSTO(
-        mockStoContract,
-        fee,
-        vestingPeriod,
-        101,
-        {
-          from : issuer
-        });
-    } catch(error) {
-        ensureException(error);
-    }
-  });
+  it("registerOfferingFactory: Should successfully add the new STO factory", async() =>{
+    // Creation of new offering factory to facilitate the distribution of the Security token
+    offeringFactory_2 = await SimpleCappedOfferingFactory.new({ from : issuer, gas : 5000000 });
+    let txReturn = await compliance.registerOfferingFactory(offeringFactory_2.address);
+    txReturn.logs[0].args._offeringFactory.should.equal(offeringFactory_2.address);
 
-  it("setSTO:Should fail in adding the new STO contract-- failed because of vesting period is less than minimum vesting period", async() =>{
-    try {
-      let txReturn = await compliance.setSTO(
-        mockStoContract,
-        fee,
-        5555555,
-        quorum,
-        {
-          from : issuer
-        });
-    } catch(error) {
-        ensureException(error);
-    }
-  });
-
-  it("setSTO:Should successfully add the new sto contract", async() =>{
-    // Adding the Offering contract details into the Polymath platform chain data
-    let txReturn = await compliance.setSTO(
-        mockStoContract,
-        fee,
-        vestingPeriod,
-        quorum,
-        {
-          from : issuer
-        });
   });
 
   /////////////////////////////////////////
-  //// proposeOfferingContract() Test Cases
+  //// proposeOfferingFactory() Test Cases
   /////////////////////////////////////////
 
-  it("proposeOfferingContract: Should fail in proposing the contract -- msg.sender is unauthorized", async() =>{
+  it("proposeOfferingFactory: Should fail in proposing the contract -- msg.sender is unauthorized", async() =>{
     try {
-      let txReturn = await compliance.proposeOfferingContract(
+      let txReturn = await compliance.proposeOfferingFactory(
         securityToken.address,
-        mockStoContract,
+        offeringFactory_2.address,
         {
           from : investor1
         });
@@ -735,18 +705,19 @@ describe("Compliance contracts functions", async()=> {
     }
   });
 
-  it("proposeOfferingContract: Should successfully propose the contract", async() =>{
-    // Propose the Offering contract to a particular Security Token
-    let txReturn = await compliance.proposeOfferingContract(
+  it("proposeOfferingFactory: Should successfully propose the contract", async() =>{
+    // Propose the Offering factory to a particular Security Token
+    let txReturn = await compliance.proposeOfferingFactory(
       securityToken.address,
-      mockStoContract,
+      offeringFactory_2.address,
       {
         from : issuer
       });
-      txReturn.logs[0].args._offeringContract.should.equal(mockStoContract);
+      console.log('Proposal Index:',txReturn.logs[2].args._offeringFactoryProposalIndex.toNumber());
+      txReturn.logs[2].args._offeringFactory.should.equal(offeringFactory_2.address);
   });
 
-  it("proposeOfferingContract: Should fail in proposing the contract -- securityToken is not generated by STR",async()=>{
+  it("proposeOfferingFactory: Should fail in proposing the STO Factory -- securityToken is not generated by STR",async()=>{
     // Creation of the false Security Token
     let falseST = await SecurityToken.new(
                         name,
@@ -760,11 +731,11 @@ describe("Compliance contracts functions", async()=> {
                         compliance.address,
                         {
                           from : issuer
-                    });
+                        });
       try {
-        let txReturn = await compliance.proposeOfferingContract(
+        let txReturn = await compliance.proposeOfferingFactory(
           falseST.address,
-          mockStoContract,
+          offeringFactory_2.address,
           {
             from : issuer
           });
@@ -774,12 +745,12 @@ describe("Compliance contracts functions", async()=> {
     });
 
 ////////////////////////////////////////
-/// cancelOfferingProposal() Test cases
+/// cancelOfferingFactoryProposal() Test cases
 ////////////////////////////////////////
 
-it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender unauthorized",async() =>{
+it("cancelOfferingFactoryProposal: Should fail in canceling the proposal -- msg.sender unauthorized",async() =>{
     try {
-    let txReturn = await compliance.cancelOfferingProposal(
+    let txReturn = await compliance.cancelOfferingFactoryProposal(
       securityToken.address,
       1,
       {
@@ -790,9 +761,9 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
     }
   });
 
-  it("cancelOfferingProposal: Should successfully cancel the proposal",async() =>{
+  it("cancelOfferingFactoryProposal: Should successfully cancel the proposal",async() =>{
     // Remove the offering proposal from the list of proposed contracts to a particular Security Token
-    let txReturn = await compliance.cancelOfferingProposal(
+    let txReturn = await compliance.cancelOfferingFactoryProposal(
       securityToken.address,
       1,
       {
@@ -827,7 +798,7 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
       // Provide Approval to securityToken contract for burning POLY of investor1 to buy the Security Token
       await POLY.approve(securityToken.address, 900, { from : investor1 });
       // Buy SecurityToken
-      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
+      let txReturn = await offeringContract.buy(900, { from : investor1 , gas : 400000 });
       investedAmount = 900;
       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
       txReturn.logs[0].args._contributor.should.equal(investor1);
@@ -837,7 +808,7 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
       await POLY.getTokens(1000, investor2, { from : investor2});
       await POLY.approve(securityToken.address, 900, { from : investor2 });
       try {
-        let txReturn = await stoContract.buySecurityTokenWithPoly(1000, { from : investor2 , gas : 400000 });
+        let txReturn = await offeringContract.buy(1000, { from : investor2 , gas : 400000 });
       } catch(error) {
         ensureException(error);
       }
@@ -846,7 +817,7 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
   it('issueSecurityTokens: Should not allocate the security token to contributor --fail due to allowance is not provided',
   async()=>{
     try {
-      let txReturn = await stoContract.buySecurityTokenWithPoly(900, { from : investor1 , gas : 400000 });
+      let txReturn = await offeringContract.buy(900, { from : investor1 , gas : 400000 });
     } catch(error) {
       ensureException(error);
     }
@@ -859,13 +830,13 @@ it("cancelOfferingProposal: Should fail in canceling the proposal -- msg.sender 
     await POLY.approve(securityToken.address, 100100, { from : investor1 });
 
     // This function call internally calls issueSecurityTokens  ( 150 extra added because auditor of STO is equal to owner of security Token)
-    let txReturn = await stoContract.buySecurityTokenWithPoly(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
+    let txReturn = await offeringContract.buy(maxPoly - (investedAmount + 150), { from : investor1 , gas : 400000 });
 
     txReturn.logs[0].args._ployContribution.toNumber().should.equal(maxPoly - (investedAmount + 150));
     txReturn.logs[0].args._contributor.should.equal(investor1);
 
     try {
-      let txReturn = await stoContract.buySecurityTokenWithPoly(100, { from : investor1 , gas : 400000 });
+      let txReturn = await offeringContract.buy(100, { from : investor1 , gas : 400000 });
     } catch(error) {
         ensureException(error);
     }

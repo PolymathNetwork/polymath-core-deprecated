@@ -146,7 +146,7 @@ contract Compliance is ICompliance {
 
         //Get a reference of the template contract and add it to the templateProposals array
         templateProposals[_securityToken].push(_template);
-        LogNewTemplateProposal(_securityToken, _template, msg.sender, templateProposals[_securityToken].length -1);
+        LogNewTemplateProposal(_securityToken, _template, msg.sender, templateProposals[_securityToken].length - 1);
         return true;
     }
 

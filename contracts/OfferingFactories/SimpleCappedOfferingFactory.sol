@@ -26,8 +26,8 @@ contract SimpleCappedOfferingFactory is IOfferingFactory {
         owner = msg.sender;
     }
 
-    function createOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, address _securityToken) public returns (address) {
-      return new SimpleCappedOffering(_startTime, _endTime, _polyTokenRate, _securityToken);
+    function createOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly, address _securityToken) public returns (address) {
+      return new SimpleCappedOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, _securityToken);
     }
 
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, bytes32) {
