@@ -76,6 +76,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
 	   // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
     uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
+    uint256 public totalAllocated = 0;
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address indexed _template, address indexed _KYC);
@@ -167,6 +168,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        totalAllocated = totalAllocated.add(_fee);
         delegate = _delegate;
         KYC = _KYC;
         PolyCompliance.updateTemplateReputation(template, 0);
@@ -204,8 +206,9 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
         OfferingFactory = IOfferingFactory(offeringFactory);
         var (_fee, _quorum, _vestingPeriod, _owner, _description) = OfferingFactory.getUsageDetails();
-        require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
+        require(POLY.balanceOf(this) >= totalAllocated.add(_fee));
         allocations[_owner] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        totalAllocated = totalAllocated.add(_fee);
 
         PolyCompliance.updateOfferingFactoryReputation(offeringFactory, 0);
         LogOfferingFactorySet(offeringFactory, _owner, _description);
@@ -290,14 +293,23 @@ contract SecurityToken is ISecurityToken, IERC20 {
       return true;
     }
 
+
+
+    /**
+     * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
+     * @return bool success
+     */
+    function withdrawUnallocatedPoly() public onlyOwner returns (bool success) {
+      require(POLY.balanceOf(this) > totalAllocated);
+      require(POLY.transfer(owner, POLY.balanceOf(this).sub(totalAllocated)));
+      return true;
+    }
+
     /**
      * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
      * @return bool success
      */
     function withdrawPoly() public returns (bool success) {
-  	    if (delegate == address(0)) {
-          return POLY.transfer(owner, POLY.balanceOf(this));
-        }
         require(hasOfferingStarted);
         require(now > offeringStartTime.add(allocations[msg.sender].vestingPeriod));
         require(!allocations[msg.sender].frozen);
@@ -356,6 +368,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         // Update the amount of POLY a contributor has contributed and allocated to the owner
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
+        totalAllocated = totalAllocated.add(_polyContributed);
         LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
         return true;
     }

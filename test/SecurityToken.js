@@ -947,6 +947,16 @@ it("cancelOfferingFactoryProposal: Should fail in canceling the proposal -- msg.
       assert.strictEqual(delegateBalance.toNumber(),10000);
   });
 
+  it('withdrawPoly: should successfully withdraw excess POLY by issuer',async()=>{
+    //Transfer some excess poly to the ST
+    let totalAllocated = await securityToken.totalAllocated();
+    let stBalance = await POLY.balanceOf(securityToken.address);
+    let initialBalance = await POLY.balanceOf(issuer);
+    await securityToken.withdrawUnallocatedPoly({from: issuer});
+    let endBalance = await POLY.balanceOf(issuer);
+    assert.strictEqual(endBalance.toNumber(), initialBalance.add(stBalance.sub(totalAllocated)).toNumber());
+  });
+
   it('withdrawPoly: should not able to successfully withdraw poly by Auditor (STO creator)',async()=>{
     let balance = await POLY.balanceOf(securityToken.address);
     try {
@@ -985,18 +995,19 @@ it("cancelOfferingFactoryProposal: Should fail in canceling the proposal -- msg.
       {
         from : issuer
       }
-  );
+    );
 
-  let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call(nameSpace, 'TPOLY');
-  let TempSecurityToken = await SecurityToken.at(tempSTAddress);
-  let balanceAfter = await POLY.balanceOf(issuer);
-  assert.strictEqual( (balanceBefore - balanceAfter), nameSpaceFee);
-
-  let txReturn = await TempSecurityToken.withdrawPoly({ from : issuer});
-  let ballast = await POLY.balanceOf(tempSTAddress);
-  assert.strictEqual(ballast.toNumber(),0);
+    let tempSTAddress = await STRegistrar.getSecurityTokenAddress.call(nameSpace, 'TPOLY');
+    let TempSecurityToken = await SecurityToken.at(tempSTAddress);
+    let balanceAfter = await POLY.balanceOf(issuer);
+    assert.strictEqual( (balanceBefore - balanceAfter), nameSpaceFee);
+    //Issuer transfers some poly to the ST.
+    await POLY.transfer(tempSTAddress, 100, {from: issuer});
+    let txReturn = await TempSecurityToken.withdrawUnallocatedPoly({ from : issuer});
+    let ballast = await POLY.balanceOf(tempSTAddress);
+    assert.strictEqual(ballast.toNumber(),0);
   });
-});
+  });
 });
 
 });
