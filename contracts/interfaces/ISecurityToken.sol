@@ -2,34 +2,6 @@
 
   interface ISecurityToken {
 
-    /**
-     * @dev Set default security token parameters
-     * @param _name Name of the security token
-     * @param _ticker Ticker name of the security
-     * @param _totalSupply Total amount of tokens being created
-     * @param _decimals Decimals for token
-     * @param _owner Ethereum address of the security token owner
-     * @param _maxPoly Amount of maximum poly issuer want to raise
-     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-     * @param _quorum Percent of initial investors required to freeze POLY raise
-     * @param _polyTokenAddress Ethereum address of the POLY token contract
-     * @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
-     * @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
-     */
-    function SecurityToken(
-        string _name,
-        string _ticker,
-        uint256 _totalSupply,
-        uint8 _decimals,
-        address _owner,
-        uint256 _maxPoly,
-        uint256 _lockupPeriod,
-        uint8 _quorum,
-        address _polyTokenAddress,
-        address _polyCustomersAddress,
-        address _polyComplianceAddress
-    ) public;
-
    /**
      * @dev `selectTemplate` Select a proposed template for the issuance
      * @param _templateIndex Array index of the delegates proposed template
@@ -49,30 +21,55 @@
     ) public returns (bool success);
 
     /**
-     * @dev `selectOfferingProposal` Select an security token offering proposal for the issuance
-     * @param _offeringProposalIndex Array index of the STO proposal
+     * @dev `selectOfferingFactory` Select an security token offering proposal for the issuance
+     * @param _offeringFactoryProposalIndex Array index of the STO proposal
      * @return bool success
      */
-    function selectOfferingProposal (
-        uint8 _offeringProposalIndex
+    function selectOfferingFactory (
+        uint8 _offeringFactoryProposalIndex
     ) public returns (bool success);
 
     /**
      * @dev Start the offering by sending all the tokens to STO contract
+     * @param _startTime Unix timestamp to start the offering
+     * @param _endTime Unix timestamp to end the offering
+     * @param _polyTokenRate Price of one security token in terms of poly
+     * @param _maxPoly Maximum amount of poly issuer wants to collect
      * @return bool
      */
-    function startOffering() external returns (bool success);
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) external returns (bool success);
 
     /**
      * @dev Add a verified address to the Security Token whitelist
      * @param _whitelistAddress Address attempting to join ST whitelist
      * @return bool success
      */
-    function addToWhitelist(uint8 KYCProviderIndex, address _whitelistAddress) public returns (bool success);
+    function addToWhitelist(address _whitelistAddress) public returns (bool success);
+
+    /**
+     * @dev Add verified addresses to the Security Token whitelist
+     * @param _whitelistAddresses Array of addresses attempting to join ST whitelist
+     * @return bool success
+     */
+    function addToWhitelistMulti(address[] _whitelistAddresses) public returns (bool success);
+
+    /**
+     * @dev Removes a previosly verified address to the Security Token blacklist
+     * @param _blacklistAddress Address being added to the blacklist
+     * @return bool success
+     */
+    function addToBlacklist(address _blacklistAddress) public returns (bool success);
+
+    /**
+     * @dev Removes previously verified addresseses to the Security Token whitelist
+     * @param _blacklistAddresses Array of addresses attempting to join ST whitelist
+     * @return bool success
+     */
+    function addToBlacklistMulti(address[] _blacklistAddresses) public returns (bool success);
 
      /**
       * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
-      * @return bool success 
+      * @return bool success
       */
     function withdrawPoly() public returns (bool success);
 
@@ -92,45 +89,6 @@
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public returns (bool success);
 
     /// Get token details
-    function getTokenDetails() view public returns (address, address, bytes32, address, address);
+    function getTokenDetails() view public returns (address, address, bytes32, address, address, address);
 
-    /**
-     * @dev Trasfer tokens from one address to another
-     * @param _to Ethereum public address to transfer tokens to
-     * @param _value Amount of tokens to send
-     * @return bool success
-     */
-    function transfer(address _to, uint256 _value) public returns (bool success);
-
-    /**
-     * @dev Allows contracts to transfer tokens on behalf of token holders
-     * @param _from Address to transfer tokens from
-     * @param _to Address to send tokens to
-     * @param _value Number of tokens to transfer
-     * @return bool success
-     */
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
-
-    /**
-     * @dev `balanceOf` used to get the balance of shareholders
-     * @param _owner The address from which the balance will be retrieved
-     * @return The balance
-     */
-    function balanceOf(address _owner) public constant returns (uint256 balance);
-
-    /**
-     * @dev Approve transfer of tokens manually
-     * @param _spender Address to approve transfer to
-     * @param _value Amount of tokens to approve for transfer
-     * @return bool success
-     */
-    function approve(address _spender, uint256 _value) public returns (bool success);
-
-    /**
-     * @dev Use to get the allowance provided to the spender
-     * @param _owner The address of the account owning tokens
-     * @param _spender The address of the account able to transfer the tokens
-     * @return Amount of remaining tokens allowed to spent
-     */
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining);
   }

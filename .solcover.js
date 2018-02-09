@@ -5,7 +5,7 @@ module.exports = {
         'interfaces/IERC20.sol',
         'interfaces/ISecurityToken.sol',
         'interfaces/ISTO.sol',
-        'interfaces/ISTRegistrar.sol',
+        'interfaces/ISecurityTokenRegistrar.sol',
         'interfaces/ITemplate.sol'
     ]
 };
