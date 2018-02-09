@@ -416,6 +416,25 @@ contract('SecurityToken', accounts => {
         assert.strictEqual(data[0], templateAddress);
       });
 
+    it('addToWhitelistMulti: Should add the multiple investor in the whitelist', async() => {
+        const id = await takeSnapshot();
+        let txReturn = await securityToken.addToWhitelistMulti([investor1, investor2, delegate0, delegate1], { from : issuer, gas : 5000000 });
+        txReturn.logs[0].args._shareholder.should.equal(investor1);
+        txReturn.logs[1].args._shareholder.should.equal(investor2);
+        txReturn.logs[2].args._shareholder.should.equal(delegate0);
+        txReturn.logs[3].args._shareholder.should.equal(delegate1);
+        await revertToSnapshot(id);
+    });
+
+    it('addToBlacklistMulti: Should add the multiple investor in the whitelist', async() => {
+        const id = await takeSnapshot();
+        await securityToken.addToWhitelistMulti([investor1, investor2, delegate0, delegate1], { from : issuer, gas : 5000000 });
+        let txReturn = await securityToken.addToBlacklistMulti([investor1, investor2], { from : issuer, gas : 5000000 });
+        txReturn.logs[0].args._shareholder.should.equal(investor1);
+        txReturn.logs[1].args._shareholder.should.equal(investor2);
+        await revertToSnapshot(id);
+    });
+
     it("initialiseOffering: Should not start the offering -- fail offering contract is not selected yet", async()=>{
       try {
         await securityToken.initialiseOffering(startTime, endTime, 100, maxPoly, { from : host});
