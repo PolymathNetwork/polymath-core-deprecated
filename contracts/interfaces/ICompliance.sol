@@ -77,6 +77,7 @@ interface ICompliance {
     /**
      * @dev Set the STO contract by the issuer.
      * @param _factoryAddress address of the offering factory
+     * @return bool success
      */
     function registerOfferingFactory (
         address _factoryAddress

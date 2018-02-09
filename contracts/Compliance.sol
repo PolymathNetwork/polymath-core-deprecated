@@ -174,6 +174,11 @@ contract Compliance is ICompliance {
         return true;
     }
 
+    /**
+     * @dev Set the STO contract by the issuer.
+     * @param _factoryAddress address of the offering factory
+     * @return bool success
+     */
     function registerOfferingFactory(
       address _factoryAddress
     ) public returns (bool success)
@@ -187,7 +192,7 @@ contract Compliance is ICompliance {
       require(vestingPeriod >= MINIMUM_VESTING_PERIOD);
       require(fee > 0);
       require(owner != address(0));
-
+      // Add the factory in the available list of factory addresses
       offeringFactories[_factoryAddress] = Reputation({
           totalRaised: 0,
           usedBy: new address[](0)
@@ -195,10 +200,6 @@ contract Compliance is ICompliance {
       LogOfferingFactoryRegistered(owner, _factoryAddress, description);
       return true;
     }
-
-    event Logger(uint256 _log);
-    event LoggerA(address _log);
-    event LoggerB(uint8 _log);
 
     /**
      * @dev Propose a Security Token Offering Factory for an issuance
@@ -223,8 +224,6 @@ contract Compliance is ICompliance {
 
         require(owner == msg.sender);
         require(expires > now);
-        Logger(expires);
-        Logger(now);
         offeringFactoryProposals[_securityToken].push(_factoryAddress);
         LogNewOfferingFactoryProposal(_securityToken, _factoryAddress, owner, offeringFactoryProposals[_securityToken].length - 1);
         return true;

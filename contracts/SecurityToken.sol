@@ -214,6 +214,10 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     /**
      * @dev Start the offering by sending all the tokens to STO contract
+     * @param _startTime Unix timestamp to start the offering
+     * @param _endTime Unix timestamp to end the offering
+     * @param _polyTokenRate Price of one security token in terms of poly
+     * @param _maxPoly Maximum amount of poly issuer wants to collect
      * @return bool
      */
     function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) onlyOwner external returns (bool success) {
@@ -250,6 +254,11 @@ contract SecurityToken is ISecurityToken, IERC20 {
         return true;
     }
 
+    /**
+     * @dev Add verified addresses to the Security Token whitelist
+     * @param _whitelistAddresses Array of addresses attempting to join ST whitelist
+     * @return bool success
+     */
     function addToWhitelistMulti(address[] _whitelistAddresses) onlyOwner public returns (bool success) {
       for (uint256 i = 0; i < _whitelistAddresses.length; i++) {
         require(addToWhitelist(_whitelistAddresses[i]));
@@ -269,6 +278,11 @@ contract SecurityToken is ISecurityToken, IERC20 {
         return true;
     }
 
+    /**
+     * @dev Removes previously verified addresseses to the Security Token whitelist
+     * @param _blacklistAddresses Array of addresses attempting to join ST whitelist
+     * @return bool success
+     */
     function addToBlacklistMulti(address[] _blacklistAddresses) onlyOwner public returns (bool success) {
       for (uint256 i = 0; i < _blacklistAddresses.length; i++) {
         require(addToBlacklist(_blacklistAddresses[i]));
