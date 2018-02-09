@@ -1,5 +1,11 @@
 pragma solidity ^0.4.18;
 
+/**
+ *  SafeMath <https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/math/SafeMath.sol/>
+ *  Copyright (c) 2016 Smart Contract Solutions, Inc.
+ *  Released under the MIT License (MIT)
+ */
+
 /// @title Math operations with safety checks
 library SafeMath {
     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
