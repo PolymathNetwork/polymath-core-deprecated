@@ -24,11 +24,6 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
 
-    struct NameSpaceData {
-      address owner;
-      uint256 fee;
-    }
-
     // Security Token
     struct SecurityTokenData {                                      // A structure that contains the specific info of each ST
       string nameSpace;
@@ -39,7 +34,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 securityType;
     }
 
-    mapping (string => NameSpaceData) nameSpaceData;                 // Mapping from nameSpace to owner / fee of nameSpace
+    mapping (string => address) nameSpace;                           // Mapping from nameSpace to owner
     mapping (address => SecurityTokenData) securityTokens;           // Mapping from securityToken address to data about the securityToken
     mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
 
@@ -73,23 +68,11 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @dev Creates a securityToken name space
      * @param _nameSpace Name space string
      * @param _owner Owner for this name space
-     * @param _fee Fee for this name space
      */
-    function createNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
-      require(nameSpaceData[_nameSpace].owner == 0x0);
+    function createNameSpace(string _nameSpace, address _owner) public {
+      require(nameSpace[_nameSpace] == 0x0);
       require(_owner != 0x0);
-      nameSpaceData[_nameSpace].owner = _owner;
-      nameSpaceData[_nameSpace].fee = _fee;
-    }
-    /**
-     * @dev Changes name space fee
-     * @param _nameSpace Name space string
-     * @param _fee New fee for security token creation for this name space
-     */
-    function changeNameSpaceFee(string _nameSpace, uint256 _fee) public {
-      require(msg.sender == nameSpaceData[_nameSpace].owner);
-      nameSpaceData[_nameSpace].fee = _fee;
-      LogFeeChange(_nameSpace, _fee);
+      nameSpace[_nameSpace] = _owner;
     }
 
     /**
@@ -98,14 +81,15 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @param _owner New owner for for this name space
      */
     function changeNameSpaceOwner(string _nameSpace, address _owner) public {
-      require(msg.sender == nameSpaceData[_nameSpace].owner);
-      nameSpaceData[_nameSpace].owner = _owner;
+      require(msg.sender == nameSpace[_nameSpace]);
+      nameSpace[_nameSpace] = _owner;
       LogPolyFeeAddressChange(_nameSpace, _owner);
     }
 
     /**
      * @dev Creates a new Security Token and saves it to the registry
      * @param _nameSpace Name space for this security token
+     * @param _hostFee Fee requested by the host/namespace owner
      * @param _name Name of the security token
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
@@ -117,6 +101,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      */
     function createSecurityToken (
       string _nameSpace,
+      uint256 _hostFee,
       string _name,
       string _ticker,
       uint256 _totalSupply,
@@ -127,59 +112,14 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 _quorum
     ) external
     {
-      require(nameSpaceData[_nameSpace].owner != 0x0);
+      require(nameSpace[_nameSpace] == msg.sender);
       require(_totalSupply > 0);
       require(tickers[_nameSpace][_ticker] == 0x0);
       require(_lockupPeriod >= now);
       require(_owner != address(0));
+      require(PolyToken.transferFrom(_owner, nameSpace[_nameSpace], _hostFee));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
-      transferFee(_nameSpace);
-      address securityTokenAddress = initialiseSecurityToken(_nameSpace, _name, _ticker, _totalSupply, _decimals, _owner, _type, _lockupPeriod, _quorum);
-      logSecurityToken(_nameSpace, _ticker, securityTokenAddress, _owner, _type);
-    }
-
-    /**
-     * @dev transferFee Transfer the fee to owner of name space
-     * @param _nameSpace Name space string
-    */  
-
-    function transferFee(string _nameSpace) internal {
-      require(PolyToken.transferFrom(msg.sender, nameSpaceData[_nameSpace].owner, nameSpaceData[_nameSpace].fee));
-    }
-
-    /**
-     * @dev It is used to log the creation of security token 
-     */
-
-    function logSecurityToken(
-      string _nameSpace,
-      string _ticker,
-      address _securityTokenAddress,
-      address _owner,
-      uint8 _type
-    ) internal 
-    {
-      LogNewSecurityToken(_nameSpace, _ticker, _securityTokenAddress, _owner, nameSpaceData[_nameSpace].owner, nameSpaceData[_nameSpace].fee, _type);
-    }
-
-    /**
-     * @dev Used to create the new instance of the securityToken
-     * The newley created instance of ST add into the available list of securityToken
-     */
-
-    function initialiseSecurityToken(
-      string _nameSpace,
-      string _name,
-      string _ticker,
-      uint256 _totalSupply,
-      uint8 _decimals,
-      address _owner,
-      uint8 _type,
-      uint256 _lockupPeriod,
-      uint8 _quorum
-    ) internal returns (address)
-    {
-      address newSecurityTokenAddress = new SecurityToken(
+      address securityTokenAddress = new SecurityToken(
         _name,
         _ticker,
         _totalSupply,
@@ -191,8 +131,8 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
         polyCustomersAddress,
         polyComplianceAddress
       );
-      tickers[_nameSpace][_ticker] = newSecurityTokenAddress;
-      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
+      tickers[_nameSpace][_ticker] = securityTokenAddress;
+      securityTokens[securityTokenAddress] = SecurityTokenData(
         _nameSpace,
         _totalSupply,
         _owner,
@@ -200,7 +140,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
         _ticker,
         _type
       );
-      return newSecurityTokenAddress;
+      LogNewSecurityToken(_nameSpace, _ticker, securityTokenAddress, _owner, nameSpace[_nameSpace], _hostFee, _type);
     }
 
     //////////////////////////////
