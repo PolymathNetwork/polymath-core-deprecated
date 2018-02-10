@@ -2,7 +2,7 @@
   "name": "polymath-core",
   "author": "Polymath Inc.",
   "license": "MIT",
-  "version": "0.6.0",
+  "version": "0.2.0",
   "description": "Polymath Network Core Smart Contracts",
   "repository": "git@github.com:PolymathNetwork/polymath-core.git",
   "homepage": "https://github.com/polymathnetwork/polymath-core",
