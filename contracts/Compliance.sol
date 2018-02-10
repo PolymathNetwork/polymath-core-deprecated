@@ -185,7 +185,7 @@ contract Compliance is ICompliance {
     {
       require(_factoryAddress != address(0));
       IOfferingFactory offeringFactory = IOfferingFactory(_factoryAddress);
-      var (fee, quorum, vestingPeriod, owner, description) = offeringFactory.getUsageDetails();
+      var (, quorum, vestingPeriod, owner, description) = offeringFactory.getUsageDetails();
 
       //Validate Offering Factory details
       require(quorum > 0 && quorum <= 100);

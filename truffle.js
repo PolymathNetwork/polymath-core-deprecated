@@ -1,5 +1,9 @@
 require('babel-register');
 require('babel-polyfill');
+const WalletProvider = require("truffle-wallet-provider");
+const keystore = require('fs').readFileSync('./UTC--2018-01-26T17-50-04Z--074bf411-7666-c662-f1a0-d6a93f5d8719').toString();
+const pass = require('fs').readFileSync('./password1.txt').toString();
+const wallet = require('ethereumjs-wallet').fromV3(keystore, pass);
 
 const config = {
   networks: {
@@ -11,12 +15,10 @@ const config = {
       network_id: '*',
     },
     ropsten: {
-      host: 'localhost',
-      port: 8545,
-      network_id: '*',
-      from: '0x00F13d5bCA2E8A4E58fD8018a7b1e8D286dD135A',
-      gas: 4.612e6,
-      gasPrice: 130000000000,
+      provider: new WalletProvider(wallet, "https://ropsten.infura.io/"),
+      network_id: 3,
+      gas: 4.5e6,
+      gasPrice: 0x50,
     },
     coverage: {
       host: 'localhost',
@@ -40,22 +42,4 @@ const config = {
   },
 };
 
-// Comment line below and uncomment the lines going after it to use Infura for deployment
 module.exports = config;
-
-// const HDWalletProvider = require('truffle-hdwallet-provider');
-//
-// const mnemonic = '';
-// const infuraToken = ''; // https://infura.io/
-//
-// config.networks = {
-//   ropsten: {
-//     provider: function() {
-//       return new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/' + infuraToken)
-//     },
-//     network_id: config.networks.ropsten.network_id,
-//     gas: config.networks.ropsten.gas,
-//   }
-// };
-//
-// module.exports = config;
