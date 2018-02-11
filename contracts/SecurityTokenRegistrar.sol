@@ -5,11 +5,9 @@ pragma solidity ^0.4.18;
   from a single place and allows wizard creators to earn POLY fees by uploading to the
   registrar.
 */
-
 import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
-import './Compliance.sol';
 
 /**
  * @title SecurityTokenRegistrar
@@ -19,7 +17,6 @@ import './Compliance.sol';
 contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
 
     string public VERSION = "2";
-    SecurityToken securityToken;
     IERC20 public PolyToken;                                        // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
@@ -32,10 +29,8 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     // Security Token
     struct SecurityTokenData {                                      // A structure that contains the specific info of each ST
       string nameSpace;
-      uint256 totalSupply;
-      address owner;
-      uint8 decimals;
       string ticker;
+      address owner;
       uint8 securityType;
     }
 
@@ -43,9 +38,8 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     mapping (address => SecurityTokenData) securityTokens;           // Mapping from securityToken address to data about the securityToken
     mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
 
-    event LogNewSecurityToken(string _nameSpace, string _ticker, address indexed _securityTokenAddress, address indexed _owner, address _polyFeeAddress, uint256 _fee, uint8 _type);
-    event LogFeeChange(string _nameSpace, uint256 _newFee);
-    event LogPolyFeeAddressChange(string _nameSpace, address _newPolyFeeAddress);
+    event LogNewSecurityToken(string _nameSpace, string _ticker, address indexed _securityTokenAddress, address indexed _owner, uint8 _type);
+    event LogNameSpaceChange(string _nameSpace, address _newOwner, uint256 _newFee);
 
     /**
      * @dev Constructor use to set the essentials addresses to facilitate
@@ -63,10 +57,6 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       PolyToken = IERC20(_polyTokenAddress);
       polyCustomersAddress = _polyCustomersAddress;
       polyComplianceAddress = _polyComplianceAddress;
-      // Creating the instance of the compliance contract and assign the STR contract
-      // address (this) into the compliance contract
-      Compliance PolyCompliance = Compliance(polyComplianceAddress);
-      require(PolyCompliance.setRegistrarAddress(this));
     }
 
     /**
@@ -86,26 +76,16 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @param _nameSpace Name space string
      * @param _fee New fee for security token creation for this name space
      */
-    function changeNameSpaceFee(string _nameSpace, uint256 _fee) public {
+    function changeNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
       require(msg.sender == nameSpaceData[_nameSpace].owner);
       nameSpaceData[_nameSpace].fee = _fee;
-      LogFeeChange(_nameSpace, _fee);
-    }
-
-    /**
-     * @dev Changes Polymath fee address
-     * @param _nameSpace Name space string
-     * @param _owner New owner for for this name space
-     */
-    function changeNameSpaceOwner(string _nameSpace, address _owner) public {
-      require(msg.sender == nameSpaceData[_nameSpace].owner);
       nameSpaceData[_nameSpace].owner = _owner;
-      LogPolyFeeAddressChange(_nameSpace, _owner);
+      LogNameSpaceChange(_nameSpace, _owner, _fee);
     }
 
     /**
      * @dev Creates a new Security Token and saves it to the registry
-     * @param _nameSpace Name space for this security token
+     * @param _nameSpaceName Name space for this security token
      * @param _name Name of the security token
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
@@ -116,7 +96,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @param _quorum Percent of initial investors required to freeze POLY raise
      */
     function createSecurityToken (
-      string _nameSpace,
+      string _nameSpaceName,
       string _name,
       string _ticker,
       uint256 _totalSupply,
@@ -127,45 +107,16 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 _quorum
     ) external
     {
-      require(nameSpaceData[_nameSpace].owner != 0x0);
       require(_totalSupply > 0);
-      require(tickers[_nameSpace][_ticker] == 0x0);
       require(_lockupPeriod >= now);
+      NameSpaceData nameSpace = nameSpaceData[_nameSpaceName];
+      require(tickers[_nameSpaceName][_ticker] == 0x0);
+      require(nameSpace.owner != 0x0);
       require(_owner != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
-      transferFee(_nameSpace);
-      address securityTokenAddress = initialiseSecurityToken(_nameSpace, _name, _ticker, _totalSupply, _decimals, _owner, _type, _lockupPeriod, _quorum);
-      logSecurityToken(_nameSpace, _ticker, securityTokenAddress, _owner, _type);
+      require(PolyToken.transferFrom(msg.sender, nameSpace.owner, nameSpace.fee));
+      initialiseSecurityToken(_nameSpaceName, _name, _ticker, _totalSupply, _decimals, _owner, _type, _lockupPeriod, _quorum);
     }
-
-    /**
-     * @dev transferFee Transfer the fee to owner of name space
-     * @param _nameSpace Name space string
-    */  
-
-    function transferFee(string _nameSpace) internal {
-      require(PolyToken.transferFrom(msg.sender, nameSpaceData[_nameSpace].owner, nameSpaceData[_nameSpace].fee));
-    }
-
-    /**
-     * @dev It is used to log the creation of security token 
-     */
-
-    function logSecurityToken(
-      string _nameSpace,
-      string _ticker,
-      address _securityTokenAddress,
-      address _owner,
-      uint8 _type
-    ) internal 
-    {
-      LogNewSecurityToken(_nameSpace, _ticker, _securityTokenAddress, _owner, nameSpaceData[_nameSpace].owner, nameSpaceData[_nameSpace].fee, _type);
-    }
-
-    /**
-     * @dev Used to create the new instance of the securityToken
-     * The newley created instance of ST add into the available list of securityToken
-     */
 
     function initialiseSecurityToken(
       string _nameSpace,
@@ -177,7 +128,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 _type,
       uint256 _lockupPeriod,
       uint8 _quorum
-    ) internal returns (address)
+    ) internal
     {
       address newSecurityTokenAddress = new SecurityToken(
         _name,
@@ -194,13 +145,11 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       tickers[_nameSpace][_ticker] = newSecurityTokenAddress;
       securityTokens[newSecurityTokenAddress] = SecurityTokenData(
         _nameSpace,
-        _totalSupply,
-        _owner,
-        _decimals,
         _ticker,
+        _owner,
         _type
       );
-      return newSecurityTokenAddress;
+      LogNewSecurityToken(_nameSpace, _ticker, newSecurityTokenAddress, _owner, _type);
     }
 
     //////////////////////////////
@@ -222,17 +171,13 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      */
     function getSecurityTokenData(address _STAddress) public view returns (
       string,
-      uint256,
       address,
-      uint8,
       string,
       uint8
     ) {
       return (
         securityTokens[_STAddress].nameSpace,
-        securityTokens[_STAddress].totalSupply,
         securityTokens[_STAddress].owner,
-        securityTokens[_STAddress].decimals,
         securityTokens[_STAddress].ticker,
         securityTokens[_STAddress].securityType
       );

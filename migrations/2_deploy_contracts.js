@@ -13,6 +13,8 @@ module.exports = async (deployer, network) => {
     await deployer.deploy(Customers, PolyToken);
     await deployer.deploy(Compliance, Customers.address);
     await deployer.deploy(SecurityTokenRegistrar, PolyToken, Customers.address, Compliance.address);
+    let compliance = await Compliance.deployed()
+    await compliance.setRegistrarAddress(SecurityTokenRegistrar.address);
     console.log(`\nPolymath Network Smart Contracts Deployed:\n
       PolyToken: ${PolyToken}\n
       Compliance: ${Compliance.address}\n
