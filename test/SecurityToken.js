@@ -121,6 +121,7 @@ contract('SecurityToken', accounts => {
         customers.address,
         compliance.address
       );
+      await compliance.setRegistrarAddress(STRegistrar.address);
       // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
         provider0,

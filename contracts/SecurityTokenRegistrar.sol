@@ -109,7 +109,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     {
       require(_totalSupply > 0);
       require(_lockupPeriod >= now);
-      NameSpaceData nameSpace = nameSpaceData[_nameSpaceName];
+      NameSpaceData storage nameSpace = nameSpaceData[_nameSpaceName];
       require(tickers[_nameSpaceName][_ticker] == 0x0);
       require(nameSpace.owner != 0x0);
       require(_owner != address(0));
@@ -171,14 +171,14 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      */
     function getSecurityTokenData(address _STAddress) public view returns (
       string,
-      address,
       string,
+      address,
       uint8
     ) {
       return (
         securityTokens[_STAddress].nameSpace,
-        securityTokens[_STAddress].owner,
         securityTokens[_STAddress].ticker,
+        securityTokens[_STAddress].owner,
         securityTokens[_STAddress].securityType
       );
     }

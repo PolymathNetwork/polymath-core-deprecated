@@ -43,6 +43,7 @@ contract('SecurityTokenRegistrar', accounts => {
         polyCustomers.address,
         polyCompliance.address
       );
+      await polyCompliance.setRegistrarAddress(STRegistrar.address);
       let PTAddress = await STRegistrar.PolyToken.call();
       assert.strictEqual(PTAddress, polyToken.address);
     });
@@ -93,7 +94,7 @@ contract('SecurityTokenRegistrar', accounts => {
       let STAddress = await STRegistrar.getSecurityTokenAddress.call(nameSpace, ticker);
       assert.notEqual(STAddress, 0x0);
       let STData = await STRegistrar.getSecurityTokenData.call(STAddress);
-      assert.strictEqual(STData[1].toNumber(), totalSupply);
+      assert.strictEqual(STData[1], ticker);
     });
 
     //////////////////////////////////////
