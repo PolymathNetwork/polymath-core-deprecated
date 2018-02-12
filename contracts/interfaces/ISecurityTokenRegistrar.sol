@@ -25,4 +25,15 @@ interface ISecurityTokenRegistrar {
         uint8 _quorum
     ) external;
 
+    /**
+     * @dev Get Security token details by its ethereum address
+     * @param _STAddress Security token address
+     */
+    function getSecurityTokenData(address _STAddress) public view returns (
+      string,
+      string,
+      address,
+      uint8
+    );
+
 }

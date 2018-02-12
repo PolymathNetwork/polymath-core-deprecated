@@ -3,7 +3,6 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/ICustomers.sol';
-import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/ISecurityToken.sol';
 import './interfaces/ICompliance.sol';
 import './interfaces/ITemplate.sol';
@@ -18,7 +17,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     using SafeMath for uint256;
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     IERC20 public POLY;                                               // Instance of the POLY token contract
 
@@ -34,8 +33,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     // ERC20 Fields
     string public name;                                               // Name of the security token
-    uint8 public decimals;                                            // Decimals for the security token it should be 0 as standard
     string public symbol;                                             // Symbol of the security token
+    uint8 public decimals;                                            // Decimals for the security token it should be 0 as standard
     address public owner;                                             // Address of the owner of the security token
     uint256 public totalSupply;                                       // Total number of security token generated
     mapping(address => mapping(address => uint256)) allowed;          // Mapping as same as in ERC20 token
@@ -43,8 +42,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     // Template
     address public delegate;                                          // Address who create the template
-    bytes32 public merkleRoot;                                        
     address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template
+    bytes32 public merkleRoot;
 
     // Security token shareholders
     struct Shareholder {                                              // Structure that contains the data of the shareholders
@@ -65,9 +64,9 @@ contract SecurityToken is ISecurityToken, IERC20 {
     struct Allocation {                                               // Structure that contains the allocation of the POLY for stakeholders
         uint256 amount;                                               // stakeholders - delegate, issuer(owner), auditor
         uint256 vestingPeriod;
-        uint8 quorum;
         uint256 yayVotes;
         uint256 yayPercent;
+        uint8 quorum;
         bool frozen;
     }
     mapping(address => mapping(address => bool)) public voted;               // Voting mapping
@@ -332,8 +331,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
       }
       return true;
     }
-
-
 
     /**
      * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
