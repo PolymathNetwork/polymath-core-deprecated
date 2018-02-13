@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import './SecurityToken.sol';
+import '../SecurityToken.sol';
 
 /**
  * @title SecurityToken
