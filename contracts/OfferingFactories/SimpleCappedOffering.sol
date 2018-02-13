@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
-import '../SecurityTokenMOCK.sol';
+//import '../SecurityTokenMOCK.sol';
+import '../interfaces/ISecurityToken.sol';
 import '../interfaces/IERC20.sol';
 import '../SafeMath.sol';
 
@@ -9,7 +10,7 @@ contract SimpleCappedOffering {
     using SafeMath for uint256;
     string public VERSION = "1";
 
-    SecurityTokenMOCK public SecurityToken;
+    ISecurityToken public SecurityToken;
 
     uint256 public maxPoly;                   // Maximum Poly limit raised by the offering contract
     uint256 public polyRaised;                // Variable to track the poly raised
@@ -75,7 +76,7 @@ contract SimpleCappedOffering {
       endTime = _endTime;
       exchangeRatePolyToken = _exchangeRatePolyToken;
       maxPoly = _maxPoly;
-      SecurityToken = SecurityTokenMOCK(_securityToken);
+      SecurityToken = ISecurityToken(_securityToken);
     }
 
     /**
