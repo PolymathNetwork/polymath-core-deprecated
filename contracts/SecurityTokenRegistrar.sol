@@ -39,6 +39,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
 
     event LogNewSecurityToken(string _nameSpace, string _ticker, address indexed _securityTokenAddress, address indexed _owner, uint8 _type);
+    event LogNameSpaceCreated(string _nameSpace, address _owner, uint256 _fee);
     event LogNameSpaceChange(string _nameSpace, address _newOwner, uint256 _newFee);
 
     /**
@@ -70,6 +71,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       require(_owner != 0x0);
       nameSpaceData[_nameSpace].owner = _owner;
       nameSpaceData[_nameSpace].fee = _fee;
+      LogNameSpaceCreated(_nameSpace, _owner, _fee);
     }
     /**
      * @dev Changes name space fee
