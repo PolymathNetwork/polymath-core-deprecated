@@ -74,7 +74,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
 	   // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
-    uint256 public tokensIssuedBySTO = 0;                                    // Flag variable to track the security token issued by the offering contract
     uint256 public totalAllocated = 0;
 
     // Notifications
@@ -390,8 +389,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
         require(shareholders[_contributor].allowed);
         // In order to issue the ST, the _contributor first pays in POLY
         require(POLY.transferFrom(_contributor, this, _polyContributed));
-        // ST being issued can't be higher than the totalSupply
-        require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
         // Update ST balances (transfers ST from STO to _contributor)
         balances[offering] = balances[offering].sub(_amountOfSecurityTokens);
         balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
@@ -400,8 +397,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
         PolyCompliance.updateTemplateReputation(address(Template), _polyContributed);
         // ERC20 Transfer event
         Transfer(offering, _contributor, _amountOfSecurityTokens);
-        // Update the amount of tokens issued by STO
-        tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
         // Update the amount of POLY a contributor has contributed and allocated to the owner
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
