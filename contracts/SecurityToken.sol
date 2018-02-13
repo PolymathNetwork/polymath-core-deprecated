@@ -488,4 +488,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
     function totalSupply() public view returns (uint256) {
       return totalSupply;
     }
+
+    function decimals() public view returns (uint8) {
+      return decimals;
+    }
 }

@@ -112,7 +112,6 @@ contract Template is ITemplate {
     ) public
     {
         require(_KYC != address(0) && _owner != address(0));
-        require(_fee > 0);
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);
         require(_quorum > 0 && _quorum <= 100);
         require(_vestingPeriod > 0);
