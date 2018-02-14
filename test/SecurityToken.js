@@ -42,7 +42,8 @@ contract('SecurityToken', accounts => {
   const pk_provider1 = pk.account_0;
   // let fee = 10000;
 
-  const nameSpace = "TestNameSpace";
+  const nameSpaceMixed = "TestNameSpace";
+  const nameSpace = "testnamespace";
   const nameSpaceFee = 10000;
   const nameSpaceOwner = accounts[6];
 
@@ -278,13 +279,16 @@ contract('SecurityToken', accounts => {
       await POLY.approve(STRegistrar.address, 100000, { from : issuer });
       let allowedToken = await POLY.allowance(issuer, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(), 100000);
+      console.log("BEF");
 
       // Create name space
       await STRegistrar.createNameSpace(
-        nameSpace,
+        nameSpaceMixed,
         nameSpaceOwner,
         nameSpaceFee
       )
+      console.log("AFT");
+
       // Creation of the Security Token with the help of SecurityTokenRegistrar contract
       let st = await STRegistrar.createSecurityToken(
           nameSpace,

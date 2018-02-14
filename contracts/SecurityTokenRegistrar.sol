@@ -67,12 +67,37 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @param _fee Fee for this name space
      */
     function createNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
-      require(nameSpaceData[_nameSpace].owner == 0x0);
       require(_owner != 0x0);
-      nameSpaceData[_nameSpace].owner = _owner;
-      nameSpaceData[_nameSpace].fee = _fee;
-      LogNameSpaceCreated(_nameSpace, _owner, _fee);
+      string memory nameSpace = lower(_nameSpace);
+      require(nameSpaceData[nameSpace].owner == 0x0);
+      nameSpaceData[nameSpace].owner = _owner;
+      nameSpaceData[nameSpace].fee = _fee;
+      LogNameSpaceCreated(nameSpace, _owner, _fee);
     }
+
+    /**
+     * @dev changes a string to lower case
+     * @param _base string to change
+     */
+    function lower(string _base) internal pure returns (string) {
+      bytes memory _baseBytes = bytes(_base);
+      for (uint i = 0; i < _baseBytes.length; i++) {
+        _baseBytes[i] = _lower(_baseBytes[i]);
+      }
+      return string(_baseBytes);
+    }
+
+    /**
+     * @dev changes a byte to lower case
+     * @param _b1 byte to change
+     */
+    function _lower(bytes1 _b1) private pure returns (bytes1) {
+      if (_b1 >= 0x41 && _b1 <= 0x5A) {
+        return bytes1(uint8(_b1)+32);
+      }
+      return _b1;
+    }
+
     /**
      * @dev Changes name space fee
      * @param _nameSpace Name space string
