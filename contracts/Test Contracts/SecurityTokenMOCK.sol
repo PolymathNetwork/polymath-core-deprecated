@@ -38,14 +38,11 @@ contract SecurityTokenMOCK is SecurityToken {
 
   function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlyOffering returns (bool success) {
 
-      require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
       // Update ST balances (transfers ST from STO to _contributor)
       balances[offering] = balances[offering].sub(_amountOfSecurityTokens);
       balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
       // ERC20 Transfer event
       Transfer(offering, _contributor, _amountOfSecurityTokens);
-      // Update the amount of tokens issued by STO
-      tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
       // Update the amount of POLY a contributor has contributed and allocated to the owner
       contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
       allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
