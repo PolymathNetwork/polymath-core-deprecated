@@ -17,7 +17,8 @@ contract('SecurityTokenRegistrar', accounts => {
   const maxPoly = 100000;
   const securityType = 5;
   const numberOfSecurityTypes = 8;                                           //8 is chosen for testing,
-  const nameSpace = "TestNameSpace";
+  const nameSpaceMixed = "TestNameSpace";
+  const nameSpace = "testnamespace";
   const nameSpaceFee = 10000;
   const nameSpaceOwner = accounts[6];
   const quorum = 3;
@@ -68,13 +69,14 @@ contract('SecurityTokenRegistrar', accounts => {
 
       let allowedToken = await polyToken.allowance(issuer1, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(),approvedAmount);
-
+      console.log("BEF");
       // Create name space
       await STRegistrar.createNameSpace(
-        nameSpace,
+        nameSpaceMixed,
         nameSpaceOwner,
         nameSpaceFee
       )
+      console.log("AFT");
 
       // Creation of the Security Token
       let ST = await STRegistrar.createSecurityToken(
@@ -120,7 +122,7 @@ contract('SecurityTokenRegistrar', accounts => {
 
         // Create name space
         await STRegistrar.createNameSpace(
-          nameSpace,
+          nameSpaceMixed,
           nameSpaceOwner,
           nameSpaceFee
         )
@@ -197,7 +199,7 @@ contract('SecurityTokenRegistrar', accounts => {
 
         // Create name space
         await STRegistrar.createNameSpace(
-          nameSpace,
+          nameSpaceMixed,
           nameSpaceOwner,
           nameSpaceFee
         )
@@ -251,7 +253,7 @@ contract('SecurityTokenRegistrar', accounts => {
 
         // Create name space
         await STRegistrar.createNameSpace(
-          nameSpace,
+          nameSpaceMixed,
           nameSpaceOwner,
           nameSpaceFee
         )
@@ -305,7 +307,7 @@ contract('SecurityTokenRegistrar', accounts => {
 
         // Create name space
         await STRegistrar.createNameSpace(
-          nameSpace,
+          nameSpaceMixed,
           nameSpaceOwner,
           nameSpaceFee
         )
@@ -343,7 +345,7 @@ contract('SecurityTokenRegistrar', accounts => {
 
         // Create name space
         await STRegistrar.createNameSpace(
-          nameSpace,
+          nameSpaceMixed,
           nameSpaceOwner,
           nameSpaceFee
         )
