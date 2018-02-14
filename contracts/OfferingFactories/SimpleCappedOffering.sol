@@ -87,7 +87,7 @@ contract SimpleCappedOffering {
     function buy(uint256 _polyContributed) public onlyDuringSale returns(bool) {
         require(_polyContributed > 0);
         require(validPurchase(_polyContributed));
-        uint256 _amountOfSecurityTokens = _polyContributed.mul(exchangeRatePolyToken).div(10 ** (18 - uint(SecurityToken.decimals())));
+        uint256 _amountOfSecurityTokens = _polyContributed.div(exchangeRatePolyToken);
 
         // Make sure we don't sell more tokens than those available to the STO
         // TBD change this so we can sell the difference.
