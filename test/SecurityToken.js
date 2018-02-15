@@ -277,7 +277,6 @@ contract('SecurityToken', accounts => {
       await POLY.approve(STRegistrar.address, 100000, { from : issuer });
       let allowedToken = await POLY.allowance(issuer, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(), 100000);
-      console.log("BEF");
 
       // Create name space
       await STRegistrar.createNameSpace(
@@ -285,7 +284,6 @@ contract('SecurityToken', accounts => {
         nameSpaceOwner,
         nameSpaceFee
       )
-      console.log("AFT");
 
       // Creation of the Security Token with the help of SecurityTokenRegistrar contract
       let st = await STRegistrar.createSecurityToken(
@@ -888,6 +886,7 @@ it("cancelOfferingFactoryProposal: Should fail in canceling the proposal -- msg.
       investedAmount = 900;
       txReturn.logs[0].args._ployContribution.toNumber().should.equal(900);
       txReturn.logs[0].args._contributor.should.equal(investor1);
+      // assert.isTrue(false);
   });
 
   it('issueSecurityTokens: Should not successfully allocate the security token to contributor -- less allowance',async()=>{

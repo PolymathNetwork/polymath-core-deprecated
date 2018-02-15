@@ -345,7 +345,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @return bool success
      */
     function withdrawPoly() public returns (bool success) {
-      require(offering == 0x0);
+      require(offering != 0x0);
       require(now > allocationStartTime.add(allocations[msg.sender].vestingPeriod));
       require(!allocations[msg.sender].frozen);
       require(allocations[msg.sender].amount > 0);
@@ -361,7 +361,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
      */
     function voteToFreeze(address _recipient) public onlyShareholder returns (bool success) {
       require(delegate != address(0));
-      require(offering == 0x0);
+      require(offering != 0x0);
       require(now > allocationStartTime);
       require(now < allocationStartTime.add(allocations[_recipient].vestingPeriod));
       require(!voted[msg.sender][_recipient]);
@@ -383,7 +383,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
      */
     function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlyOffering returns (bool success) {
       // Check whether the offering active or not
-      require(offering == 0x0);
+      require(offering != 0x0);
       // The _contributor being issued tokens must be in the whitelist
       require(shareholders[_contributor].allowed);
       // In order to issue the ST, the _contributor first pays in POLY
