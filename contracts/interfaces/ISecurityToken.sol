@@ -91,4 +91,6 @@
     /// Get token details
     function getTokenDetails() view public returns (address, address, bytes32, address, address, address);
 
+    /// Get token decimals
+    function decimals() view public returns (uint8);
   }

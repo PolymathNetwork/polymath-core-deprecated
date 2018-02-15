@@ -129,33 +129,6 @@ interface ICustomers {
   );
 }
 
-interface ISecurityTokenRegistrar {
-
-   /**
-    * @dev Creates a new Security Token and saves it to the registry
-    * @param _nameSpace Name space for this security token
-    * @param _name Name of the security token
-    * @param _ticker Ticker name of the security
-    * @param _totalSupply Total amount of tokens being created
-    * @param _owner Ethereum public key address of the security token owner
-    * @param _type Type of security being tokenized
-    * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-    * @param _quorum Percent of initial investors required to freeze POLY raise
-    */
-    function createSecurityToken (
-        string _nameSpace,
-        string _name,
-        string _ticker,
-        uint256 _totalSupply,
-        uint8 _decimals,
-        address _owner,
-        uint8 _type,
-        uint256 _lockupPeriod,
-        uint8 _quorum
-    ) external;
-
-}
-
 interface ISecurityToken {
 
    /**
@@ -247,6 +220,8 @@ interface ISecurityToken {
     /// Get token details
     function getTokenDetails() view public returns (address, address, bytes32, address, address, address);
 
+    /// Get token decimals
+    function decimals() view public returns (uint8);
   }
 
 /*
@@ -479,7 +454,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     using SafeMath for uint256;
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     IERC20 public POLY;                                               // Instance of the POLY token contract
 
@@ -495,8 +470,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     // ERC20 Fields
     string public name;                                               // Name of the security token
-    uint8 public decimals;                                            // Decimals for the security token it should be 0 as standard
     string public symbol;                                             // Symbol of the security token
+    uint8 public decimals;                                            // Decimals for the security token it should be 0 as standard
     address public owner;                                             // Address of the owner of the security token
     uint256 public totalSupply;                                       // Total number of security token generated
     mapping(address => mapping(address => uint256)) allowed;          // Mapping as same as in ERC20 token
@@ -504,8 +479,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     // Template
     address public delegate;                                          // Address who create the template
-    bytes32 public merkleRoot;                                        //
     address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template
+    bytes32 public merkleRoot;
 
     // Security token shareholders
     struct Shareholder {                                              // Structure that contains the data of the shareholders
@@ -526,9 +501,9 @@ contract SecurityToken is ISecurityToken, IERC20 {
     struct Allocation {                                               // Structure that contains the allocation of the POLY for stakeholders
         uint256 amount;                                               // stakeholders - delegate, issuer(owner), auditor
         uint256 vestingPeriod;
-        uint8 quorum;
         uint256 yayVotes;
         uint256 yayPercent;
+        uint8 quorum;
         bool frozen;
     }
     mapping(address => mapping(address => bool)) public voted;               // Voting mapping
@@ -536,7 +511,8 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
 	   // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
-    uint256 public tokensIssuedBySTO = 0;                             // Flag variable to track the security token issued by the offering contract
+    uint256 public tokensIssuedBySTO = 0;                                    // Flag variable to track the security token issued by the offering contract
+    uint256 public totalAllocated = 0;
 
     // Notifications
     event LogTemplateSet(address indexed _delegateAddress, address indexed _template, address indexed _KYC);
@@ -547,6 +523,11 @@ contract SecurityToken is ISecurityToken, IERC20 {
     event LogNewBlacklistedAddress(address indexed _shareholder);
     event LogVoteToFreeze(address indexed _recipient, uint256 _yayPercent, uint8 _quorum, bool _frozen);
     event LogTokenIssued(address indexed _contributor, uint256 _stAmount, uint256 _polyContributed, uint256 _timestamp);
+
+    //Change token details, except for SYMBOL
+    event ChangeName(string _oldName, string _newName);
+    event ChangeDecimals(uint8 _oldDecimals, uint8 _newDecimals);
+    event ChangeTotalSupply(uint256 _oldTotalSupply, uint256 _newTotalSupply);
 
     //Modifiers
     modifier onlyOwner() {
@@ -612,7 +593,42 @@ contract SecurityToken is ISecurityToken, IERC20 {
         Transfer(0x0, _owner, _totalSupply);
     }
 
-    /* function initialiseBalances(uint256) */
+    /**
+     * @dev `changeTotalSupply` change the total supply of the token
+     * @param _newTotalSupply New total supply
+     * @return bool success
+     */
+    function changeTotalSupply(uint256 _newTotalSupply) public onlyOwner returns (bool success) {
+      require(!hasOfferingStarted);
+      ChangeTotalSupply(totalSupply, _newTotalSupply);
+      totalSupply = _newTotalSupply;
+      balances[owner] = _newTotalSupply;
+      return true;
+    }
+
+    /**
+     * @dev `changeDecimals` change the total supply of the token
+     * @param _newDecimals New decimals
+     * @return bool success
+     */
+    function changeDecimals(uint8 _newDecimals) public onlyOwner returns (bool success) {
+      require(!hasOfferingStarted);
+      ChangeDecimals(decimals, _newDecimals);
+      decimals = _newDecimals;
+      return true;
+    }
+
+    /**
+     * @dev `changeName` change the total supply of the token
+     * @param _newName New name
+     * @return bool success
+     */
+    function changeName(string _newName) public onlyOwner returns (bool success) {
+      require(!hasOfferingStarted);
+      ChangeName(name, _newName);
+      name = _newName;
+      return true;
+    }
 
     /**
      * @dev `selectTemplate` Select a proposed template for the issuance
@@ -628,6 +644,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         var (_fee, _quorum, _vestingPeriod, _delegate, _KYC) = Template.getUsageDetails();
         require(POLY.balanceOf(this) >= _fee);
         allocations[_delegate] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        totalAllocated = totalAllocated.add(_fee);
         delegate = _delegate;
         KYC = _KYC;
         PolyCompliance.updateTemplateReputation(template, 0);
@@ -665,8 +682,9 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
         OfferingFactory = IOfferingFactory(offeringFactory);
         var (_fee, _quorum, _vestingPeriod, _owner, _description) = OfferingFactory.getUsageDetails();
-        require(POLY.balanceOf(this) >= allocations[delegate].amount.add(_fee));
+        require(POLY.balanceOf(this) >= totalAllocated.add(_fee));
         allocations[_owner] = Allocation(_fee, _vestingPeriod, _quorum, 0, 0, false);
+        totalAllocated = totalAllocated.add(_fee);
 
         PolyCompliance.updateOfferingFactoryReputation(offeringFactory, 0);
         LogOfferingFactorySet(offeringFactory, _owner, _description);
@@ -687,7 +705,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         hasOfferingStarted = true;
         offeringStartTime = _startTime;
         require(_startTime > now && _endTime > _startTime);
-
+        // Creation of the new instance of the offering contract to facilitate the offering of this security token
         offering = OfferingFactory.createOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, this);
         shareholders[offering] = Shareholder(this, true, 5);
         uint256 tokenAmount = this.balanceOf(msg.sender);
@@ -755,10 +773,17 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
      * @return bool success
      */
+    function withdrawUnallocatedPoly() public onlyOwner returns (bool success) {
+      require(POLY.balanceOf(this) > totalAllocated);
+      require(POLY.transfer(owner, POLY.balanceOf(this).sub(totalAllocated)));
+      return true;
+    }
+
+    /**
+     * @dev Allow POLY allocations to be withdrawn by owner, delegate, and the STO auditor at appropriate times
+     * @return bool success
+     */
     function withdrawPoly() public returns (bool success) {
-  	    if (delegate == address(0)) {
-          return POLY.transfer(owner, POLY.balanceOf(this));
-        }
         require(hasOfferingStarted);
         require(now > offeringStartTime.add(allocations[msg.sender].vestingPeriod));
         require(!allocations[msg.sender].frozen);
@@ -817,6 +842,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         // Update the amount of POLY a contributor has contributed and allocated to the owner
         contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
         allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
+        totalAllocated = totalAllocated.add(_polyContributed);
         LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
         return true;
     }
@@ -898,5 +924,9 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     function totalSupply() public view returns (uint256) {
       return totalSupply;
+    }
+
+    function decimals() public view returns (uint8) {
+      return decimals;
     }
 }

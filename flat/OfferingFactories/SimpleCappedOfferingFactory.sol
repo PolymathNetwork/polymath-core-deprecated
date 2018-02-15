@@ -1,55 +1,5 @@
 pragma solidity ^0.4.18;
 
-interface ISecurityTokenRegistrar {
-
-   /**
-    * @dev Creates a new Security Token and saves it to the registry
-    * @param _nameSpace Name space for this security token
-    * @param _name Name of the security token
-    * @param _ticker Ticker name of the security
-    * @param _totalSupply Total amount of tokens being created
-    * @param _owner Ethereum public key address of the security token owner
-    * @param _type Type of security being tokenized
-    * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-    * @param _quorum Percent of initial investors required to freeze POLY raise
-    */
-    function createSecurityToken (
-        string _nameSpace,
-        string _name,
-        string _ticker,
-        uint256 _totalSupply,
-        uint8 _decimals,
-        address _owner,
-        uint8 _type,
-        uint256 _lockupPeriod,
-        uint8 _quorum
-    ) external;
-
-    /**
-     * @dev Get Security token details by its ethereum address
-     * @param _STAddress Security token address
-     */
-    function getSecurityTokenData(address _STAddress) public view returns (
-      string,
-      string,
-      address,
-      uint8
-    );
-
-}
-
-/// ERC Token Standard #20 Interface (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md)
-interface IERC20 {
-    function balanceOf(address _owner) public view returns (uint256 balance);
-    function transfer(address _to, uint256 _value) public returns (bool success);
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
-    function approve(address _spender, uint256 _value) public returns (bool success);
-    function allowance(address _owner, address _spender) public view returns (uint256 remaining);
-    function totalSupply() public view returns (uint256);
-    event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
-}
-
 /**
  *  SafeMath <https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/math/SafeMath.sol/>
  *  Copyright (c) 2016 Smart Contract Solutions, Inc.
@@ -97,6 +47,18 @@ library SafeMath {
     function min256(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
+}
+
+/// ERC Token Standard #20 Interface (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md)
+interface IERC20 {
+    function balanceOf(address _owner) public view returns (uint256 balance);
+    function transfer(address _to, uint256 _value) public returns (bool success);
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
+    function approve(address _spender, uint256 _value) public returns (bool success);
+    function allowance(address _owner, address _spender) public view returns (uint256 remaining);
+    function totalSupply() public view returns (uint256);
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
 
 interface ICustomers {
@@ -969,137 +931,26 @@ contract SecurityToken is ISecurityToken, IERC20 {
     }
 }
 
-/*
-  The Polymath Security Token Registrar provides a way to lookup security token details
-  from a single place and allows wizard creators to earn POLY fees by uploading to the
-  registrar.
-*/
-
-
-
-
 /**
- * @title SecurityTokenRegistrar
- * @dev Contract use to register the security token on Polymath platform
+ * @title SecurityToken
+ * @dev Contract (A Blueprint) that contains the functionalities of the security token
  */
 
-contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
+contract SecurityTokenMOCK is SecurityToken {
 
-    string public VERSION = "2";
-    IERC20 public PolyToken;                                        // Address of POLY token
-    address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
-    address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
-
-    struct NameSpaceData {
-      address owner;
-      uint256 fee;
-    }
-
-    // Security Token
-    struct SecurityTokenData {                                      // A structure that contains the specific info of each ST
-      string nameSpace;
-      string ticker;
-      address owner;
-      uint8 securityType;
-    }
-
-    mapping (string => NameSpaceData) nameSpaceData;                 // Mapping from nameSpace to owner / fee of nameSpace
-    mapping (address => SecurityTokenData) securityTokens;           // Mapping from securityToken address to data about the securityToken
-    mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
-
-    event LogNewSecurityToken(string _nameSpace, string _ticker, address indexed _securityTokenAddress, address indexed _owner, uint8 _type);
-    event LogNameSpaceChange(string _nameSpace, address _newOwner, uint256 _newFee);
-
-    /**
-     * @dev Constructor use to set the essentials addresses to facilitate
-     * the creation of the security token
-     */
-    function SecurityTokenRegistrar(
+  function SecurityTokenMOCK(
+      string _name,
+      string _ticker,
+      uint256 _totalSupply,
+      uint8 _decimals,
+      address _owner,
+      uint256 _lockupPeriod,
+      uint8 _quorum,
       address _polyTokenAddress,
       address _polyCustomersAddress,
       address _polyComplianceAddress
-    ) public
-    {
-      require(_polyTokenAddress != address(0));
-      require(_polyCustomersAddress != address(0));
-      require(_polyComplianceAddress != address(0));
-      PolyToken = IERC20(_polyTokenAddress);
-      polyCustomersAddress = _polyCustomersAddress;
-      polyComplianceAddress = _polyComplianceAddress;
-    }
-
-    /**
-     * @dev Creates a securityToken name space
-     * @param _nameSpace Name space string
-     * @param _owner Owner for this name space
-     * @param _fee Fee for this name space
-     */
-    function createNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
-      require(nameSpaceData[_nameSpace].owner == 0x0);
-      require(_owner != 0x0);
-      nameSpaceData[_nameSpace].owner = _owner;
-      nameSpaceData[_nameSpace].fee = _fee;
-    }
-    /**
-     * @dev Changes name space fee
-     * @param _nameSpace Name space string
-     * @param _fee New fee for security token creation for this name space
-     */
-    function changeNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
-      require(msg.sender == nameSpaceData[_nameSpace].owner);
-      nameSpaceData[_nameSpace].fee = _fee;
-      nameSpaceData[_nameSpace].owner = _owner;
-      LogNameSpaceChange(_nameSpace, _owner, _fee);
-    }
-
-    /**
-     * @dev Creates a new Security Token and saves it to the registry
-     * @param _nameSpaceName Name space for this security token
-     * @param _name Name of the security token
-     * @param _ticker Ticker name of the security
-     * @param _totalSupply Total amount of tokens being created
-     * @param _decimals Decimals value for token
-     * @param _owner Ethereum public key address of the security token owner
-     * @param _type Type of security being tokenized
-     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-     * @param _quorum Percent of initial investors required to freeze POLY raise
-     */
-    function createSecurityToken (
-      string _nameSpaceName,
-      string _name,
-      string _ticker,
-      uint256 _totalSupply,
-      uint8 _decimals,
-      address _owner,
-      uint8 _type,
-      uint256 _lockupPeriod,
-      uint8 _quorum
-    ) external
-    {
-      require(_totalSupply > 0);
-      require(_lockupPeriod >= now);
-      NameSpaceData storage nameSpace = nameSpaceData[_nameSpaceName];
-      require(tickers[_nameSpaceName][_ticker] == 0x0);
-      require(nameSpace.owner != 0x0);
-      require(_owner != address(0));
-      require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
-      require(PolyToken.transferFrom(msg.sender, nameSpace.owner, nameSpace.fee));
-      initialiseSecurityToken(_nameSpaceName, _name, _ticker, _totalSupply, _decimals, _owner, _type, _lockupPeriod, _quorum);
-    }
-
-    function initialiseSecurityToken(
-      string _nameSpace,
-      string _name,
-      string _ticker,
-      uint256 _totalSupply,
-      uint8 _decimals,
-      address _owner,
-      uint8 _type,
-      uint256 _lockupPeriod,
-      uint8 _quorum
-    ) internal
-    {
-      address newSecurityTokenAddress = new SecurityToken(
+  ) public
+  SecurityToken(
         _name,
         _ticker,
         _totalSupply,
@@ -1107,49 +958,225 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
         _owner,
         _lockupPeriod,
         _quorum,
-        PolyToken,
-        polyCustomersAddress,
-        polyComplianceAddress
-      );
-      tickers[_nameSpace][_ticker] = newSecurityTokenAddress;
-      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
-        _nameSpace,
-        _ticker,
-        _owner,
-        _type
-      );
-      LogNewSecurityToken(_nameSpace, _ticker, newSecurityTokenAddress, _owner, _type);
+        _polyTokenAddress,
+        _polyCustomersAddress,
+        _polyComplianceAddress
+
+    )
+  {}
+
+  function issueSecurityTokens(address _contributor, uint256 _amountOfSecurityTokens, uint256 _polyContributed) public onlyOffering returns (bool success) {
+
+      require(tokensIssuedBySTO.add(_amountOfSecurityTokens) <= totalSupply);
+      // Update ST balances (transfers ST from STO to _contributor)
+      balances[offering] = balances[offering].sub(_amountOfSecurityTokens);
+      balances[_contributor] = balances[_contributor].add(_amountOfSecurityTokens);
+      // ERC20 Transfer event
+      Transfer(offering, _contributor, _amountOfSecurityTokens);
+      // Update the amount of tokens issued by STO
+      tokensIssuedBySTO = tokensIssuedBySTO.add(_amountOfSecurityTokens);
+      // Update the amount of POLY a contributor has contributed and allocated to the owner
+      contributedToSTO[_contributor] = contributedToSTO[_contributor].add(_polyContributed);
+      allocations[owner].amount = allocations[owner].amount.add(_polyContributed);
+      totalAllocated = totalAllocated.add(_polyContributed);
+      LogTokenIssued(_contributor, _amountOfSecurityTokens, _polyContributed, now);
+      return true;
+  }
+
+  /**
+   * @dev Start the offering by sending all the tokens to STO contract
+   * @return bool
+   */
+  function initialiseOffering(address _offering) onlyOwner external returns (bool success) {
+      require(!hasOfferingStarted);
+      hasOfferingStarted = true;
+      offering = _offering;
+      shareholders[offering] = Shareholder(this, true, 5);
+      uint256 tokenAmount = this.balanceOf(msg.sender);
+      require(tokenAmount == totalSupply);
+      balances[offering] = balances[offering].add(tokenAmount);
+      balances[msg.sender] = balances[msg.sender].sub(tokenAmount);
+      Transfer(owner, offering, tokenAmount);
+      return true;
+  }
+
+}
+
+contract SimpleCappedOffering {
+
+    using SafeMath for uint256;
+    string public VERSION = "1";
+
+    SecurityTokenMOCK public SecurityToken;
+
+    uint256 public maxPoly;                   // Maximum Poly limit raised by the offering contract
+    uint256 public polyRaised;                // Variable to track the poly raised
+    uint256 public startTime;                 // Unix timestamp to start the offering
+    uint256 public endTime;                   // Unix timestamp to end the offering
+    uint256 public exchangeRatePolyToken;     // Fix rate of 1 security token in terms of POLY
+
+    uint256 public securityTokensSold;        // Amount of security tokens sold through the STO
+
+    /////////////
+    // Constants
+    /////////////
+
+    uint256 public constant DECIMALSFACTOR = 10**uint256(18);
+
+    uint256 public constant TOKENS_MAX_TOTAL          = 1000000 * DECIMALSFACTOR;  // 100%
+    uint256 public constant TOKENS_STO                =  500000 * DECIMALSFACTOR;  //  50%
+    uint256 public constant TOKENS_FOUNDERS           =  200000  * DECIMALSFACTOR; //  20%
+    uint256 public constant TOKENS_EARLY_INVESTORS    =  200000  * DECIMALSFACTOR; //  20%
+    uint256 public constant TOKENS_ADVISORS           =  100000  * DECIMALSFACTOR; //  10%
+
+    ///////////////
+    // MODIFIERS //
+    ///////////////
+
+    modifier onlyDuringSale() {
+          require(hasStarted() && !hasEnded());
+          _;
+      }
+
+    modifier onlyAfterSale() {
+        // require finalized is stronger than hasSaleEnded
+        require(hasEnded());
+        _;
     }
 
-    //////////////////////////////
-    ///////// Get Functions
-    //////////////////////////////
+    ////////////
+    // EVENTS //
+    ////////////
+
+    event LogBoughtSecurityToken(address indexed _contributor, uint256 _ployContribution, uint256 _timestamp);
+
     /**
-     * @dev Get security token address by ticker name
-     * @param _nameSpace Name space of the Scurity token
-     * @param _ticker Symbol of the Scurity token
-     * @return address _ticker
+     * @dev Constructor A new instance of the capped offering contract get launch
+     * everytime when the constructor called by the factory contract
+     * @param _startTime Unix timestamp to start the offering
+     * @param _endTime Unix timestamp to end the offering
+     * @param _exchangeRatePolyToken Price of one security token in terms of poly
+     * @param _maxPoly Maximum amount of poly issuer wants to collect
+     * @param _securityToken Address of the security token
      */
-    function getSecurityTokenAddress(string _nameSpace, string _ticker) public view returns (address) {
-      return tickers[_nameSpace][_ticker];
+
+    function SimpleCappedOffering(uint256 _startTime, uint256 _endTime, uint256 _exchangeRatePolyToken, uint256 _maxPoly, address _securityToken) public {
+      require(_startTime >= now);
+      require(_endTime > _startTime);
+      require(_exchangeRatePolyToken > 0);
+      require(_securityToken != address(0));
+
+      //TOKENS_MAX_TOTAL MUST BE equal to all other token token allocations combined
+      require(TOKENS_STO.add(TOKENS_FOUNDERS).add(TOKENS_EARLY_INVESTORS).add(TOKENS_ADVISORS) == TOKENS_MAX_TOTAL);
+
+      startTime = _startTime;
+      endTime = _endTime;
+      exchangeRatePolyToken = _exchangeRatePolyToken;
+      maxPoly = _maxPoly;
+      SecurityToken = SecurityTokenMOCK(_securityToken);
     }
 
     /**
-     * @dev Get Security token details by its ethereum address
-     * @param _STAddress Security token address
+     * @dev `buy` Facilitate the buying of SecurityToken in exchange of POLY
+     * @param _polyContributed Amount of POLY contributor want to invest.
+     * @return bool
      */
-    function getSecurityTokenData(address _STAddress) public view returns (
-      string,
-      string,
-      address,
-      uint8
-    ) {
-      return (
-        securityTokens[_STAddress].nameSpace,
-        securityTokens[_STAddress].ticker,
-        securityTokens[_STAddress].owner,
-        securityTokens[_STAddress].securityType
-      );
+    function buy(uint256 _polyContributed) public onlyDuringSale returns(bool) {
+        require(_polyContributed > 0);
+        require(validPurchase(_polyContributed));
+        uint256 _amountOfSecurityTokens = _polyContributed.mul(exchangeRatePolyToken).div(10 ** (18 - uint(SecurityToken.decimals())));
+
+        // Make sure we don't sell more tokens than those available to the STO
+        // TBD change this so we can sell the difference.
+        require (securityTokensSold.add(_amountOfSecurityTokens) <= TOKENS_STO);
+
+        require(SecurityToken.issueSecurityTokens(msg.sender, _amountOfSecurityTokens, _polyContributed));
+
+        polyRaised = polyRaised.add(_polyContributed);
+        securityTokensSold = securityTokensSold.add(_amountOfSecurityTokens); //Keep track of tokens sold
+
+        LogBoughtSecurityToken(msg.sender, _polyContributed, now);
+
+        return true;
+    }
+
+    /**
+     * @dev Use to validate the poly contribution
+     * If issuer sets the capping over the offering contract then raised amount should
+     * always less than or equal to the maximum amount set (maxPoly)
+     * @param _polyContributed Amount of POLY contributor want to invest
+     * @return bool
+     */
+    function validPurchase(uint256 _polyContributed) internal view returns(bool) {
+        bool reachedCap = maxPoly > 0 && polyRaised.add(_polyContributed) <= maxPoly;
+        return (reachedCap);
+    }
+
+    //
+    //Helper functions for onlyDuringSale / onlyAfterSale modifiers
+    //
+
+    // @return true if STO has ended
+    function hasEnded() public constant returns (bool) {
+      return now > endTime;
+    }
+
+    // @return true if STO has started
+    function hasStarted() public constant returns (bool) {
+      return now >= startTime;
+    }
+
+}
+
+/**
+ * @dev Highly Recommended - Only a sample STO factory Not used for mainnet !!
+ */
+
+contract SimpleCappedOfferingFactory is IOfferingFactory {
+
+    using SafeMath for uint256;
+    string public VERSION = "1";
+
+    ISecurityToken public SecurityToken;
+
+    uint256 public fee = 100;
+    uint8 public quorum = 10;
+    uint256 public vestingPeriod = 8888888;
+    bytes32 public description = "Capped";
+    uint256 public fxPolyToken;
+
+    address public owner;
+
+    function SimpleCappedOfferingFactory() public {
+        owner = msg.sender;
+    }
+
+    /**
+     * @dev It facilitate the creation of the STO contract with essentials parameters
+     * @param _startTime Unix timestamp to start the offering
+     * @param _endTime Unix timestamp to end the offering
+     * @param _polyTokenRate Price of one security token in terms of poly
+     * @param _maxPoly Maximum amount of poly issuer wants to collect
+     * @param _securityToken Address of the security token 
+     * @return address Address of the new offering instance
+     */
+    function createOffering(
+      uint256 _startTime,
+      uint256 _endTime,
+      uint256 _polyTokenRate,
+      uint256 _maxPoly,
+      address _securityToken
+      ) public returns (address) 
+    {
+      return new SimpleCappedOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, _securityToken);
+    }
+
+    /**
+     * @dev `getUsageDetails` is a function to get all the details on factory usage fees
+     * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, string description
+     */
+    function getUsageDetails() view public returns (uint256, uint8, uint256, address, bytes32) {
+      return (fee, quorum, vestingPeriod, owner, description);
     }
 
 }
