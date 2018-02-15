@@ -68,7 +68,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         uint8 quorum;
         bool frozen;
     }
-    
+
     mapping(address => mapping(address => bool)) public voted;               // Voting mapping
     mapping(address => Allocation) public allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
 
@@ -123,8 +123,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @param _ticker Ticker name of the security
      * @param _totalSupply Total amount of tokens being created
      * @param _owner Ethereum address of the security token owner
-     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-     * @param _quorum Percent of initial investors required to freeze POLY raise
      * @param _polyTokenAddress Ethereum address of the POLY token contract
      * @param _polyCustomersAddress Ethereum address of the PolyCustomers contract
      * @param _polyComplianceAddress Ethereum address of the PolyCompliance contract
@@ -135,8 +133,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
         uint256 _totalSupply,
         uint8 _decimals,
         address _owner,
-        uint256 _lockupPeriod,
-        uint8 _quorum,
         address _polyTokenAddress,
         address _polyCustomersAddress,
         address _polyComplianceAddress
@@ -151,7 +147,6 @@ contract SecurityToken is ISecurityToken, IERC20 {
         POLY = IERC20(_polyTokenAddress);
         PolyCustomers = ICustomers(_polyCustomersAddress);
         PolyCompliance = ICompliance(_polyComplianceAddress);
-        allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
         Transfer(0x0, _owner, _totalSupply);
     }
 
@@ -260,13 +255,17 @@ contract SecurityToken is ISecurityToken, IERC20 {
      * @param _endTime Unix timestamp to end the offering
      * @param _polyTokenRate Price of one security token in terms of poly
      * @param _maxPoly Maximum amount of poly issuer wants to collect
+     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+     * @param _quorum Percent of initial investors required to freeze POLY raise
      * @return bool
      */
-    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) onlyOwner external returns (bool success) {
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly, uint256 _lockupPeriod, uint8 _quorum) onlyOwner external returns (bool success) {
         require(isOfferingFactorySet);
         require(offering == 0x0);
         allocationStartTime = _startTime;
         require(_startTime > now && _endTime > _startTime);
+        require(_lockupPeriod >= now);
+        allocations[owner] = Allocation(0, _lockupPeriod, _quorum, 0, 0, false);
         // Creation of the new instance of the offering contract to facilitate the offering of this security token
         offering = OfferingFactory.createOffering(_startTime, _endTime, _polyTokenRate, _maxPoly);
         shareholders[offering] = Shareholder(this, true, 5);
@@ -302,7 +301,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
      */
     function addToWhitelistMulti(address[] _whitelistAddresses) onlyOwner public returns (bool success) {
       for (uint256 i = 0; i < _whitelistAddresses.length; i++) {
-        require(addToWhitelist(_whitelistAddresses[i]));
+        addToWhitelist(_whitelistAddresses[i]);
       }
       return true;
     }
@@ -326,7 +325,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
      */
     function addToBlacklistMulti(address[] _blacklistAddresses) onlyOwner public returns (bool success) {
       for (uint256 i = 0; i < _blacklistAddresses.length; i++) {
-        require(addToBlacklist(_blacklistAddresses[i]));
+        addToBlacklist(_blacklistAddresses[i]);
       }
       return true;
     }

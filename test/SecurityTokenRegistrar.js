@@ -87,8 +87,6 @@ contract('SecurityTokenRegistrar', accounts => {
         0,
         issuer1,
         numberOfSecurityTypes,
-        lockupPeriod,
-        quorum,
         {
           from: issuer1,
         },
@@ -136,8 +134,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer1,
               numberOfSecurityTypes,
-              lockupPeriod,
-              quorum,
               {
                 from : issuer1
               })
@@ -171,8 +167,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer1,
               numberOfSecurityTypes,
-              lockupPeriod,
-              quorum,
               {
                 from : issuer1
               })
@@ -213,8 +207,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer1,
               numberOfSecurityTypes,
-              lockupPeriod,
-              quorum,
               {
                 from : issuer1
               })
@@ -266,8 +258,6 @@ contract('SecurityTokenRegistrar', accounts => {
           0,
           issuer1,
           numberOfSecurityTypes,
-          lockupPeriod,
-          quorum,
           {
             from : issuer1
           });
@@ -282,8 +272,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer2,
               numberOfSecurityTypes,
-              lockupPeriod,
-              quorum,
               {
                 from : issuer2
               });
@@ -321,8 +309,6 @@ contract('SecurityTokenRegistrar', accounts => {
               0,
               issuer1,
               numberOfSecurityTypes,
-              lockupPeriod,
-              quorum,
               {
                 from: issuer1
               });
@@ -359,8 +345,6 @@ contract('SecurityTokenRegistrar', accounts => {
                 issuer1,
                 0,
                 numberOfSecurityTypes,
-                lockupPeriod,
-                quorum,
                 {
                   from : issuer1
                 });

@@ -112,8 +112,6 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @param _decimals Decimals value for token
      * @param _owner Ethereum public key address of the security token owner
      * @param _type Type of security being tokenized
-     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-     * @param _quorum Percent of initial investors required to freeze POLY raise
      */
     function createSecurityToken (
       string _nameSpaceName,
@@ -122,22 +120,37 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint256 _totalSupply,
       uint8 _decimals,
       address _owner,
-      uint8 _type,
-      uint256 _lockupPeriod,
-      uint8 _quorum
+      uint8 _type
     ) external
     {
       require(_totalSupply > 0);
-      require(_lockupPeriod >= now);
       NameSpaceData storage nameSpace = nameSpaceData[_nameSpaceName];
       require(tickers[_nameSpaceName][_ticker] == 0x0);
       require(nameSpace.owner != 0x0);
       require(_owner != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
       require(PolyToken.transferFrom(msg.sender, nameSpace.owner, nameSpace.fee));
-      initialiseSecurityToken(_nameSpaceName, _name, _ticker, _totalSupply, _decimals, _owner, _type, _lockupPeriod, _quorum);
+      address newSecurityTokenAddress = new SecurityToken(
+        _name,
+        _ticker,
+        _totalSupply,
+        _decimals,
+        _owner,
+        PolyToken,
+        polyCustomersAddress,
+        polyComplianceAddress
+      );
+      tickers[_nameSpaceName][_ticker] = newSecurityTokenAddress;
+      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
+        _nameSpaceName,
+        _ticker,
+        _owner,
+        _type
+      );
+      LogNewSecurityToken(_nameSpaceName, _ticker, newSecurityTokenAddress, _owner, _type);
+      /* initialiseSecurityToken(_nameSpaceName, _name, _ticker, _totalSupply, _decimals, _owner, _type); */
     }
-
+/*
     function initialiseSecurityToken(
       string _nameSpace,
       string _name,
@@ -145,9 +158,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint256 _totalSupply,
       uint8 _decimals,
       address _owner,
-      uint8 _type,
-      uint256 _lockupPeriod,
-      uint8 _quorum
+      uint8 _type
     ) internal
     {
       address newSecurityTokenAddress = new SecurityToken(
@@ -156,8 +167,6 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
         _totalSupply,
         _decimals,
         _owner,
-        _lockupPeriod,
-        _quorum,
         PolyToken,
         polyCustomersAddress,
         polyComplianceAddress
@@ -170,7 +179,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
         _type
       );
       LogNewSecurityToken(_nameSpace, _ticker, newSecurityTokenAddress, _owner, _type);
-    }
+    } */
 
     //////////////////////////////
     ///////// Get Functions

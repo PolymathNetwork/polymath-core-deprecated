@@ -15,8 +15,6 @@ contract SecurityTokenMOCK is SecurityToken {
       uint256 _totalSupply,
       uint8 _decimals,
       address _owner,
-      uint256 _lockupPeriod,
-      uint8 _quorum,
       address _polyTokenAddress,
       address _polyCustomersAddress,
       address _polyComplianceAddress
@@ -27,8 +25,6 @@ contract SecurityTokenMOCK is SecurityToken {
         _totalSupply,
         _decimals,
         _owner,
-        _lockupPeriod,
-        _quorum,
         _polyTokenAddress,
         _polyCustomersAddress,
         _polyComplianceAddress

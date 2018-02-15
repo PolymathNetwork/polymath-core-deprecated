@@ -298,8 +298,6 @@ contract('SecurityToken', accounts => {
           0,
           issuer,
           type,
-          lockupPeriod,
-          quorum,
           {
             from : issuer
           });
@@ -458,7 +456,7 @@ contract('SecurityToken', accounts => {
 
     it("initialiseOffering: Should not start the offering -- fail offering contract is not selected yet", async()=>{
       try {
-        await securityToken.initialiseOffering(startTime, endTime, 100, maxPoly, { from : host});
+        await securityToken.initialiseOffering(startTime, endTime, 100, maxPoly, lockupPeriod, quorum, { from : host});
       } catch (error) {
         ensureException(error);
       }
@@ -475,7 +473,7 @@ contract('SecurityToken', accounts => {
         {
           from : issuer
         });
-      // Propose the Offering contract to a particular Security Token 
+      // Propose the Offering contract to a particular Security Token
       let response = await compliance.proposeOfferingFactory(
         securityToken.address,
         offeringFactory.address,
@@ -509,7 +507,7 @@ contract('SecurityToken', accounts => {
     describe("initialiseOffering() Test Cases",async()=>{
       it("Should not start the offering -- fail msg.sender is not issuer", async()=>{
        try {
-         await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, { from : host});
+         await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, lockupPeriod, quorum, { from : host});
        } catch (error) {
          ensureException(error);
        }
@@ -519,7 +517,7 @@ contract('SecurityToken', accounts => {
         let balance = await securityToken.balanceOf(issuer);
         // After selecting the offering contract Issuer needs to start the offering contract
         // It makes issuer to transfer the ownership of all generated security token to offering contract
-        let txReturn = await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, { from : issuer});
+        let txReturn = await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, lockupPeriod, quorum, { from : issuer});
         txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
         // Storing the offering contract imstance to the variable
         offeringContract = await SimpleCappedOffering.at(txReturn.logs[0].args._to);
@@ -547,7 +545,7 @@ contract('SecurityToken', accounts => {
 
       it("Should not start the offering -- fail offering already active", async()=>{
        try {
-         await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, { from : issuer});
+         await securityToken.initialiseOffering(startTime, endTime, polyTokenRate, maxPoly, lockupPeriod, quorum, { from : issuer});
        } catch (error) {
           ensureException(error);
        }
@@ -664,7 +662,7 @@ describe("Compliance contracts functions", async()=> {
     let templateAddress = await compliance.getTemplateByProposal(securityToken.address, 0);
 
     try {
-    // Proposing the same template again 
+    // Proposing the same template again
     let txReturn = await compliance.proposeTemplate(
       securityToken.address,
       templateAddress,
@@ -1080,8 +1078,6 @@ it("cancelOfferingFactoryProposal: Should fail in canceling the proposal -- msg.
       0,
       issuer,
       type,
-      lockupPeriod,
-      quorum,
       {
         from : issuer
       }
