@@ -125,10 +125,9 @@ contract('SecurityToken', accounts => {
       await compliance.setRegistrarAddress(STRegistrar.address);
       // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
-        provider0,
         providerName0,
         providerApplication0,
-        providerFee0
+        providerFee0,  {from: provider0}
       );
       // Provide approval to the customer contract to register the issuer (This step is performed by the Polymath wizard)
       await POLY.getTokens(100000, issuer, { from : issuer });
@@ -159,10 +158,9 @@ contract('SecurityToken', accounts => {
 
       // Adding the new KYC provider in to the Polymath Platform chain data
       await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1
+        providerFee1, {from: provider1}
       );
       // Provide approval to the customer contract to register the investor1 (This step is performed by the Polymath wizard)
       await POLY.getTokens(10000, investor1, { from : investor1 });
@@ -521,7 +519,7 @@ contract('SecurityToken', accounts => {
         txReturn.logs[0].args._value.toNumber().should.equal(totalSupply);
         // Storing the offering contract imstance to the variable
         offeringContract = await SimpleCappedOffering.at(txReturn.logs[0].args._to);
-        assert.isTrue(await securityToken.hasOfferingStarted.call());
+        assert.isTrue((await securityToken.offering.call()) != 0x0);
       });
 
       it("Can no longer change details", async()=>{
