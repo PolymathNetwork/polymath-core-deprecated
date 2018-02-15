@@ -4,12 +4,11 @@ interface ICustomers {
 
   /**
    * @dev Allow new provider applications
-   * @param _providerAddress The provider's public key address
    * @param _name The provider's name
    * @param _details A SHA256 hash of the new providers details
    * @param _fee The fee charged for customer verification
    */
-  function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success);
+  function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success);
 
   /**
    * @dev Change a providers fee

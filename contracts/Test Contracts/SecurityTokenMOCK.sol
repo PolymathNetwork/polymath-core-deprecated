@@ -56,8 +56,7 @@ contract SecurityTokenMOCK is SecurityToken {
    * @return bool
    */
   function initialiseOffering(address _offering) onlyOwner external returns (bool success) {
-      require(!hasOfferingStarted);
-      hasOfferingStarted = true;
+      require(offering == 0x0);
       offering = _offering;
       shareholders[offering] = Shareholder(this, true, 5);
       uint256 tokenAmount = this.balanceOf(msg.sender);

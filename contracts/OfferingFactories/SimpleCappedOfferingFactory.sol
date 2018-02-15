@@ -32,18 +32,16 @@ contract SimpleCappedOfferingFactory is IOfferingFactory {
      * @param _endTime Unix timestamp to end the offering
      * @param _polyTokenRate Price of one security token in terms of poly
      * @param _maxPoly Maximum amount of poly issuer wants to collect
-     * @param _securityToken Address of the security token 
      * @return address Address of the new offering instance
      */
     function createOffering(
       uint256 _startTime,
       uint256 _endTime,
       uint256 _polyTokenRate,
-      uint256 _maxPoly,
-      address _securityToken
-      ) public returns (address) 
+      uint256 _maxPoly
+      ) public returns (address)
     {
-      return new SimpleCappedOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, _securityToken);
+      return new SimpleCappedOffering(_startTime, _endTime, _polyTokenRate, _maxPoly, msg.sender);
     }
 
     /**

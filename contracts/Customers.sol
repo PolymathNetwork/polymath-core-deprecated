@@ -62,17 +62,15 @@ contract Customers is ICustomers {
 
     /**
      * @dev Allow new provider applications
-     * @param _providerAddress The provider's public key address
      * @param _name The provider's name
      * @param _details A SHA256 hash of the new providers details
      * @param _fee The fee charged for customer verification
      */
-    function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
-        require(_providerAddress != address(0));
+    function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_details != 0x0);
-        require(providers[_providerAddress].details == 0x0);
-        providers[_providerAddress] = Provider(_name, now, _details, _fee);
-        LogNewProvider(_providerAddress, _name, _details);
+        require(providers[msg.sender].details == 0x0);
+        providers[msg.sender] = Provider(_name, now, _details, _fee);
+        LogNewProvider(msg.sender, _name, _details);
         return true;
     }
 
