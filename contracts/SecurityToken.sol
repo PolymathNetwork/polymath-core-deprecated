@@ -68,6 +68,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
         uint8 quorum;
         bool frozen;
     }
+    
     mapping(address => mapping(address => bool)) public voted;               // Voting mapping
     mapping(address => Allocation) public allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
 

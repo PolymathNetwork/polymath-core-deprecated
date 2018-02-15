@@ -82,20 +82,13 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     function lower(string _base) internal pure returns (string) {
       bytes memory _baseBytes = bytes(_base);
       for (uint i = 0; i < _baseBytes.length; i++) {
-        _baseBytes[i] = _lower(_baseBytes[i]);
+       bytes1 b1 = _baseBytes[i];
+       if (b1 >= 0x41 && b1 <= 0x5A) {
+         b1 = bytes1(uint8(b1)+32);
+       }
+       _baseBytes[i] = b1;
       }
       return string(_baseBytes);
-    }
-
-    /**
-     * @dev changes a byte to lower case
-     * @param _b1 byte to change
-     */
-    function _lower(bytes1 _b1) private pure returns (bytes1) {
-      if (_b1 >= 0x41 && _b1 <= 0x5A) {
-        return bytes1(uint8(_b1)+32);
-      }
-      return _b1;
     }
 
     /**
