@@ -48,6 +48,7 @@ contract("Template",(accounts)=>{
     });
 });
 
+
     ////////////////////////////////////
     ////// addJurisdiction() Test Cases
     ////////////////////////////////////
@@ -165,6 +166,7 @@ contract("Template",(accounts)=>{
             vestingPeriod
         );
         await template.addJurisdiction(countryJurisdiction, [true, true, true, true], { from : owner });
+        await template.addRoles([1,2,3], { from : owner });
         await template.finalizeTemplate({ from : owner });
 
         try {
@@ -229,6 +231,7 @@ contract("Template",(accounts)=>{
             quorum,
             vestingPeriod
         );
+        await template.addJurisdiction(countryJurisdiction, [true, true, true, true], { from : owner });
         await template.addRoles([1,2], { from : owner });
         await template.finalizeTemplate({ from : owner });
 
@@ -322,6 +325,8 @@ contract("Template",(accounts)=>{
             quorum,
             vestingPeriod
         );
+        await template.addJurisdiction(countryJurisdiction, [true, true, true, true], { from : owner });
+        await template.addRoles([1,2], { from : owner });
         await template.finalizeTemplate({ from : owner });
     });
 
@@ -338,6 +343,53 @@ contract("Template",(accounts)=>{
             quorum,
             vestingPeriod
         );
+        await template.addJurisdiction(countryJurisdiction, [true, true, true, true], { from : owner });
+        await template.addRoles([1,2], { from : owner });
+
+        try {
+            await template.finalizeTemplate({ from : accounts[8] });
+        } catch(error) {
+            ensureException(error);
+        }
+    });
+
+    it("finalizetemplate: Should fail to change the template status to finalize -- Due to not having set roles", async()=>{
+        let template = await Template.new(
+            owner,
+            offeringType,
+            issuerJurisdiction,
+            accredited,
+            KYCAddress,
+            details,
+            expires,
+            fee,
+            quorum,
+            vestingPeriod
+        );
+        await template.addJurisdiction(countryJurisdiction, [true, true, true, true], { from : owner });
+
+        try {
+            await template.finalizeTemplate({ from : accounts[8] });
+        } catch(error) {
+            ensureException(error);
+        }
+    });
+
+    it("finalizetemplate: Should fail to change the template status to finalize -- Due to not having set jurisdictions", async()=>{
+        let template = await Template.new(
+            owner,
+            offeringType,
+            issuerJurisdiction,
+            accredited,
+            KYCAddress,
+            details,
+            expires,
+            fee,
+            quorum,
+            vestingPeriod
+        );
+        await template.addRoles([1,2], { from : owner });
+
         try {
             await template.finalizeTemplate({ from : accounts[8] });
         } catch(error) {
