@@ -27,9 +27,9 @@ compliant securities tokens on a decentralized blockchain.
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | [PolyToken](./contracts/PolyToken.sol)                           | [0x96a62428509002a7ae5f6ad29e4750d852a3f3d7](https://ropsten.etherscan.io/address/0x96a62428509002a7ae5f6ad29e4750d852a3f3d7) |
-| [Compliance](./contracts/Compliance.sol)                         | [0xc7cff0abbdb57ed2204077d53836bcfbd05fe474](https://ropsten.etherscan.io/address/0xc7cff0abbdb57ed2204077d53836bcfbd05fe474) |
-| [Customers](./contracts/Customers.sol)                           | [0x6ae8cb236a2badec68c030c9cef252a68989002f](https://ropsten.etherscan.io/address/0x6ae8cb236a2badec68c030c9cef252a68989002f) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x86535a0f5d0fa9552295b021ff95bca3fb74f523](https://ropsten.etherscan.io/address/0x86535a0f5d0fa9552295b021ff95bca3fb74f523) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x33b090a5cb2ace756eb0399737db68c92b71d3bc](https://ropsten.etherscan.io/address/0x33b090a5cb2ace756eb0399737db68c92b71d3bc) |
+| [Customers](./contracts/Customers.sol)                           | [0x9ca1fcff96ccd38863394a55dcf18fcea14f10b7](https://ropsten.etherscan.io/address/0x9ca1fcff96ccd38863394a55dcf18fcea14f10b7) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x8960e51bbf64b7fab86823885fa0d25ee746a4fe](https://ropsten.etherscan.io/address/0x8960e51bbf64b7fab86823885fa0d25ee746a4fe) |
 
 ## Setup
 
