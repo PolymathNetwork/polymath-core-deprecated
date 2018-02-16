@@ -35,9 +35,11 @@
      * @param _endTime Unix timestamp to end the offering
      * @param _polyTokenRate Price of one security token in terms of poly
      * @param _maxPoly Maximum amount of poly issuer wants to collect
+     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+     * @param _quorum Percent of initial investors required to freeze POLY raise
      * @return bool
      */
-    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) external returns (bool success);
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly, uint256 _lockupPeriod, uint8 _quorum) external returns (bool success);
 
     /**
      * @dev Add a verified address to the Security Token whitelist

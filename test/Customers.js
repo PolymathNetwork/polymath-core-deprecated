@@ -24,7 +24,7 @@ contract('Customers', accounts => {
   let attestor2 = accounts[6];
   let pk_customer1 = pk.account_1;
   let pk_customer2 = pk.account_2;
-  
+
   //newCustomer() constants
   const jurisdiction0 = '0';
   const jurisdiction0_0 = '0_1';
@@ -51,10 +51,9 @@ contract('Customers', accounts => {
       let customers = await Customers.new(poly.address);
 
       await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1,
+        providerFee1, {from: provider1}
       );
 
       // Providing allowance to the customer contract address to spend the POLY of Customer
@@ -67,7 +66,7 @@ contract('Customers', accounts => {
       const r = `0x${sig.r.toString('hex')}`;
       const s = `0x${sig.s.toString('hex')}`;
       const v = sig.v;
-      
+
       let isVerify = await customers.verifyCustomer(
         customer1,
         web3StringToBytes32(jurisdiction0),
@@ -90,10 +89,9 @@ contract('Customers', accounts => {
       let customers = await Customers.new(poly.address);
 
       await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1,
+        providerFee1, {from: provider1}
       );
 
       // Providing allowance to the customer contract address to spend the POLY of Customer
@@ -153,10 +151,9 @@ contract('Customers', accounts => {
       let customers = await Customers.new(poly.address);
 
       await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1,
+        providerFee1, {from: provider1}
       );
 
       // Providing allowance to the customer contract address to spend the POLY of Customer
@@ -222,10 +219,9 @@ contract('Customers', accounts => {
       let customers = await Customers.new(poly.address);
 
       await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1,
+        providerFee1, {from: provider1}
       );
       // Providing allowance to the customer contract address to spend the POLY of Customer
       await poly.getTokens(10000, customer1, { from: customer1 });
@@ -264,10 +260,9 @@ contract('Customers', accounts => {
       let customers = await Customers.new(poly.address);
 
       let providerOne = await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1,
+        providerFee1, {from: provider1}
       );
       // Providing allowance to the customer contract address to spend the POLY of Customer
       await poly.getTokens(10000, customer1, { from: customer1 });
@@ -308,29 +303,12 @@ contract('Customers', accounts => {
       let customers = await Customers.new(poly.address);
 
       await customers.newProvider(
-        provider1,
         providerName1,
         providerApplication1,
-        providerFee1,
+        providerFee1, {from: provider1}
       );
       let providerDetails = await customers.getProvider.call(provider1);
       assert.strictEqual(providerDetails[0].toString(), providerName1);   // providerName1 = KYC-Chain
-    });
-
-    it('newProvider: should kyc providers apply their data to chain -- fail because of zero address', async () => {
-      let poly = await POLY.new();
-      let customers = await Customers.new(poly.address);
-
-      try {
-        await customers.newProvider(
-          0x0,                              // fail because of the 0x0 address instead of the provider address
-          providerName1,
-          providerApplication1,
-          providerFee1,
-        );
-      } catch (error) {
-            ensureException(error);
-      }
     });
 
     it('newProvider: should kyc providers apply their data to chain -- fail because of zero details', async () => {
@@ -339,10 +317,9 @@ contract('Customers', accounts => {
 
       try {
         await customers.newProvider(
-          provider1,
           providerName1,
           0x0,                                              // Failed because details are zero
-          providerFee1,
+          providerFee1, {from: provider1}
         );
       } catch (error) {
           ensureException(error);
@@ -358,10 +335,9 @@ contract('Customers', accounts => {
             let customers = await Customers.new(poly.address);
 
             await customers.newProvider(
-              provider1,
               providerName1,
               providerApplication1,
-              providerFee1
+              providerFee1, {from: provider1}
             );
 
             await customers.changeFee(10000,{ from : provider1 });
@@ -374,10 +350,9 @@ contract('Customers', accounts => {
             let customers = await Customers.new(poly.address);
 
             await customers.newProvider(
-              provider1,
               providerName1,
               providerApplication1,
-              providerFee1
+              providerFee1, {from: provider1}
             );
 
             // Providing allowance to the customer contract address to spend the POLY of Customer1
