@@ -228,11 +228,7 @@ contract Compliance is ICompliance {
         IOfferingFactory offeringFactory = IOfferingFactory(_factoryAddress);
         var (,,, owner,) = offeringFactory.getUsageDetails();
 
-        var (,,,,KYC,) = ISecurityToken(_securityToken).getTokenDetails();
-        var (,,, expires) = PolyCustomers.getCustomer(KYC, owner);
-
         require(owner == msg.sender);
-        require(expires > now);
         offeringFactoryProposals[_securityToken].push(_factoryAddress);
         proposedOfferingFactoryList[_securityToken][_factoryAddress] = true;
         LogNewOfferingFactoryProposal(_securityToken, _factoryAddress, owner, offeringFactoryProposals[_securityToken].length - 1);
