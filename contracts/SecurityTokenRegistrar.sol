@@ -34,7 +34,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 securityType;
     }
 
-    mapping (string => NameSpaceData) nameSpaceData;                 // Mapping from nameSpace to owner / fee of nameSpace
+    mapping (string => NameSpaceData) nameSpaceData;          // Mapping from nameSpace to owner / fee of nameSpace
     mapping (address => SecurityTokenData) securityTokens;           // Mapping from securityToken address to data about the securityToken
     mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
 
@@ -63,16 +63,15 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     /**
      * @dev Creates a securityToken name space
      * @param _nameSpace Name space string
-     * @param _owner Owner for this name space
      * @param _fee Fee for this name space
      */
-    function createNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
-      require(_owner != 0x0);
+    function createNameSpace(string _nameSpace, uint256 _fee) public {
+      require(bytes(_nameSpace).length > 0);
       string memory nameSpace = lower(_nameSpace);
-      require(nameSpaceData[nameSpace].owner == 0x0);
-      nameSpaceData[nameSpace].owner = _owner;
+      require(nameSpaceData[nameSpace].owner == address(0));
+      nameSpaceData[nameSpace].owner = msg.sender;
       nameSpaceData[nameSpace].fee = _fee;
-      LogNameSpaceCreated(nameSpace, _owner, _fee);
+      LogNameSpaceCreated(nameSpace, msg.sender, _fee);
     }
 
     /**
@@ -96,11 +95,11 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
      * @param _nameSpace Name space string
      * @param _fee New fee for security token creation for this name space
      */
-    function changeNameSpace(string _nameSpace, address _owner, uint256 _fee) public {
-      require(msg.sender == nameSpaceData[_nameSpace].owner);
-      nameSpaceData[_nameSpace].fee = _fee;
-      nameSpaceData[_nameSpace].owner = _owner;
-      LogNameSpaceChange(_nameSpace, _owner, _fee);
+    function changeNameSpace(string _nameSpace, uint256 _fee) public {
+      string memory nameSpace = lower(_nameSpace);
+      require(msg.sender == nameSpaceData[nameSpace].owner);
+      nameSpaceData[nameSpace].fee = _fee;
+      LogNameSpaceChange(nameSpace, msg.sender, _fee);
     }
 
     /**
@@ -125,8 +124,8 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     {
       require(_totalSupply > 0);
       NameSpaceData storage nameSpace = nameSpaceData[_nameSpaceName];
-      require(tickers[_nameSpaceName][_ticker] == 0x0);
-      require(nameSpace.owner != 0x0);
+      require(tickers[_nameSpaceName][_ticker] == address(0));
+      require(nameSpace.owner != address(0));
       require(_owner != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
       require(PolyToken.transferFrom(msg.sender, nameSpace.owner, nameSpace.fee));
@@ -148,38 +147,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
         _type
       );
       LogNewSecurityToken(_nameSpaceName, _ticker, newSecurityTokenAddress, _owner, _type);
-      /* initialiseSecurityToken(_nameSpaceName, _name, _ticker, _totalSupply, _decimals, _owner, _type); */
     }
-/*
-    function initialiseSecurityToken(
-      string _nameSpace,
-      string _name,
-      string _ticker,
-      uint256 _totalSupply,
-      uint8 _decimals,
-      address _owner,
-      uint8 _type
-    ) internal
-    {
-      address newSecurityTokenAddress = new SecurityToken(
-        _name,
-        _ticker,
-        _totalSupply,
-        _decimals,
-        _owner,
-        PolyToken,
-        polyCustomersAddress,
-        polyComplianceAddress
-      );
-      tickers[_nameSpace][_ticker] = newSecurityTokenAddress;
-      securityTokens[newSecurityTokenAddress] = SecurityTokenData(
-        _nameSpace,
-        _ticker,
-        _owner,
-        _type
-      );
-      LogNewSecurityToken(_nameSpace, _ticker, newSecurityTokenAddress, _owner, _type);
-    } */
 
     //////////////////////////////
     ///////// Get Functions
@@ -212,4 +180,15 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       );
     }
 
+    /**
+     * @dev Get the name space data
+     * @param _nameSpace Name space string.
+     */
+     function getNameSpaceData(string _nameSpace) public view returns(address, uint256) {
+       string memory nameSpace = lower(_nameSpace); 
+       return (
+         nameSpaceData[nameSpace].owner,
+         nameSpaceData[nameSpace].fee
+       );
+     }  
 }
