@@ -281,8 +281,10 @@ contract('SecurityToken', accounts => {
       // Create name space
       await STRegistrar.createNameSpace(
         nameSpaceMixed,
-        nameSpaceOwner,
-        nameSpaceFee
+        nameSpaceFee,
+        {
+          from: nameSpaceOwner,
+        }
       )
 
       // Creation of the Security Token with the help of SecurityTokenRegistrar contract

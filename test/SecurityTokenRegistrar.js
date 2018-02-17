@@ -32,18 +32,22 @@ contract('SecurityTokenRegistrar', accounts => {
   let acct2 = accounts[2];
   let issuer2 = accounts[3];
   let issuer1 = accounts[4];
+  let polyToken, polyCustomers, polyCompliance, STRegistrar;
 
-  describe('Constructor', async () => {
-    it('should have polyTokenAddress updated to contract storage', async () => {
-      let polyToken = await POLY.new();
-      let polyCustomers = await Customers.new(polyToken.address);
-      let polyCompliance = await Compliance.new(polyCustomers.address);
+  beforeEach(async () => {
+       polyToken = await POLY.new();
+       polyCustomers = await Customers.new(polyToken.address);
+       polyCompliance = await Compliance.new(polyCustomers.address);
       // Creation of the new SecurityTokenRegistrar contract
-      let STRegistrar = await SecurityTokenRegistrar.new(
+       STRegistrar = await SecurityTokenRegistrar.new(
         polyToken.address,
         polyCustomers.address,
         polyCompliance.address
       );
+  })
+
+  describe('Constructor', async () => {
+    it('should have polyTokenAddress updated to contract storage', async () => {
       await polyCompliance.setRegistrarAddress(STRegistrar.address);
       let PTAddress = await STRegistrar.PolyToken.call();
       assert.strictEqual(PTAddress, polyToken.address);
@@ -52,15 +56,6 @@ contract('SecurityTokenRegistrar', accounts => {
 
   describe('function createSecurityToken', async () => {
     it('should allow for the creation of a Security Token.', async () => {
-      let polyToken = await POLY.new();
-      let polyCustomers = await Customers.new(polyToken.address);
-      let polyCompliance = await Compliance.new(polyCustomers.address);
-      // Creation of the new SecurityTokenRegistrar contract
-      let STRegistrar = await SecurityTokenRegistrar.new(
-        polyToken.address,
-        polyCustomers.address,
-        polyCompliance.address
-      );
       // Allowance Provided to SecurityToken Registrar contract
       await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
       let issuerBalance = await polyToken.balanceOf(issuer1);
@@ -69,14 +64,14 @@ contract('SecurityTokenRegistrar', accounts => {
 
       let allowedToken = await polyToken.allowance(issuer1, STRegistrar.address);
       assert.strictEqual(allowedToken.toNumber(),approvedAmount);
-      console.log("BEF");
       // Create name space
       await STRegistrar.createNameSpace(
         nameSpaceMixed,
-        nameSpaceOwner,
-        nameSpaceFee
+        nameSpaceFee,
+        {
+          from: nameSpaceOwner 
+        }
       )
-      console.log("AFT");
 
       // Creation of the Security Token
       let ST = await STRegistrar.createSecurityToken(
@@ -103,14 +98,6 @@ contract('SecurityTokenRegistrar', accounts => {
 
     describe('Creation of SecurityTokenMetaData Struct is within its proper limitations', async () => {
       it('createSecurityToken:should fail when total supply is zero', async () => {
-        let polyToken = await POLY.new();
-        let polyCustomers = await Customers.new(polyToken.address);
-        let polyCompliance = await Compliance.new(polyCustomers.address);
-        let STRegistrar = await SecurityTokenRegistrar.new(
-          polyToken.address,
-          polyCustomers.address,
-          polyCompliance.address
-        );
         let totalSupply = 0;
         // Allowance Provided to SecurityToken Registrar contract
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1 });
@@ -121,8 +108,10 @@ contract('SecurityTokenRegistrar', accounts => {
         // Create name space
         await STRegistrar.createNameSpace(
           nameSpaceMixed,
-          nameSpaceOwner,
-          nameSpaceFee
+          nameSpaceFee,
+          {
+            from: nameSpaceOwner
+          }
         )
 
         try{
@@ -143,14 +132,6 @@ contract('SecurityTokenRegistrar', accounts => {
       });
 
       it('createSecurityToken:should fail when name space does not exist', async () => {
-        let polyToken = await POLY.new();
-        let polyCustomers = await Customers.new(polyToken.address);
-        let polyCompliance = await Compliance.new(polyCustomers.address);
-        let STRegistrar = await SecurityTokenRegistrar.new(
-          polyToken.address,
-          polyCustomers.address,
-          polyCompliance.address
-        );
         let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936;
         // Allowance Provided to SecurityToken Registrar contract
         await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
@@ -176,14 +157,6 @@ contract('SecurityTokenRegistrar', accounts => {
       });
 
       it('createSecurityToken:should fail when total supply is greater than (2^256)-1', async () => {
-        let polyToken = await POLY.new();
-        let polyCustomers = await Customers.new(polyToken.address);
-        let polyCompliance = await Compliance.new(polyCustomers.address);
-        let STRegistrar = await SecurityTokenRegistrar.new(
-          polyToken.address,
-          polyCustomers.address,
-          polyCompliance.address
-        );
         let totalSupply = 115792089237316195423570985008687907853269984665640564039457584007913129639936;
         // Allowance Provided to SecurityToken Registrar contract
         await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
@@ -194,8 +167,10 @@ contract('SecurityTokenRegistrar', accounts => {
         // Create name space
         await STRegistrar.createNameSpace(
           nameSpaceMixed,
-          nameSpaceOwner,
-          nameSpaceFee
+          nameSpaceFee,
+          {
+            from:nameSpaceOwner
+          }
         )
 
         try{
@@ -216,14 +191,6 @@ contract('SecurityTokenRegistrar', accounts => {
       });
 
       it("createSecurityToken:should fail when ticker name is already exist", async () => {
-        let polyToken = await POLY.new();
-        let polyCustomers = await Customers.new(polyToken.address);
-        let polyCompliance = await Compliance.new(polyCustomers.address);
-        let STRegistrar = await SecurityTokenRegistrar.new(
-          polyToken.address,
-          polyCustomers.address,
-          polyCompliance.address
-        );
 
         await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
         await polyToken.getTokens(getAmount, issuer2, { from : issuer2 });
@@ -246,8 +213,10 @@ contract('SecurityTokenRegistrar', accounts => {
         // Create name space
         await STRegistrar.createNameSpace(
           nameSpaceMixed,
-          nameSpaceOwner,
-          nameSpaceFee
+          nameSpaceFee,
+          {
+            from:nameSpaceOwner
+          }
         )
 
         let ST = await STRegistrar.createSecurityToken(
@@ -281,23 +250,16 @@ contract('SecurityTokenRegistrar', accounts => {
       });
 
       it('createSecurityToken:should fail when the approved quantity is less than the fee', async () => {
-        let polyToken = await POLY.new();
-        let polyCustomers = await Customers.new(polyToken.address);
-        let polyCompliance = await Compliance.new(polyCustomers.address);
-        let STRegistrar = await SecurityTokenRegistrar.new(
-          polyToken.address,
-          polyCustomers.address,
-          polyCompliance.address
-        );
-
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1 });
         await polyToken.approve(STRegistrar.address, 1000, {from:issuer1});
 
         // Create name space
         await STRegistrar.createNameSpace(
           nameSpaceMixed,
-          nameSpaceOwner,
-          nameSpaceFee
+          nameSpaceFee,
+          {
+            from:nameSpaceOwner
+          }
         )
 
         try {
@@ -318,22 +280,15 @@ contract('SecurityTokenRegistrar', accounts => {
       });
 
       it("createSecurityToken:should fail when the security registrar haven't approved to spent the poly" , async () => {
-        let polyToken = await POLY.new();
-        let polyCustomers = await Customers.new(polyToken.address);
-        let polyCompliance = await Compliance.new(polyCustomers.address);
-        let STRegistrar = await SecurityTokenRegistrar.new(
-          polyToken.address,
-          polyCustomers.address,
-          polyCompliance.address
-        );
-
         await polyToken.getTokens(getAmount, issuer1, {from : issuer1});
 
         // Create name space
         await STRegistrar.createNameSpace(
           nameSpaceMixed,
-          nameSpaceOwner,
-          nameSpaceFee
+          nameSpaceFee,
+          {
+            from:nameSpaceOwner
+          }
         )
 
         try {
@@ -351,6 +306,93 @@ contract('SecurityTokenRegistrar', accounts => {
         } catch(error) {
               ensureException(error);
         }
+      });
+
+      it("changeNameSpace: Should able to change the name space fee", async () => {
+          // Create name space
+      await STRegistrar.createNameSpace(
+        nameSpaceMixed,
+        nameSpaceFee,
+        {
+          from: nameSpaceOwner 
+        }
+      );
+      //change name space fee
+      await STRegistrar.changeNameSpace(
+        nameSpaceMixed,
+        100,
+        {
+          from: nameSpaceOwner
+        }
+      );
+      let data = await STRegistrar.getNameSpaceData(nameSpaceMixed);
+        assert.equal(data[1], 100);
+      });
+      
+      it("changeNameSpace: Create security token after changing the name space fee", async () => { 
+        // Allowance Provided to SecurityToken Registrar contract
+      await polyToken.getTokens(getAmount, issuer1, { from : issuer1 });
+      let issuerBalance = await polyToken.balanceOf(issuer1);
+      assert.strictEqual(issuerBalance.toNumber(),getAmount);
+      await polyToken.approve(STRegistrar.address, approvedAmount, { from : issuer1 });
+
+      let allowedToken = await polyToken.allowance(issuer1, STRegistrar.address);
+      assert.strictEqual(allowedToken.toNumber(),approvedAmount);
+      // Create name space
+      await STRegistrar.createNameSpace(
+        nameSpaceMixed,
+        nameSpaceFee,
+        {
+          from: nameSpaceOwner 
+        }
+      )
+
+      // Creation of the Security Token
+      let ST = await STRegistrar.createSecurityToken(
+        nameSpace,
+        name,
+        ticker,
+        totalSupply,
+        0,
+        issuer1,
+        numberOfSecurityTypes,
+        {
+          from: issuer1,
+        },
+      );
+      let STAddress = await STRegistrar.getSecurityTokenAddress.call(nameSpace, ticker);
+      assert.notEqual(STAddress, 0x0);
+      let STData = await STRegistrar.getSecurityTokenData.call(STAddress);
+      assert.strictEqual(STData[1], ticker);
+
+      //change name space fee
+      await STRegistrar.changeNameSpace(
+        nameSpaceMixed,
+        100,
+        {
+          from: nameSpaceOwner
+        }
+      );
+      let data = await STRegistrar.getNameSpaceData(nameSpaceMixed);
+      assert.equal(data[1], 100);
+      await polyToken.approve(STRegistrar.address, approvedAmount, { from : issuer1 });
+      // Creation of the Security Token
+      await STRegistrar.createSecurityToken(
+        nameSpace,
+        name,
+        "TICK",
+        totalSupply,
+        0,
+        issuer1,
+        numberOfSecurityTypes,
+        {
+          from: issuer1,
+        },
+      );
+      let STAddress_new = await STRegistrar.getSecurityTokenAddress.call(nameSpace, "TICK");
+      assert.notEqual(STAddress, 0x0);
+      let STData_new = await STRegistrar.getSecurityTokenData.call(STAddress_new);
+      assert.strictEqual(STData_new[1], "TICK");
       });
     });
   });

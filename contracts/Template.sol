@@ -89,7 +89,7 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+     * @dev `addDivisionJurisdiction` allows the adding of new jurisdictions to a template
      * @param _blockedDivisionJurisdictions An array of subdivision jurisdictions
      * @param _blocked An array of whether the subdivision jurisdiction is blocked to purchase the security or not
      */
@@ -103,7 +103,7 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `addRole` allows the adding of new roles to be added to whitelist
+     * @dev `addRoles` allows the adding of new roles to be added to whitelist
      * @param _allowedRoles User roles that can purchase the security
      */
     function addRoles(uint8[] _allowedRoles) public {
@@ -177,7 +177,7 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `getUsageFees` is a function to get all the details on template usage fees
+     * @dev `getUsageDetails` is a function to get all the details on template usage fees
      * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
      */
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
