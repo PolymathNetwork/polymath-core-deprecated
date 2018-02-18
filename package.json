@@ -16,7 +16,6 @@
     "migrate-local": "truffle migrate --network=development --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten --reset",
     "flatten": "sol-merger './contracts/*.sol' ./flat",
-    "flatten-STOs": "sol-merger './contracts/OfferingFactories/*.sol' ./flat/OfferingFactories",
     "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "dependencies": {
