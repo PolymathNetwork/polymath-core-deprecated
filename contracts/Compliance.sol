@@ -182,7 +182,7 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev Set the STO contract by the issuer.
+     * @dev Register the Offering factory by the developer.
      * @param _factoryAddress address of the offering factory
      * @return bool success
      */
@@ -236,7 +236,7 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev Cancel a STO factory proposal if the bid hasn't been accepted
+     * @dev Cancel a Offering factory proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
      * @param _offeringFactoryProposalIndex The offeringFactory proposal array index
      * @return bool success

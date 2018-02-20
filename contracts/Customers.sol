@@ -44,7 +44,7 @@ contract Customers is ICustomers {
     mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
 
     // Notifications
-    event LogNewProvider(address indexed providerAddress, string name, bytes32 details);
+    event LogNewProvider(address indexed providerAddress, string name, bytes32 details, uint256 _fee);
     event LogCustomerVerified(address indexed customer, address indexed provider, uint8 role);
 
     // Modifier
@@ -70,7 +70,7 @@ contract Customers is ICustomers {
         require(_details != 0x0);
         require(providers[msg.sender].details == 0x0);
         providers[msg.sender] = Provider(_name, now, _details, _fee);
-        LogNewProvider(msg.sender, _name, _details);
+        LogNewProvider(msg.sender, _name, _details, _fee);
         return true;
     }
 
