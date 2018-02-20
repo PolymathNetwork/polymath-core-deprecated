@@ -2,7 +2,6 @@
 *.DS_Store
 .npm-debug.log
 coverage/
-/build
 coverageEnv/
 coverage.json
 .idea
