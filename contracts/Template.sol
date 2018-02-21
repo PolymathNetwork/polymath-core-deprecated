@@ -35,7 +35,7 @@ contract Template is ITemplate {
 
     uint allowedJurisdictionsCount;                                 // Keeps track of how many jurisdictions have been allowed for this template
     uint allowedRolesCount;                                         // Keeps track of how many roles have been allowed for this template
-
+    // Notification
     event DetailsUpdated(bytes32 _prevDetails, bytes32 _newDetails, uint _updateDate);
 
     function Template (
@@ -55,7 +55,6 @@ contract Template is ITemplate {
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);
         require(_quorum > 0 && _quorum <= 100);
         require(_vestingPeriod > 0);
-        require(_fee > 0);
         owner = _owner;
         offeringType = _offeringType;
         issuerJurisdiction = _issuerJurisdiction;

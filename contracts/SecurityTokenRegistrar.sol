@@ -34,7 +34,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       uint8 securityType;
     }
 
-    mapping (string => NameSpaceData) nameSpaceData;          // Mapping from nameSpace to owner / fee of nameSpace
+    mapping (string => NameSpaceData) nameSpaceData;                 // Mapping from nameSpace to owner / fee of nameSpace
     mapping (address => SecurityTokenData) securityTokens;           // Mapping from securityToken address to data about the securityToken
     mapping (string => mapping (string => address)) tickers;         // Mapping from nameSpace, to a mapping of ticker name to correspondong securityToken addresses
 

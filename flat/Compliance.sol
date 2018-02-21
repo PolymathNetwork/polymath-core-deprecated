@@ -123,8 +123,8 @@ interface ICompliance {
         uint256 _templateProposalIndex
     ) public returns (bool success);
 
-    /**
-     * @dev Set the STO contract by the issuer.
+   /**
+     * @dev Register the Offering factory by the developer.
      * @param _factoryAddress address of the offering factory
      * @return bool success
      */
@@ -133,9 +133,9 @@ interface ICompliance {
     ) public returns (bool success);
 
     /**
-     * @dev Cancel a STO contract proposal if the bid hasn't been accepted
+     * @dev Cancel a Offering factory proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
-     * @param _offeringFactoryProposalIndex The offering proposal array index
+     * @param _offeringFactoryProposalIndex The offeringFactory proposal array index
      * @return bool success
      */
     function cancelOfferingFactoryProposal(
@@ -188,15 +188,13 @@ interface IOfferingFactory {
    * @param _endTime Unix timestamp to end the offering
    * @param _polyTokenRate Price of one security token in terms of poly
    * @param _maxPoly Maximum amount of poly issuer wants to collect
-   * @param _securityToken Address of the security token 
    * @return address Address of the new offering instance
    */
   function createOffering(
     uint256 _startTime,
     uint256 _endTime,
     uint256 _polyTokenRate,
-    uint256 _maxPoly,
-    address _securityToken
+    uint256 _maxPoly
     ) public returns (address);
 
   /**
@@ -223,12 +221,11 @@ interface ICustomers {
 
   /**
    * @dev Allow new provider applications
-   * @param _providerAddress The provider's public key address
    * @param _name The provider's name
    * @param _details A SHA256 hash of the new providers details
    * @param _fee The fee charged for customer verification
    */
-  function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success);
+  function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success);
 
   /**
    * @dev Change a providers fee
@@ -299,12 +296,12 @@ interface ICustomers {
 
 /**
  * @title Customers
- * @dev Contract use to register the user on the Platform platform
+ * @dev Contract use to register the user on the Polymath platform
  */
 
 contract Customers is ICustomers {
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     IERC20 POLY;                                                        // Instance of the POLY token
 
@@ -312,7 +309,7 @@ contract Customers is ICustomers {
         bytes32 countryJurisdiction;                                    // Customers country jurisdiction as ex - ISO3166
         bytes32 divisionJurisdiction;                                   // Customers sub-division jurisdiction as ex - ISO3166
         uint256 joined;                                                 // Timestamp when customer register
-        uint8 role;                                                     // role of the customer
+        uint8 role;                                                     // Role of the customer
         bool accredited;                                                // Accrediation status of the customer
         bytes32 proof;                                                  // Proof for customer
         uint256 expires;                                                // Timestamp when customer verification expires
@@ -331,7 +328,7 @@ contract Customers is ICustomers {
     mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
 
     // Notifications
-    event LogNewProvider(address indexed providerAddress, string name, bytes32 details);
+    event LogNewProvider(address indexed providerAddress, string name, bytes32 details, uint256 _fee);
     event LogCustomerVerified(address indexed customer, address indexed provider, uint8 role);
 
     // Modifier
@@ -349,17 +346,15 @@ contract Customers is ICustomers {
 
     /**
      * @dev Allow new provider applications
-     * @param _providerAddress The provider's public key address
      * @param _name The provider's name
      * @param _details A SHA256 hash of the new providers details
      * @param _fee The fee charged for customer verification
      */
-    function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
-        require(_providerAddress != address(0));
+    function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_details != 0x0);
-        require(providers[_providerAddress].details == 0x0);
-        providers[_providerAddress] = Provider(_name, now, _details, _fee);
-        LogNewProvider(_providerAddress, _name, _details);
+        require(providers[msg.sender].details == 0x0);
+        providers[msg.sender] = Provider(_name, now, _details, _fee);
+        LogNewProvider(msg.sender, _name, _details, _fee);
         return true;
     }
 
@@ -555,6 +550,9 @@ contract Template is ITemplate {
     uint8 quorum;                                                   // Minimum percent of shareholders which need to vote to freeze
     uint256 vestingPeriod;                                          // Length of time to vest funds
 
+    uint allowedJurisdictionsCount;                                 // Keeps track of how many jurisdictions have been allowed for this template
+    uint allowedRolesCount;                                         // Keeps track of how many roles have been allowed for this template
+    // Notification
     event DetailsUpdated(bytes32 _prevDetails, bytes32 _newDetails, uint _updateDate);
 
     function Template (
@@ -597,12 +595,17 @@ contract Template is ITemplate {
         require(_allowedJurisdictions.length == _allowed.length);
         require(!finalized);
         for (uint i = 0; i < _allowedJurisdictions.length; ++i) {
+            if(!allowedJurisdictions[_allowedJurisdictions[i]] && _allowed[i])
+              allowedJurisdictionsCount++;
+            else if(allowedJurisdictions[_allowedJurisdictions[i]] && !_allowed[i])
+              allowedJurisdictionsCount--;
+
             allowedJurisdictions[_allowedJurisdictions[i]] = _allowed[i];
         }
     }
 
     /**
-     * @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+     * @dev `addDivisionJurisdiction` allows the adding of new jurisdictions to a template
      * @param _blockedDivisionJurisdictions An array of subdivision jurisdictions
      * @param _blocked An array of whether the subdivision jurisdiction is blocked to purchase the security or not
      */
@@ -616,13 +619,16 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `addRole` allows the adding of new roles to be added to whitelist
+     * @dev `addRoles` allows the adding of new roles to be added to whitelist
      * @param _allowedRoles User roles that can purchase the security
      */
     function addRoles(uint8[] _allowedRoles) public {
         require(owner == msg.sender);
         require(!finalized);
         for (uint i = 0; i < _allowedRoles.length; ++i) {
+            if(!allowedRoles[_allowedRoles[i]])
+              allowedRolesCount++;
+
             allowedRoles[_allowedRoles[i]] = true;
         }
     }
@@ -647,6 +653,8 @@ contract Template is ITemplate {
      */
     function finalizeTemplate() public returns (bool success) {
         require(owner == msg.sender);
+        require(allowedJurisdictionsCount > 0);
+        require(allowedRolesCount > 0);
         finalized = true;
         return true;
     }
@@ -685,7 +693,7 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `getUsageFees` is a function to get all the details on template usage fees
+     * @dev `getUsageDetails` is a function to get all the details on template usage fees
      * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
      */
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
@@ -728,9 +736,11 @@ interface ISecurityToken {
      * @param _endTime Unix timestamp to end the offering
      * @param _polyTokenRate Price of one security token in terms of poly
      * @param _maxPoly Maximum amount of poly issuer wants to collect
+     * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
+     * @param _quorum Percent of initial investors required to freeze POLY raise
      * @return bool
      */
-    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly) external returns (bool success);
+    function initialiseOffering(uint256 _startTime, uint256 _endTime, uint256 _polyTokenRate, uint256 _maxPoly, uint256 _lockupPeriod, uint8 _quorum) external returns (bool success);
 
     /**
      * @dev Add a verified address to the Security Token whitelist
@@ -798,8 +808,6 @@ interface ISecurityTokenRegistrar {
     * @param _totalSupply Total amount of tokens being created
     * @param _owner Ethereum public key address of the security token owner
     * @param _type Type of security being tokenized
-    * @param _lockupPeriod Length of time raised POLY will be locked up for dispute
-    * @param _quorum Percent of initial investors required to freeze POLY raise
     */
     function createSecurityToken (
         string _nameSpace,
@@ -808,9 +816,7 @@ interface ISecurityTokenRegistrar {
         uint256 _totalSupply,
         uint8 _decimals,
         address _owner,
-        uint8 _type,
-        uint256 _lockupPeriod,
-        uint8 _quorum
+        uint8 _type
     ) external;
 
     /**
@@ -849,7 +855,7 @@ contract Compliance is ICompliance {
 
     using SafeMath for uint256;
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     ISecurityTokenRegistrar public STRegistrar;
 
@@ -857,16 +863,19 @@ contract Compliance is ICompliance {
     struct Reputation {
         uint256 totalRaised;                                             // Total amount raised by issuers that used the template / offeringFactory
         address[] usedBy;                                                // Array of security token addresses that used this particular template / offeringFactory
+        mapping (address => bool) usedBySecurityToken;                   // Mapping of STs using this Reputation
     }
 
     mapping(address => Reputation) public templates;                     // Mapping used for storing the template repuation
     mapping(address => address[]) public templateProposals;              // Template proposals for a specific security token
 
-    mapping(address => Reputation) offeringFactories;                    // Mapping used for storing the offering factory reputation
-    mapping(address => address[]) public offeringFactoryProposals;       // OfferingFactory proposals for a specific security token
+    mapping(address => Reputation) public offeringFactories;                        // Mapping used for storing the offering factory reputation
+    mapping(address => address[]) public offeringFactoryProposals;                  // OfferingFactory proposals for a specific security token
+    mapping(address => mapping(address => bool)) public proposedTemplatesList;      // Use to restrict the proposing the same templates again and again
+    mapping(address => mapping(address => bool)) public proposedOfferingFactoryList; // Use to restrict the proposing the same offeringFactory again and again
 
-    Customers public PolyCustomers;                                      // Instance of the Compliance contract
-    uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100; // 100 Day minimum vesting period for POLY earned
+    Customers public PolyCustomers;                                                 // Instance of the Compliance contract
+    uint256 public constant MINIMUM_VESTING_PERIOD = 60 * 60 * 24 * 100;            // 100 Day minimum vesting period for POLY earned
 
     // Notifications for templates
     event LogTemplateCreated(address indexed _creator, address indexed _template, string _offeringType);
@@ -885,6 +894,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev `setRegistrarAddress` This function set the SecurityTokenRegistrar contract address.
+     * Called just after the deployment of smart contracts.
      * @param _STRegistrar It is the `this` reference of STR contract
      * @return bool
      */
@@ -940,6 +950,8 @@ contract Compliance is ICompliance {
           totalRaised: 0,
           usedBy: new address[](0)
       });
+      //Keep track of templates created through Compliance.sol
+      templates[_template].usedBySecurityToken[address(this)] = true;
       LogTemplateCreated(msg.sender, _template, _offeringType);
     }
 
@@ -954,14 +966,18 @@ contract Compliance is ICompliance {
         address _template
     ) public returns (bool success)
     {
+        require(templates[_template].usedBySecurityToken[address(this)]);
         // Verifying that provided _securityToken is generated by securityTokenRegistrar only
         var (,, securityTokenOwner,) = STRegistrar.getSecurityTokenData(_securityToken);
         require(securityTokenOwner != address(0));
 
+        // Check whether the template is already proposed or not for the given securityToken
+        require(!proposedTemplatesList[_securityToken][_template]);
+
         // Creating the instance of template to avail the function calling
         ITemplate template = ITemplate(_template);
 
-        //This will fail if template is expired
+        // This will fail if template is expired
         var (,finalized) = template.getTemplateDetails();
         var (,,, owner,) = template.getUsageDetails();
 
@@ -972,6 +988,7 @@ contract Compliance is ICompliance {
 
         //Get a reference of the template contract and add it to the templateProposals array
         templateProposals[_securityToken].push(_template);
+        proposedTemplatesList[_securityToken][_template] = true;
         LogNewTemplateProposal(_securityToken, _template, msg.sender, templateProposals[_securityToken].length - 1);
         return true;
     }
@@ -990,9 +1007,10 @@ contract Compliance is ICompliance {
         address proposedTemplate = templateProposals[_securityToken][_templateProposalIndex];
         ITemplate template = ITemplate(proposedTemplate);
         var (,,, owner,) = template.getUsageDetails();
-
+        // Cancelation is only being performed by the owner of template.
         require(owner == msg.sender);
         var (chosenTemplate,,,,,) = ISecurityToken(_securityToken).getTokenDetails();
+        // Template shouldn't be choosed one.
         require(chosenTemplate != proposedTemplate);
         templateProposals[_securityToken][_templateProposalIndex] = address(0);
         LogCancelTemplateProposal(_securityToken, proposedTemplate, _templateProposalIndex);
@@ -1001,7 +1019,7 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev Set the STO contract by the issuer.
+     * @dev Register the Offering factory by the developer.
      * @param _factoryAddress address of the offering factory
      * @return bool success
      */
@@ -1010,10 +1028,12 @@ contract Compliance is ICompliance {
     ) public returns (bool success)
     {
       require(_factoryAddress != address(0));
+      // Restrict to update the reputation of already registered offeringFactory
+      require(!(offeringFactories[_factoryAddress].totalRaised > 0 || offeringFactories[_factoryAddress].usedBy.length > 0));
       IOfferingFactory offeringFactory = IOfferingFactory(_factoryAddress);
       var (, quorum, vestingPeriod, owner, description) = offeringFactory.getUsageDetails();
 
-      //Validate Offering Factory details
+      // Validate Offering Factory details
       require(quorum > 0 && quorum <= 100);
       require(vestingPeriod >= MINIMUM_VESTING_PERIOD);
       require(owner != address(0));
@@ -1022,6 +1042,8 @@ contract Compliance is ICompliance {
           totalRaised: 0,
           usedBy: new address[](0)
       });
+      // Keep track of offering factories registered through Compliance.sol
+      offeringFactories[_factoryAddress].usedBySecurityToken[address(this)] = true;
       LogOfferingFactoryRegistered(owner, _factoryAddress, description);
       return true;
     }
@@ -1037,25 +1059,24 @@ contract Compliance is ICompliance {
         address _factoryAddress
     ) public returns (bool success)
     {
+        require(offeringFactories[_factoryAddress].usedBySecurityToken[address(this)]);
         // Verifying that provided _securityToken is generated by securityTokenRegistrar only
         var (,, securityTokenOwner,) = STRegistrar.getSecurityTokenData(_securityToken);
         require(securityTokenOwner != address(0));
-
+        // Check whether the offeringFactory is already proposed or not for the given securityToken
+        require(!proposedOfferingFactoryList[_securityToken][_factoryAddress]);
         IOfferingFactory offeringFactory = IOfferingFactory(_factoryAddress);
         var (,,, owner,) = offeringFactory.getUsageDetails();
 
-        var (,,,,KYC,) = ISecurityToken(_securityToken).getTokenDetails();
-        var (,,, expires) = PolyCustomers.getCustomer(KYC, owner);
-
         require(owner == msg.sender);
-        require(expires > now);
         offeringFactoryProposals[_securityToken].push(_factoryAddress);
+        proposedOfferingFactoryList[_securityToken][_factoryAddress] = true;
         LogNewOfferingFactoryProposal(_securityToken, _factoryAddress, owner, offeringFactoryProposals[_securityToken].length - 1);
         return true;
     }
 
     /**
-     * @dev Cancel a STO factory proposal if the bid hasn't been accepted
+     * @dev Cancel a Offering factory proposal if the bid hasn't been accepted
      * @param _securityToken The security token being bid on
      * @param _offeringFactoryProposalIndex The offeringFactory proposal array index
      * @return bool success
@@ -1068,7 +1089,7 @@ contract Compliance is ICompliance {
         address proposedOfferingFactory = offeringFactoryProposals[_securityToken][_offeringFactoryProposalIndex];
         IOfferingFactory offeringFactory = IOfferingFactory(proposedOfferingFactory);
         var (,,, owner,) = offeringFactory.getUsageDetails();
-
+        // Cancelation is only being performed by the owner of template.
         require(owner == msg.sender);
         var (,,,,,chosenOfferingFactory) = ISecurityToken(_securityToken).getTokenDetails();
         require(chosenOfferingFactory != proposedOfferingFactory);
@@ -1079,33 +1100,39 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev `updateTemplateReputation` is a constant function that updates the
+     * @dev `updateTemplateReputation` is a function that updates the
        history of a security token template usage to keep track of previous uses
      * @param _template The unique template id
      * @param _polyRaised The amount of poly raised
      */
     function updateTemplateReputation(address _template, uint256 _polyRaised) external returns (bool success) {
-        //Check that the caller is a security token
+        // Check that the caller is a security token
         var (,, securityTokenOwner,) = STRegistrar.getSecurityTokenData(msg.sender);
         require(securityTokenOwner != address(0));
-        //If it is, then update reputation
-        templates[_template].usedBy.push(msg.sender);
+        // If it is, then update reputation
+        if (!templates[_template].usedBySecurityToken[msg.sender]) {
+          templates[_template].usedBy.push(msg.sender);
+          templates[_template].usedBySecurityToken[msg.sender] = true;
+        }
         templates[_template].totalRaised = templates[_template].totalRaised.add(_polyRaised);
         return true;
     }
 
     /**
-     * @dev `updateOfferingReputation` is a constant function that updates the
+     * @dev `updateOfferingReputation` is a function that updates the
        history of a security token offeringFactory contract to keep track of previous uses
      * @param _offeringFactory The address of the offering factory
      * @param _polyRaised The amount of poly raised
      */
     function updateOfferingFactoryReputation(address _offeringFactory, uint256 _polyRaised) external returns (bool success) {
-        //Check that the caller is a security token
+        // Check that the caller is a security token
         var (,, securityTokenOwner,) = STRegistrar.getSecurityTokenData(msg.sender);
         require(securityTokenOwner != address(0));
-        //If it is, then update reputation
-        offeringFactories[_offeringFactory].usedBy.push(msg.sender);
+        // If it is, then update reputation
+        if (!offeringFactories[_offeringFactory].usedBySecurityToken[msg.sender]) {
+          offeringFactories[_offeringFactory].usedBy.push(msg.sender);
+          offeringFactories[_offeringFactory].usedBySecurityToken[msg.sender] = true;
+        }
         offeringFactories[_offeringFactory].totalRaised = offeringFactories[_offeringFactory].totalRaised.add(_polyRaised);
         return true;
     }
@@ -1124,16 +1151,16 @@ contract Compliance is ICompliance {
 
     /**
      * @dev Get an array containing the address of all template proposals for a given ST
-     * @param _securityTokenAddress The security token ethereum address
+     * @param _securityTokenAddress The security token address
      * @return Template proposals array
      */
-    function getAllTemplateProposals(address _securityTokenAddress) view public returns (address[]){
+    function getAllTemplateProposals(address _securityTokenAddress) view public returns (address[]) {
         return templateProposals[_securityTokenAddress];
     }
 
     /**
      * @dev Get security token offering smart contract details by the proposal index
-     * @param _securityTokenAddress The security token ethereum address
+     * @param _securityTokenAddress The security token address
      * @param _offeringFactoryProposalIndex The array index of the STO contract being checked
      * @return Contract struct
      */
@@ -1145,7 +1172,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev Get an array containing the address of all offering proposals for a given ST
-     * @param _securityTokenAddress The security token ethereum address
+     * @param _securityTokenAddress The security token address
      * @return Offering proposals array
      */
     function getAllOfferingFactoryProposals(address _securityTokenAddress) view public returns (address[]) {

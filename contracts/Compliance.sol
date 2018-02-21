@@ -23,7 +23,7 @@ contract Compliance is ICompliance {
 
     using SafeMath for uint256;
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     ISecurityTokenRegistrar public STRegistrar;
 
@@ -37,7 +37,7 @@ contract Compliance is ICompliance {
     mapping(address => Reputation) public templates;                     // Mapping used for storing the template repuation
     mapping(address => address[]) public templateProposals;              // Template proposals for a specific security token
 
-    mapping(address => Reputation) offeringFactories;                               // Mapping used for storing the offering factory reputation
+    mapping(address => Reputation) public offeringFactories;                        // Mapping used for storing the offering factory reputation
     mapping(address => address[]) public offeringFactoryProposals;                  // OfferingFactory proposals for a specific security token
     mapping(address => mapping(address => bool)) public proposedTemplatesList;      // Use to restrict the proposing the same templates again and again
     mapping(address => mapping(address => bool)) public proposedOfferingFactoryList; // Use to restrict the proposing the same offeringFactory again and again
@@ -62,6 +62,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev `setRegistrarAddress` This function set the SecurityTokenRegistrar contract address.
+     * Called just after the deployment of smart contracts.
      * @param _STRegistrar It is the `this` reference of STR contract
      * @return bool
      */
@@ -144,7 +145,7 @@ contract Compliance is ICompliance {
         // Creating the instance of template to avail the function calling
         ITemplate template = ITemplate(_template);
 
-        //This will fail if template is expired
+        // This will fail if template is expired
         var (,finalized) = template.getTemplateDetails();
         var (,,, owner,) = template.getUsageDetails();
 
@@ -174,9 +175,10 @@ contract Compliance is ICompliance {
         address proposedTemplate = templateProposals[_securityToken][_templateProposalIndex];
         ITemplate template = ITemplate(proposedTemplate);
         var (,,, owner,) = template.getUsageDetails();
-
+        // Cancelation is only being performed by the owner of template.
         require(owner == msg.sender);
         var (chosenTemplate,,,,,) = ISecurityToken(_securityToken).getTokenDetails();
+        // Template shouldn't be choosed one.
         require(chosenTemplate != proposedTemplate);
         templateProposals[_securityToken][_templateProposalIndex] = address(0);
         LogCancelTemplateProposal(_securityToken, proposedTemplate, _templateProposalIndex);
@@ -194,12 +196,12 @@ contract Compliance is ICompliance {
     ) public returns (bool success)
     {
       require(_factoryAddress != address(0));
-      // restrict to update the reputation of already registered offeringFactory
+      // Restrict to update the reputation of already registered offeringFactory
       require(!(offeringFactories[_factoryAddress].totalRaised > 0 || offeringFactories[_factoryAddress].usedBy.length > 0));
       IOfferingFactory offeringFactory = IOfferingFactory(_factoryAddress);
       var (, quorum, vestingPeriod, owner, description) = offeringFactory.getUsageDetails();
 
-      //Validate Offering Factory details
+      // Validate Offering Factory details
       require(quorum > 0 && quorum <= 100);
       require(vestingPeriod >= MINIMUM_VESTING_PERIOD);
       require(owner != address(0));
@@ -208,7 +210,7 @@ contract Compliance is ICompliance {
           totalRaised: 0,
           usedBy: new address[](0)
       });
-      //Keep track of offering factories registered through Compliance.sol
+      // Keep track of offering factories registered through Compliance.sol
       offeringFactories[_factoryAddress].usedBySecurityToken[address(this)] = true;
       LogOfferingFactoryRegistered(owner, _factoryAddress, description);
       return true;
@@ -255,7 +257,7 @@ contract Compliance is ICompliance {
         address proposedOfferingFactory = offeringFactoryProposals[_securityToken][_offeringFactoryProposalIndex];
         IOfferingFactory offeringFactory = IOfferingFactory(proposedOfferingFactory);
         var (,,, owner,) = offeringFactory.getUsageDetails();
-
+        // Cancelation is only being performed by the owner of template.
         require(owner == msg.sender);
         var (,,,,,chosenOfferingFactory) = ISecurityToken(_securityToken).getTokenDetails();
         require(chosenOfferingFactory != proposedOfferingFactory);
@@ -266,17 +268,17 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev `updateTemplateReputation` is a constant function that updates the
+     * @dev `updateTemplateReputation` is a function that updates the
        history of a security token template usage to keep track of previous uses
      * @param _template The unique template id
      * @param _polyRaised The amount of poly raised
      */
     function updateTemplateReputation(address _template, uint256 _polyRaised) external returns (bool success) {
-        //Check that the caller is a security token
+        // Check that the caller is a security token
         var (,, securityTokenOwner,) = STRegistrar.getSecurityTokenData(msg.sender);
         require(securityTokenOwner != address(0));
-        //If it is, then update reputation
-        if (templates[_template].usedBySecurityToken[msg.sender] == false) {
+        // If it is, then update reputation
+        if (!templates[_template].usedBySecurityToken[msg.sender]) {
           templates[_template].usedBy.push(msg.sender);
           templates[_template].usedBySecurityToken[msg.sender] = true;
         }
@@ -285,21 +287,20 @@ contract Compliance is ICompliance {
     }
 
     /**
-     * @dev `updateOfferingReputation` is a constant function that updates the
+     * @dev `updateOfferingReputation` is a function that updates the
        history of a security token offeringFactory contract to keep track of previous uses
      * @param _offeringFactory The address of the offering factory
      * @param _polyRaised The amount of poly raised
      */
     function updateOfferingFactoryReputation(address _offeringFactory, uint256 _polyRaised) external returns (bool success) {
-        //Check that the caller is a security token
+        // Check that the caller is a security token
         var (,, securityTokenOwner,) = STRegistrar.getSecurityTokenData(msg.sender);
         require(securityTokenOwner != address(0));
-        //If it is, then update reputation
-        if (offeringFactories[_offeringFactory].usedBySecurityToken[msg.sender] == false) {
+        // If it is, then update reputation
+        if (!offeringFactories[_offeringFactory].usedBySecurityToken[msg.sender]) {
           offeringFactories[_offeringFactory].usedBy.push(msg.sender);
           offeringFactories[_offeringFactory].usedBySecurityToken[msg.sender] = true;
         }
-        offeringFactories[_offeringFactory].usedBy.push(msg.sender);
         offeringFactories[_offeringFactory].totalRaised = offeringFactories[_offeringFactory].totalRaised.add(_polyRaised);
         return true;
     }
@@ -318,7 +319,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev Get an array containing the address of all template proposals for a given ST
-     * @param _securityTokenAddress The security token ethereum address
+     * @param _securityTokenAddress The security token address
      * @return Template proposals array
      */
     function getAllTemplateProposals(address _securityTokenAddress) view public returns (address[]) {
@@ -327,7 +328,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev Get security token offering smart contract details by the proposal index
-     * @param _securityTokenAddress The security token ethereum address
+     * @param _securityTokenAddress The security token address
      * @param _offeringFactoryProposalIndex The array index of the STO contract being checked
      * @return Contract struct
      */
@@ -339,7 +340,7 @@ contract Compliance is ICompliance {
 
     /**
      * @dev Get an array containing the address of all offering proposals for a given ST
-     * @param _securityTokenAddress The security token ethereum address
+     * @param _securityTokenAddress The security token address
      * @return Offering proposals array
      */
     function getAllOfferingFactoryProposals(address _securityTokenAddress) view public returns (address[]) {

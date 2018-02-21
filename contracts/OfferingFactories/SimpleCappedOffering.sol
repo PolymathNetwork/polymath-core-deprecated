@@ -1,6 +1,5 @@
 pragma solidity ^0.4.18;
 
-//import '../SecurityTokenMOCK.sol';
 import '../interfaces/ISecurityToken.sol';
 import '../interfaces/IERC20.sol';
 import '../SafeMath.sol';
