@@ -12,12 +12,12 @@ import './interfaces/ICustomers.sol';
 
 /**
  * @title Customers
- * @dev Contract use to register the user on the Platform platform
+ * @dev Contract use to register the user on the Polymath platform
  */
 
 contract Customers is ICustomers {
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     IERC20 POLY;                                                        // Instance of the POLY token
 
@@ -25,7 +25,7 @@ contract Customers is ICustomers {
         bytes32 countryJurisdiction;                                    // Customers country jurisdiction as ex - ISO3166
         bytes32 divisionJurisdiction;                                   // Customers sub-division jurisdiction as ex - ISO3166
         uint256 joined;                                                 // Timestamp when customer register
-        uint8 role;                                                     // role of the customer
+        uint8 role;                                                     // Role of the customer
         bool accredited;                                                // Accrediation status of the customer
         bytes32 proof;                                                  // Proof for customer
         uint256 expires;                                                // Timestamp when customer verification expires

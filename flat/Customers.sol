@@ -16,12 +16,11 @@ interface ICustomers {
 
   /**
    * @dev Allow new provider applications
-   * @param _providerAddress The provider's public key address
    * @param _name The provider's name
    * @param _details A SHA256 hash of the new providers details
    * @param _fee The fee charged for customer verification
    */
-  function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success);
+  function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success);
 
   /**
    * @dev Change a providers fee
@@ -92,12 +91,12 @@ interface ICustomers {
 
 /**
  * @title Customers
- * @dev Contract use to register the user on the Platform platform
+ * @dev Contract use to register the user on the Polymath platform
  */
 
 contract Customers is ICustomers {
 
-    string public VERSION = "1";
+    string public VERSION = "2";
 
     IERC20 POLY;                                                        // Instance of the POLY token
 
@@ -105,7 +104,7 @@ contract Customers is ICustomers {
         bytes32 countryJurisdiction;                                    // Customers country jurisdiction as ex - ISO3166
         bytes32 divisionJurisdiction;                                   // Customers sub-division jurisdiction as ex - ISO3166
         uint256 joined;                                                 // Timestamp when customer register
-        uint8 role;                                                     // role of the customer
+        uint8 role;                                                     // Role of the customer
         bool accredited;                                                // Accrediation status of the customer
         bytes32 proof;                                                  // Proof for customer
         uint256 expires;                                                // Timestamp when customer verification expires
@@ -124,7 +123,7 @@ contract Customers is ICustomers {
     mapping(address => Provider) public providers;                      // KYC/Accreditation Providers
 
     // Notifications
-    event LogNewProvider(address indexed providerAddress, string name, bytes32 details);
+    event LogNewProvider(address indexed providerAddress, string name, bytes32 details, uint256 _fee);
     event LogCustomerVerified(address indexed customer, address indexed provider, uint8 role);
 
     // Modifier
@@ -142,17 +141,15 @@ contract Customers is ICustomers {
 
     /**
      * @dev Allow new provider applications
-     * @param _providerAddress The provider's public key address
      * @param _name The provider's name
      * @param _details A SHA256 hash of the new providers details
      * @param _fee The fee charged for customer verification
      */
-    function newProvider(address _providerAddress, string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
-        require(_providerAddress != address(0));
+    function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success) {
         require(_details != 0x0);
-        require(providers[_providerAddress].details == 0x0);
-        providers[_providerAddress] = Provider(_name, now, _details, _fee);
-        LogNewProvider(_providerAddress, _name, _details);
+        require(providers[msg.sender].details == 0x0);
+        providers[msg.sender] = Provider(_name, now, _details, _fee);
+        LogNewProvider(msg.sender, _name, _details, _fee);
         return true;
     }
 

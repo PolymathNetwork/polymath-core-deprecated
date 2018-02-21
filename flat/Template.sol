@@ -96,6 +96,9 @@ contract Template is ITemplate {
     uint8 quorum;                                                   // Minimum percent of shareholders which need to vote to freeze
     uint256 vestingPeriod;                                          // Length of time to vest funds
 
+    uint allowedJurisdictionsCount;                                 // Keeps track of how many jurisdictions have been allowed for this template
+    uint allowedRolesCount;                                         // Keeps track of how many roles have been allowed for this template
+    // Notification
     event DetailsUpdated(bytes32 _prevDetails, bytes32 _newDetails, uint _updateDate);
 
     function Template (
@@ -115,6 +118,7 @@ contract Template is ITemplate {
         require(_details.length > 0 && _expires > now && _issuerJurisdiction.length > 0);
         require(_quorum > 0 && _quorum <= 100);
         require(_vestingPeriod > 0);
+        require(_fee > 0);
         owner = _owner;
         offeringType = _offeringType;
         issuerJurisdiction = _issuerJurisdiction;
@@ -138,12 +142,17 @@ contract Template is ITemplate {
         require(_allowedJurisdictions.length == _allowed.length);
         require(!finalized);
         for (uint i = 0; i < _allowedJurisdictions.length; ++i) {
+            if(!allowedJurisdictions[_allowedJurisdictions[i]] && _allowed[i])
+              allowedJurisdictionsCount++;
+            else if(allowedJurisdictions[_allowedJurisdictions[i]] && !_allowed[i])
+              allowedJurisdictionsCount--;
+
             allowedJurisdictions[_allowedJurisdictions[i]] = _allowed[i];
         }
     }
 
     /**
-     * @dev `addJurisdiction` allows the adding of new jurisdictions to a template
+     * @dev `addDivisionJurisdiction` allows the adding of new jurisdictions to a template
      * @param _blockedDivisionJurisdictions An array of subdivision jurisdictions
      * @param _blocked An array of whether the subdivision jurisdiction is blocked to purchase the security or not
      */
@@ -157,13 +166,16 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `addRole` allows the adding of new roles to be added to whitelist
+     * @dev `addRoles` allows the adding of new roles to be added to whitelist
      * @param _allowedRoles User roles that can purchase the security
      */
     function addRoles(uint8[] _allowedRoles) public {
         require(owner == msg.sender);
         require(!finalized);
         for (uint i = 0; i < _allowedRoles.length; ++i) {
+            if(!allowedRoles[_allowedRoles[i]])
+              allowedRolesCount++;
+
             allowedRoles[_allowedRoles[i]] = true;
         }
     }
@@ -188,6 +200,8 @@ contract Template is ITemplate {
      */
     function finalizeTemplate() public returns (bool success) {
         require(owner == msg.sender);
+        require(allowedJurisdictionsCount > 0);
+        require(allowedRolesCount > 0);
         finalized = true;
         return true;
     }
@@ -226,7 +240,7 @@ contract Template is ITemplate {
     }
 
     /**
-     * @dev `getUsageFees` is a function to get all the details on template usage fees
+     * @dev `getUsageDetails` is a function to get all the details on template usage fees
      * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
      */
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {

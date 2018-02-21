@@ -72,7 +72,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
     mapping(address => mapping(address => bool)) public voted;               // Voting mapping
     mapping(address => Allocation) public allocations;                       // Mapping that contains the data of allocation corresponding to stakeholder address
 
-	   // Security Token Offering statistics
+    // Security Token Offering statistics
     mapping(address => uint256) public contributedToSTO;                     // Mapping for tracking the POLY contribution by the contributor
     uint256 public totalAllocated = 0;
 
