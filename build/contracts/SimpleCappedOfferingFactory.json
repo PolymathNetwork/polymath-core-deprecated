@@ -227,7 +227,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 4858,
+          "SourceUnit": 4918,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/IOfferingFactory.sol",
           "file": "../interfaces/IOfferingFactory.sol",
           "scope": 1712,
@@ -243,15 +243,15 @@
       {
         "attributes": {
           "contractDependencies": [
-            4857,
-            1626
+            1626,
+            4917
           ],
           "contractKind": "contract",
           "documentation": "@dev Highly Recommended - Only a sample STO factory Not used for mainnet !!",
           "fullyImplemented": true,
           "linearizedBaseContracts": [
             1711,
-            4857
+            4917
           ],
           "name": "SimpleCappedOfferingFactory",
           "scope": 1712
@@ -268,7 +268,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "IOfferingFactory",
-                  "referencedDeclaration": 4857,
+                  "referencedDeclaration": 4917,
                   "type": "contract IOfferingFactory"
                 },
                 "id": 1631,
@@ -365,7 +365,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "ISecurityToken",
-                  "referencedDeclaration": 4973,
+                  "referencedDeclaration": 5033,
                   "type": "contract ISecurityToken"
                 },
                 "id": 1639,
@@ -682,7 +682,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5108,
+                                  "referencedDeclaration": 5168,
                                   "type": "msg",
                                   "value": "msg"
                                 },
@@ -727,7 +727,7 @@
               "payable": false,
               "scope": 1711,
               "stateMutability": "nonpayable",
-              "superFunction": 4843,
+              "superFunction": 4903,
               "visibility": "public"
             },
             "children": [
@@ -1018,7 +1018,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5108,
+                                  "referencedDeclaration": 5168,
                                   "type": "msg",
                                   "value": "msg"
                                 },
@@ -1063,7 +1063,7 @@
               "payable": false,
               "scope": 1711,
               "stateMutability": "view",
-              "superFunction": 4856,
+              "superFunction": 4916,
               "visibility": "public"
             },
             "children": [
@@ -1339,5 +1339,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-22T18:25:02.179Z"
+  "updatedAt": "2018-02-22T19:14:11.887Z"
 }

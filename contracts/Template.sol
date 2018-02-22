@@ -80,25 +80,14 @@ contract Template is ITemplate {
         require(_allowedJurisdictions.length == _allowed.length);
         require(!finalized);
         for (uint i = 0; i < _allowedJurisdictions.length; ++i) {
-            if(!allowedJurisdictions[_allowedJurisdictions[i]] && _allowed[i])
+            if (!allowedJurisdictions[_allowedJurisdictions[i]] && _allowed[i])
               allowedJurisdictionsList.push(_allowedJurisdictions[i]);
-            else if(allowedJurisdictions[_allowedJurisdictions[i]] && !_allowed[i]) {
+            else if (allowedJurisdictions[_allowedJurisdictions[i]] && !_allowed[i]) {
                 removeFromJurisdictionList(_allowedJurisdictions[i]);
                 removedJurisdictionsCount++;
             }
               
             allowedJurisdictions[_allowedJurisdictions[i]] = _allowed[i];
-        }
-    }
-
-    /**
-     * @dev remove the jurisdiction from the allowed list of jurisdictions
-     * @param _jurisdiction Jurisdiction which need to be removed
-     */
-    function removeFromJurisdictionList(bytes32 _jurisdiction) internal {
-        for (uint i = 0; i < allowedJurisdictionsList.length; i++) {
-            if (allowedJurisdictionsList[i] == _jurisdiction)
-                allowedJurisdictionsList[i] = 0x0;
         }
     }
 
@@ -112,8 +101,36 @@ contract Template is ITemplate {
         require(_blockedDivisionJurisdictions.length == _blocked.length);
         require(!finalized);
         for (uint i = 0; i < _blockedDivisionJurisdictions.length; ++i) {
+             if (!blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] && _blocked[i])
+                blockedDivisionJurisdictionsList.push(_blockedDivisionJurisdictions[i]);
+            else if (blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] && !_blocked[i]) {
+                removeFromDivisionJurisdictionList(_blockedDivisionJurisdictions[i]);
+            }
+              
             blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] = _blocked[i];
-            blockedDivisionJurisdictionsList.push(_blockedDivisionJurisdictions[i]);
+        }
+    }
+
+     /**
+     * @dev remove the jurisdiction from the allowed list of jurisdictions
+     * @param _jurisdiction Jurisdiction which need to be removed
+     */
+    function removeFromJurisdictionList(bytes32 _jurisdiction) internal {
+        for (uint i = 0; i < allowedJurisdictionsList.length; i++) {
+            if (allowedJurisdictionsList[i] == _jurisdiction)
+                allowedJurisdictionsList[i] = 0x0;
+        }
+    }
+
+
+    /**
+     * @dev remove the divisionJurisdiction from the blocked list of divisionJurisdiction
+     * @param _blockedDivisionJurisdiction divisionJurisdiction which need to be removed
+     */
+    function removeFromDivisionJurisdictionList(bytes32 _blockedDivisionJurisdiction) internal {
+         for (uint i = 0; i < blockedDivisionJurisdictionsList.length; i++) {
+            if (blockedDivisionJurisdictionsList[i] == _blockedDivisionJurisdiction)
+                blockedDivisionJurisdictionsList[i] = 0x0;
         }
     }
 
