@@ -61,4 +61,22 @@ interface ITemplate {
    * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
    */
   function getUsageDetails() view public returns (uint256, uint8, uint256, address, address);
+
+  /**
+   * @dev Get the list of allowed jurisdictions
+   * @return bytes32[]
+   */
+  function getAllowedJurisdictionsList() view public returns (bytes32[]);
+
+  /**
+   * @dev Get the list of allowed roles
+   * @return uin8[]
+   */
+  function getAllowedRolesList() view public returns (uint8[]);
+    
+  /**
+   * @dev Get the list of allowed roles
+   * @return bytes32[]
+   */
+  function getblockedDivisionJurisdictionsList() view public returns (bytes32[]);
 }
