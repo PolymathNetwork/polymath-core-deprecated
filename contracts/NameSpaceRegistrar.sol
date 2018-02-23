@@ -20,14 +20,14 @@ contract NameSpaceRegistrar {
     //by other contracts. String can not be returned within the EVM, only externally.
 
     //A token symbol can only be registered once under a given namespace (so a symbol always maps to exactly one owner)
-    mapping (bytes32 => mapping (bytes32 => address)) public symbolToOwner;  //Maps namespaces to token symbols to owner address
-    mapping (bytes32 => string) symbolDescription;                           //Maps token symbols to their description - this is only used internally within this contract
-    mapping (bytes32 => string) symbolContact;                               //Maps token symbols to their contact details - this is only used internally within this contract
+    mapping (string => mapping (string => address)) symbolToOwner;  //Maps namespaces to token symbols to owner address
+    mapping (string => string) symbolDescription;                           //Maps token symbols to their description - this is only used internally within this contract
+    mapping (string => string) symbolContact;                               //Maps token symbols to their contact details - this is only used internally within this contract
 
     address public admin;
 
     event AdminChange(address indexed _oldAdmin, address indexed _newAdmin);
-    event RegisteredToken(bytes32 indexed _nameSpace, bytes32 _symbol, string _description, string _contact, address indexed _owner);
+    event RegisteredToken(string _nameSpace, string _symbol, string _description, string _contact, address indexed _owner);
 
     /**
      * @dev Constructor - sets the admin
@@ -54,7 +54,7 @@ contract NameSpaceRegistrar {
      * @param _symbol symbol
      * @param _owner owner
      */
-    function registerToken(bytes32 _nameSpace, bytes32 _symbol, string _description, string _contact, address _owner) public {
+    function registerToken(string _nameSpace, string _symbol, string _description, string _contact, address _owner) public {
       require(msg.sender == admin);
       require(symbolToOwner[_nameSpace][_symbol] == address(0));
       symbolToOwner[_nameSpace][_symbol] = _owner;
@@ -68,7 +68,7 @@ contract NameSpaceRegistrar {
      * @param _nameSpace namespace
      * @param _symbol symbol
      */
-    function getOwner(bytes32 _nameSpace, bytes32 _symbol) view public returns (address) {
+    function getOwner(string _nameSpace, string _symbol) view public returns (address) {
       return symbolToOwner[_nameSpace][_symbol];
     }
 }
