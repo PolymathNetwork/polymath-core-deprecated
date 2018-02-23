@@ -244,14 +244,14 @@
         "attributes": {
           "contractDependencies": [
             1626,
-            4917
+            4928
           ],
           "contractKind": "contract",
           "documentation": "@dev Highly Recommended - Only a sample STO factory Not used for mainnet !!",
           "fullyImplemented": true,
           "linearizedBaseContracts": [
             1711,
-            4917
+            4928
           ],
           "name": "SimpleCappedOfferingFactory",
           "scope": 1712
@@ -268,7 +268,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "IOfferingFactory",
-                  "referencedDeclaration": 4917,
+                  "referencedDeclaration": 4928,
                   "type": "contract IOfferingFactory"
                 },
                 "id": 1631,
@@ -365,7 +365,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "ISecurityToken",
-                  "referencedDeclaration": 5033,
+                  "referencedDeclaration": 5044,
                   "type": "contract ISecurityToken"
                 },
                 "id": 1639,
@@ -682,7 +682,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5168,
+                                  "referencedDeclaration": 5179,
                                   "type": "msg",
                                   "value": "msg"
                                 },
@@ -727,7 +727,7 @@
               "payable": false,
               "scope": 1711,
               "stateMutability": "nonpayable",
-              "superFunction": 4903,
+              "superFunction": 4914,
               "visibility": "public"
             },
             "children": [
@@ -1018,7 +1018,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5168,
+                                  "referencedDeclaration": 5179,
                                   "type": "msg",
                                   "value": "msg"
                                 },
@@ -1063,7 +1063,7 @@
               "payable": false,
               "scope": 1711,
               "stateMutability": "view",
-              "superFunction": 4916,
+              "superFunction": 4927,
               "visibility": "public"
             },
             "children": [
@@ -1339,5 +1339,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-23T16:33:22.704Z"
+  "updatedAt": "2018-02-23T15:00:24.084Z"
 }

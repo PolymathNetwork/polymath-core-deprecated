@@ -69,9 +69,14 @@ contract("Template",(accounts)=>{
             vestingPeriod
         );
         await template.addJurisdiction(countryJurisdiction, [true, false, true, true], { from : owner });
+        const allowedJurisdictionList = await template.getAllowedJurisdictionsList.call();
+        // add test cases for getAllowedJurisdictionsList;
+        assert.equal(convertHex(allowedJurisdictionList[0]), countryJurisdiction[0]);
+        assert.equal(convertHex(allowedJurisdictionList[1]), countryJurisdiction[2]);
+        assert.equal(convertHex(allowedJurisdictionList[2]), countryJurisdiction[3]);
     });
 
-    it("addJuridisction: Should add the array of divisionJurisdiction into the allowedDivisionJusrisdiction mapping",
+    it("addDivisionJuridisction: Should add the array of divisionJurisdiction into the allowedDivisionJusrisdiction mapping",
     async()=>{
         let template = await Template.new(
             owner,
@@ -86,6 +91,11 @@ contract("Template",(accounts)=>{
             vestingPeriod
         );
         await template.addDivisionJurisdiction(divisionJurisdiction, [true, false, true], { from : owner });
+        const blockedDivisionJurisdictionList = await template.getblockedDivisionJurisdictionsList.call();
+        // add test cases for getblockedDivisionJurisdictionsList;
+        assert.equal(convertHex(blockedDivisionJurisdictionList[0]), divisionJurisdiction[0]);
+        assert.equal(convertHex(blockedDivisionJurisdictionList[1]), divisionJurisdiction[2]);
+
     });
 
     it("addDivisionJuridisction: Should fail adding into mapping allowedJurisdiction -- msg.sender is not owner",
@@ -196,6 +206,11 @@ contract("Template",(accounts)=>{
             vestingPeriod
         );
         await template.addRoles([1,2,3], { from : owner });
+        const allowedRolesList = await template.getAllowedRolesList.call();
+        // add test cases for getAllowedRolesList;
+        assert.equal(allowedRolesList[0].toNumber(), 1);
+        assert.equal(allowedRolesList[1].toNumber(), 2); 
+        assert.equal(allowedRolesList[2].toNumber(), 3); 
     });
 
     it("addRoles:Should fail in adding the new roles -- fail because msg.sender is not the owner",async()=>{
@@ -327,7 +342,8 @@ contract("Template",(accounts)=>{
         );
         await template.addJurisdiction(countryJurisdiction, [true, true, true, true], { from : owner });
         await template.addRoles([1,2], { from : owner });
-        await template.finalizeTemplate({ from : owner });
+        const txReturn = await template.finalizeTemplate({ from : owner });
+        txReturn.logs[0].args._finalized.should.equal(true);
     });
 
     it("finalizetemplate: Should fail to change the template status to finalize -- Due to msg.sender is not owner ", async()=>{

@@ -210,7 +210,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -251,7 +251,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5168,
+                                      "referencedDeclaration": 5179,
                                       "type": "msg",
                                       "value": "msg"
                                     },
@@ -393,7 +393,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5168,
+                                  "referencedDeclaration": 5179,
                                   "type": "msg",
                                   "value": "msg"
                                 },
