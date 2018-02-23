@@ -68,10 +68,10 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.4.18;\n\ninterface IOfferingFactory {\n\n  /**\n   * @dev It facilitate the creation of the STO contract with essentials parameters\n   * @param _startTime Unix timestamp to start the offering\n   * @param _endTime Unix timestamp to end the offering\n   * @param _polyTokenRate Price of one security token in terms of poly\n   * @param _maxPoly Maximum amount of poly issuer wants to collect\n   * @return address Address of the new offering instance\n   */\n  function createOffering(\n    uint256 _startTime,\n    uint256 _endTime,\n    uint256 _polyTokenRate,\n    uint256 _maxPoly\n    ) public returns (address);\n\n  /**\n   * @dev `getUsageDetails` is a function to get all the details on factory usage fees\n   * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, string description\n   */\n  function getUsageDetails() view public returns (uint256, uint8, uint256, address, bytes32);\n\n}\n",
-  "sourcePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/IOfferingFactory.sol",
+  "sourcePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/IOfferingFactory.sol",
   "ast": {
     "attributes": {
-      "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/IOfferingFactory.sol",
+      "absolutePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/IOfferingFactory.sol",
       "exportedSymbols": {
         "IOfferingFactory": [
           4917
@@ -462,5 +462,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-22T19:14:11.909Z"
+  "updatedAt": "2018-02-23T16:33:22.714Z"
 }

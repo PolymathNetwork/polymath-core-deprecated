@@ -178,10 +178,10 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.4.18;\n\ninterface ICustomers {\n\n  /**\n   * @dev Allow new provider applications\n   * @param _name The provider's name\n   * @param _details A SHA256 hash of the new providers details\n   * @param _fee The fee charged for customer verification\n   */\n  function newProvider(string _name, bytes32 _details, uint256 _fee) public returns (bool success);\n\n  /**\n   * @dev Change a providers fee\n   * @param _newFee The new fee of the provider\n   */\n  function changeFee(uint256 _newFee) public returns (bool success);\n\n  /**\n   * @dev Verify an investor\n   * @param _customer The customer's public key address\n   * @param _countryJurisdiction The country urisdiction code of the customer\n   * @param _divisionJurisdiction The subdivision jurisdiction code of the customer\n   * @param _role The type of customer - investor:1, delegate:2, issuer:3, marketmaker:4, etc.\n   * @param _accredited Whether the customer is accredited or not (only applied to investors)\n   * @param _expires The time the verification expires\n   */\n  function verifyCustomer(\n    address _customer,\n    bytes32 _countryJurisdiction,\n    bytes32 _divisionJurisdiction,\n    uint8 _role,\n    bool _accredited,\n    uint256 _expires,\n    uint _nonce,\n    uint8 _v,\n    bytes32 _r,\n    bytes32 _s\n  ) public returns (bool success);\n\n   ///////////////////\n    /// GET Functions\n    //////////////////\n\n  /**\n    * @dev Get customer attestation data by KYC provider and customer ethereum address\n    * @param _provider Address of the KYC provider.\n    * @param _customer Address of the customer ethereum address\n    */\n  function getCustomer(address _provider, address _customer) public view returns (\n    bytes32,\n    bytes32,\n    bool,\n    uint8,\n    uint256\n  );\n\n  /**\n   * Get provider details and fee by ethereum address\n   * @param _providerAddress Address of the KYC provider\n   */\n  function getProvider(address _providerAddress) public view returns (\n    string name,\n    uint256 joined,\n    bytes32 details,\n    uint256 fee\n  );\n}\n",
-  "sourcePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ICustomers.sol",
+  "sourcePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/ICustomers.sol",
   "ast": {
     "attributes": {
-      "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ICustomers.sol",
+      "absolutePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/ICustomers.sol",
       "exportedSymbols": {
         "ICustomers": [
           4819
@@ -1170,5 +1170,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-22T19:14:11.907Z"
+  "updatedAt": "2018-02-23T16:33:22.714Z"
 }
