@@ -1085,7 +1085,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 4889,
+          "SourceUnit": 4900,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/IERC20.sol",
           "file": "./interfaces/IERC20.sol",
           "scope": 3303,
@@ -1100,7 +1100,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 4820,
+          "SourceUnit": 4831,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ICustomers.sol",
           "file": "./interfaces/ICustomers.sol",
           "scope": 3303,
@@ -1115,7 +1115,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 5034,
+          "SourceUnit": 5045,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ISecurityToken.sol",
           "file": "./interfaces/ISecurityToken.sol",
           "scope": 3303,
@@ -1130,7 +1130,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 4744,
+          "SourceUnit": 4755,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ICompliance.sol",
           "file": "./interfaces/ICompliance.sol",
           "scope": 3303,
@@ -1145,7 +1145,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 5157,
+          "SourceUnit": 5168,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ITemplate.sol",
           "file": "./interfaces/ITemplate.sol",
           "scope": 3303,
@@ -1160,7 +1160,7 @@
       },
       {
         "attributes": {
-          "SourceUnit": 4918,
+          "SourceUnit": 4929,
           "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/IOfferingFactory.sol",
           "file": "./interfaces/IOfferingFactory.sol",
           "scope": 3303,
@@ -1176,16 +1176,16 @@
       {
         "attributes": {
           "contractDependencies": [
-            4888,
-            5033
+            4899,
+            5044
           ],
           "contractKind": "contract",
           "documentation": "@title SecurityToken\n@dev Contract (A Blueprint) that contains the functionalities of the security token",
           "fullyImplemented": true,
           "linearizedBaseContracts": [
             3302,
-            4888,
-            5033
+            4899,
+            5044
           ],
           "name": "SecurityToken",
           "scope": 3303
@@ -1202,7 +1202,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "ISecurityToken",
-                  "referencedDeclaration": 5033,
+                  "referencedDeclaration": 5044,
                   "type": "contract ISecurityToken"
                 },
                 "id": 1884,
@@ -1225,7 +1225,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "IERC20",
-                  "referencedDeclaration": 4888,
+                  "referencedDeclaration": 4899,
                   "type": "contract IERC20"
                 },
                 "id": 1886,
@@ -1322,7 +1322,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "IERC20",
-                  "referencedDeclaration": 4888,
+                  "referencedDeclaration": 4899,
                   "type": "contract IERC20"
                 },
                 "id": 1894,
@@ -1350,7 +1350,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "ICompliance",
-                  "referencedDeclaration": 4743,
+                  "referencedDeclaration": 4754,
                   "type": "contract ICompliance"
                 },
                 "id": 1896,
@@ -1378,7 +1378,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "ITemplate",
-                  "referencedDeclaration": 5156,
+                  "referencedDeclaration": 5167,
                   "type": "contract ITemplate"
                 },
                 "id": 1898,
@@ -1406,7 +1406,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "IOfferingFactory",
-                  "referencedDeclaration": 4917,
+                  "referencedDeclaration": 4928,
                   "type": "contract IOfferingFactory"
                 },
                 "id": 1900,
@@ -1460,7 +1460,7 @@
                 "attributes": {
                   "contractScope": null,
                   "name": "ICustomers",
-                  "referencedDeclaration": 4819,
+                  "referencedDeclaration": 4830,
                   "type": "contract ICustomers"
                 },
                 "id": 1904,
@@ -3286,7 +3286,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -3327,7 +3327,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5168,
+                                      "referencedDeclaration": 5179,
                                       "type": "msg",
                                       "value": "msg"
                                     },
@@ -3431,7 +3431,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -3472,7 +3472,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5168,
+                                      "referencedDeclaration": 5179,
                                       "type": "msg",
                                       "value": "msg"
                                     },
@@ -3576,7 +3576,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -3632,7 +3632,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -3697,7 +3697,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -3806,7 +3806,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -3847,7 +3847,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5168,
+                                      "referencedDeclaration": 5179,
                                       "type": "msg",
                                       "value": "msg"
                                     },
@@ -3951,7 +3951,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -4013,7 +4013,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -4693,7 +4693,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 4888,
+                                  "referencedDeclaration": 4899,
                                   "type": "type(contract IERC20)",
                                   "value": "IERC20"
                                 },
@@ -4783,7 +4783,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 4819,
+                                  "referencedDeclaration": 4830,
                                   "type": "type(contract ICustomers)",
                                   "value": "ICustomers"
                                 },
@@ -4873,7 +4873,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 4743,
+                                  "referencedDeclaration": 4754,
                                   "type": "type(contract ICompliance)",
                                   "value": "ICompliance"
                                 },
@@ -4946,7 +4946,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 4879,
+                              "referencedDeclaration": 4890,
                               "type": "function (address,address,uint256)",
                               "value": "Transfer"
                             },
@@ -5028,7 +5028,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4926,
+              "superFunction": 4937,
               "visibility": "public"
             },
             "children": [
@@ -5154,7 +5154,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -5316,7 +5316,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5156,
+                              "referencedDeclaration": 5167,
                               "type": "type(contract ITemplate)",
                               "value": "ITemplate"
                             },
@@ -5356,7 +5356,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "member_name": "getTemplateByProposal",
-                                  "referencedDeclaration": 4733,
+                                  "referencedDeclaration": 4744,
                                   "type": "function (address,uint8) view external returns (address)"
                                 },
                                 "children": [
@@ -5385,7 +5385,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5207,
+                                  "referencedDeclaration": 5218,
                                   "type": "contract SecurityToken",
                                   "value": "this"
                                 },
@@ -5450,7 +5450,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -5611,7 +5611,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5156,
+                                  "referencedDeclaration": 5167,
                                   "type": "type(contract ITemplate)",
                                   "value": "ITemplate"
                                 },
@@ -5772,7 +5772,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "getUsageDetails",
-                              "referencedDeclaration": 5137,
+                              "referencedDeclaration": 5148,
                               "type": "function () view external returns (uint256,uint8,uint256,address,address)"
                             },
                             "children": [
@@ -5833,7 +5833,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -5884,7 +5884,7 @@
                                       "isPure": false,
                                       "lValueRequested": false,
                                       "member_name": "balanceOf",
-                                      "referencedDeclaration": 4828,
+                                      "referencedDeclaration": 4839,
                                       "type": "function (address) view external returns (uint256)"
                                     },
                                     "children": [
@@ -5913,7 +5913,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5207,
+                                      "referencedDeclaration": 5218,
                                       "type": "contract SecurityToken",
                                       "value": "this"
                                     },
@@ -6416,7 +6416,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "updateTemplateReputation",
-                              "referencedDeclaration": 4715,
+                              "referencedDeclaration": 4726,
                               "type": "function (address,uint256) external returns (bool)"
                             },
                             "children": [
@@ -6622,7 +6622,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4935,
+              "superFunction": 4946,
               "visibility": "public"
             },
             "children": [
@@ -6921,7 +6921,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4942,
+              "superFunction": 4953,
               "visibility": "public"
             },
             "children": [
@@ -7047,7 +7047,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -7124,7 +7124,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -7312,7 +7312,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "getOfferingFactoryByProposal",
-                              "referencedDeclaration": 4742,
+                              "referencedDeclaration": 4753,
                               "type": "function (address,uint8) view external returns (address)"
                             },
                             "children": [
@@ -7341,7 +7341,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5207,
+                              "referencedDeclaration": 5218,
                               "type": "contract SecurityToken",
                               "value": "this"
                             },
@@ -7401,7 +7401,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -7562,7 +7562,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 4917,
+                                  "referencedDeclaration": 4928,
                                   "type": "type(contract IOfferingFactory)",
                                   "value": "IOfferingFactory"
                                 },
@@ -7723,7 +7723,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "getUsageDetails",
-                              "referencedDeclaration": 4916,
+                              "referencedDeclaration": 4927,
                               "type": "function () view external returns (uint256,uint8,uint256,address,bytes32)"
                             },
                             "children": [
@@ -7784,7 +7784,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -7835,7 +7835,7 @@
                                       "isPure": false,
                                       "lValueRequested": false,
                                       "member_name": "balanceOf",
-                                      "referencedDeclaration": 4828,
+                                      "referencedDeclaration": 4839,
                                       "type": "function (address) view external returns (uint256)"
                                     },
                                     "children": [
@@ -7864,7 +7864,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5207,
+                                      "referencedDeclaration": 5218,
                                       "type": "contract SecurityToken",
                                       "value": "this"
                                     },
@@ -8321,7 +8321,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "updateOfferingFactoryReputation",
-                              "referencedDeclaration": 4724,
+                              "referencedDeclaration": 4735,
                               "type": "function (address,uint256) external returns (bool)"
                             },
                             "children": [
@@ -8527,7 +8527,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4959,
+              "superFunction": 4970,
               "visibility": "external"
             },
             "children": [
@@ -8783,7 +8783,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -8843,7 +8843,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -9030,7 +9030,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -9088,7 +9088,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5170,
+                                      "referencedDeclaration": 5181,
                                       "type": "uint256",
                                       "value": "now"
                                     },
@@ -9192,7 +9192,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -9235,7 +9235,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5170,
+                                  "referencedDeclaration": 5181,
                                   "type": "uint256",
                                   "value": "now"
                                 },
@@ -9546,7 +9546,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "member_name": "createOffering",
-                                  "referencedDeclaration": 4903,
+                                  "referencedDeclaration": 4914,
                                   "type": "function (uint256,uint256,uint256,uint256) external returns (address)"
                                 },
                                 "children": [
@@ -9744,7 +9744,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5207,
+                                  "referencedDeclaration": 5218,
                                   "type": "contract SecurityToken",
                                   "value": "this"
                                 },
@@ -9872,7 +9872,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5207,
+                                  "referencedDeclaration": 5218,
                                   "type": "contract SecurityToken",
                                   "value": "this"
                                 },
@@ -9903,7 +9903,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5168,
+                                  "referencedDeclaration": 5179,
                                   "type": "msg",
                                   "value": "msg"
                                 },
@@ -9954,7 +9954,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -10240,7 +10240,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5168,
+                                      "referencedDeclaration": 5179,
                                       "type": "msg",
                                       "value": "msg"
                                     },
@@ -10332,7 +10332,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -10420,7 +10420,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 4879,
+                              "referencedDeclaration": 4890,
                               "type": "function (address,address,uint256)",
                               "value": "Transfer"
                             },
@@ -10526,7 +10526,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4966,
+              "superFunction": 4977,
               "visibility": "public"
             },
             "children": [
@@ -10752,7 +10752,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "getCustomer",
-                              "referencedDeclaration": 4805,
+                              "referencedDeclaration": 4816,
                               "type": "function (address,address) view external returns (bytes32,bytes32,bool,uint8,uint256)"
                             },
                             "children": [
@@ -10841,7 +10841,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -10884,7 +10884,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5170,
+                                  "referencedDeclaration": 5181,
                                   "type": "uint256",
                                   "value": "now"
                                 },
@@ -10935,7 +10935,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -10983,7 +10983,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "member_name": "checkTemplateRequirements",
-                                  "referencedDeclaration": 5117,
+                                  "referencedDeclaration": 5128,
                                   "type": "function (bytes32,bytes32,bool,uint8) view external returns (bool)"
                                 },
                                 "children": [
@@ -11377,7 +11377,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4974,
+              "superFunction": 4985,
               "visibility": "public"
             },
             "children": [
@@ -11793,7 +11793,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4981,
+              "superFunction": 4992,
               "visibility": "public"
             },
             "children": [
@@ -11919,7 +11919,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -12203,7 +12203,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4989,
+              "superFunction": 5000,
               "visibility": "public"
             },
             "children": [
@@ -12723,7 +12723,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -12774,7 +12774,7 @@
                                       "isPure": false,
                                       "lValueRequested": false,
                                       "member_name": "balanceOf",
-                                      "referencedDeclaration": 4828,
+                                      "referencedDeclaration": 4839,
                                       "type": "function (address) view external returns (uint256)"
                                     },
                                     "children": [
@@ -12803,7 +12803,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5207,
+                                      "referencedDeclaration": 5218,
                                       "type": "contract SecurityToken",
                                       "value": "this"
                                     },
@@ -12873,7 +12873,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -12913,7 +12913,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "member_name": "transfer",
-                                  "referencedDeclaration": 4837,
+                                  "referencedDeclaration": 4848,
                                   "type": "function (address,uint256) external returns (bool)"
                                 },
                                 "children": [
@@ -13010,7 +13010,7 @@
                                               "isPure": false,
                                               "lValueRequested": false,
                                               "member_name": "balanceOf",
-                                              "referencedDeclaration": 4828,
+                                              "referencedDeclaration": 4839,
                                               "type": "function (address) view external returns (uint256)"
                                             },
                                             "children": [
@@ -13039,7 +13039,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5207,
+                                              "referencedDeclaration": 5218,
                                               "type": "contract SecurityToken",
                                               "value": "this"
                                             },
@@ -13140,7 +13140,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4994,
+              "superFunction": 5005,
               "visibility": "public"
             },
             "children": [
@@ -13218,7 +13218,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -13354,7 +13354,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -13383,7 +13383,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5170,
+                                  "referencedDeclaration": 5181,
                                   "type": "uint256",
                                   "value": "now"
                                 },
@@ -13496,7 +13496,7 @@
                                                   "overloadedDeclarations": [
                                                     null
                                                   ],
-                                                  "referencedDeclaration": 5168,
+                                                  "referencedDeclaration": 5179,
                                                   "type": "msg",
                                                   "value": "msg"
                                                 },
@@ -13567,7 +13567,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -13641,7 +13641,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -13707,7 +13707,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -13784,7 +13784,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -13867,7 +13867,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -13907,7 +13907,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "member_name": "transfer",
-                                  "referencedDeclaration": 4837,
+                                  "referencedDeclaration": 4848,
                                   "type": "function (address,uint256) external returns (bool)"
                                 },
                                 "children": [
@@ -13948,7 +13948,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 5168,
+                                      "referencedDeclaration": 5179,
                                       "type": "msg",
                                       "value": "msg"
                                     },
@@ -14015,7 +14015,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -14120,7 +14120,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -14216,7 +14216,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 5001,
+              "superFunction": 5012,
               "visibility": "public"
             },
             "children": [
@@ -14342,7 +14342,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -14478,7 +14478,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -14614,7 +14614,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -14643,7 +14643,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5170,
+                                  "referencedDeclaration": 5181,
                                   "type": "uint256",
                                   "value": "now"
                                 },
@@ -14708,7 +14708,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -14737,7 +14737,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5170,
+                                  "referencedDeclaration": 5181,
                                   "type": "uint256",
                                   "value": "now"
                                 },
@@ -14904,7 +14904,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -14976,7 +14976,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -15093,7 +15093,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -15369,7 +15369,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -16261,7 +16261,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 5012,
+              "superFunction": 5023,
               "visibility": "public"
             },
             "children": [
@@ -16439,7 +16439,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -16575,7 +16575,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -16681,7 +16681,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5171,
+                              "referencedDeclaration": 5182,
                               "type": "function (bool) pure",
                               "value": "require"
                             },
@@ -16725,7 +16725,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "member_name": "transferFrom",
-                                  "referencedDeclaration": 4848,
+                                  "referencedDeclaration": 4859,
                                   "type": "function (address,address,uint256) external returns (bool)"
                                 },
                                 "children": [
@@ -16768,7 +16768,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5207,
+                                  "referencedDeclaration": 5218,
                                   "type": "contract SecurityToken",
                                   "value": "this"
                                 },
@@ -17169,7 +17169,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "updateOfferingFactoryReputation",
-                              "referencedDeclaration": 4724,
+                              "referencedDeclaration": 4735,
                               "type": "function (address,uint256) external returns (bool)"
                             },
                             "children": [
@@ -17211,7 +17211,7 @@
                                 "attributes": {
                                   "argumentTypes": [
                                     {
-                                      "typeIdentifier": "t_contract$_IOfferingFactory_$4917",
+                                      "typeIdentifier": "t_contract$_IOfferingFactory_$4928",
                                       "typeString": "contract IOfferingFactory"
                                     }
                                   ],
@@ -17303,7 +17303,7 @@
                               "isPure": false,
                               "lValueRequested": false,
                               "member_name": "updateTemplateReputation",
-                              "referencedDeclaration": 4715,
+                              "referencedDeclaration": 4726,
                               "type": "function (address,uint256) external returns (bool)"
                             },
                             "children": [
@@ -17345,7 +17345,7 @@
                                 "attributes": {
                                   "argumentTypes": [
                                     {
-                                      "typeIdentifier": "t_contract$_ITemplate_$5156",
+                                      "typeIdentifier": "t_contract$_ITemplate_$5167",
                                       "typeString": "contract ITemplate"
                                     }
                                   ],
@@ -17439,7 +17439,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 4879,
+                              "referencedDeclaration": 4890,
                               "type": "function (address,address,uint256)",
                               "value": "Transfer"
                             },
@@ -18066,7 +18066,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 5170,
+                              "referencedDeclaration": 5181,
                               "type": "uint256",
                               "value": "now"
                             },
@@ -18133,7 +18133,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "view",
-              "superFunction": 5027,
+              "superFunction": 5038,
               "visibility": "public"
             },
             "children": [
@@ -18445,7 +18445,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4837,
+              "superFunction": 4848,
               "visibility": "public"
             },
             "children": [
@@ -18689,7 +18689,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -18774,7 +18774,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -18873,7 +18873,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -18965,7 +18965,7 @@
                                                       "overloadedDeclarations": [
                                                         null
                                                       ],
-                                                      "referencedDeclaration": 5168,
+                                                      "referencedDeclaration": 5179,
                                                       "type": "msg",
                                                       "value": "msg"
                                                     },
@@ -19218,7 +19218,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 4879,
+                                      "referencedDeclaration": 4890,
                                       "type": "function (address,address,uint256)",
                                       "value": "Transfer"
                                     },
@@ -19244,7 +19244,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -19388,7 +19388,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4848,
+              "superFunction": 4859,
               "visibility": "public"
             },
             "children": [
@@ -19852,7 +19852,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -20000,7 +20000,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -20272,7 +20272,7 @@
                                               "overloadedDeclarations": [
                                                 null
                                               ],
-                                              "referencedDeclaration": 5168,
+                                              "referencedDeclaration": 5179,
                                               "type": "msg",
                                               "value": "msg"
                                             },
@@ -20571,7 +20571,7 @@
                                       "overloadedDeclarations": [
                                         null
                                       ],
-                                      "referencedDeclaration": 4879,
+                                      "referencedDeclaration": 4890,
                                       "type": "function (address,address,uint256)",
                                       "value": "Transfer"
                                     },
@@ -20724,7 +20724,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "view",
-              "superFunction": 4828,
+              "superFunction": 4839,
               "visibility": "public"
             },
             "children": [
@@ -20871,7 +20871,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "nonpayable",
-              "superFunction": 4857,
+              "superFunction": 4868,
               "visibility": "public"
             },
             "children": [
@@ -21034,7 +21034,7 @@
                                           "overloadedDeclarations": [
                                             null
                                           ],
-                                          "referencedDeclaration": 5168,
+                                          "referencedDeclaration": 5179,
                                           "type": "msg",
                                           "value": "msg"
                                         },
@@ -21131,7 +21131,7 @@
                               "overloadedDeclarations": [
                                 null
                               ],
-                              "referencedDeclaration": 4887,
+                              "referencedDeclaration": 4898,
                               "type": "function (address,address,uint256)",
                               "value": "Approval"
                             },
@@ -21157,7 +21157,7 @@
                                   "overloadedDeclarations": [
                                     null
                                   ],
-                                  "referencedDeclaration": 5168,
+                                  "referencedDeclaration": 5179,
                                   "type": "msg",
                                   "value": "msg"
                                 },
@@ -21257,7 +21257,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "view",
-              "superFunction": 4866,
+              "superFunction": 4877,
               "visibility": "public"
             },
             "children": [
@@ -21459,7 +21459,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "view",
-              "superFunction": 4871,
+              "superFunction": 4882,
               "visibility": "public"
             },
             "children": [
@@ -21555,7 +21555,7 @@
               "payable": false,
               "scope": 3302,
               "stateMutability": "view",
-              "superFunction": 5032,
+              "superFunction": 5043,
               "visibility": "public"
             },
             "children": [
@@ -21655,5 +21655,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-22T19:14:12.191Z"
+  "updatedAt": "2018-02-23T15:00:24.085Z"
 }

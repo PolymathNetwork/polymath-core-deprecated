@@ -39,6 +39,7 @@ contract Template is ITemplate {
     uint removedJurisdictionsCount;                                 // Keeps track of how many jurisdictions have been removed from allowed list for this template
     // Notification
     event DetailsUpdated(bytes32 _prevDetails, bytes32 _newDetails, uint _updateDate);
+    event LogFinalizedTemplate(bool _finalized, uint256 _timestamp);
 
     function Template (
         address _owner,
@@ -172,6 +173,7 @@ contract Template is ITemplate {
         require(removedJurisdictionsCount != allowedJurisdictionsList.length);
         require(allowedRolesList.length > 0);
         finalized = true;
+        LogFinalizedTemplate(finalized, now);
         return true;
     }
 
