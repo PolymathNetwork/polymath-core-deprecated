@@ -16,18 +16,21 @@ contract NameSpaceRegistrar {
 
     string public VERSION = "2";
 
-    //We use bytes32 rather than string for namespaces & token symbols to allow these to be retrieved
-    //by other contracts. String can not be returned within the EVM, only externally.
+    mapping (string => mapping (string => address)) symbolOwner;          //Maps namespaces to token symbols to owner address
+    mapping (string => mapping (string => uint256)) symbolTimestamp;      //Maps namespaces to token symbols to registration timestamp
+    mapping (string => mapping (string => string)) symbolDescription;     //Maps token symbols to their description - this is only used internally within this contract
+    mapping (string => mapping (string => string)) symbolContact;         //Maps token symbols to their contact details - this is only used internally within this contract
+    mapping (address => bool) hasRegistered;                              //Tracks addresses that have registered tokens, only allow one registration per address
+    mapping (address => bool) public admins;                              //Track valid admin addresses
 
-    //A token symbol can only be registered once under a given namespace (so a symbol always maps to exactly one owner)
-    mapping (string => mapping (string => address)) symbolToOwner;  //Maps namespaces to token symbols to owner address
-    mapping (string => string) symbolDescription;                           //Maps token symbols to their description - this is only used internally within this contract
-    mapping (string => string) symbolContact;                               //Maps token symbols to their contact details - this is only used internally within this contract
+    event AdminChange(address indexed _admin, bool _valid);
+    event RegisteredToken(string _nameSpace, string _symbol, string _description, string _contact, address indexed _owner, address indexed _admin, uint256 _timestamp);
 
-    address public admin;
-
-    event AdminChange(address indexed _oldAdmin, address indexed _newAdmin);
-    event RegisteredToken(string _nameSpace, string _symbol, string _description, string _contact, address indexed _owner);
+    // Check that msg.sender is an admin
+    modifier onlyAdmin {
+      require(admins[msg.sender]);
+      _;
+    }
 
     /**
      * @dev Constructor - sets the admin
@@ -35,17 +38,17 @@ contract NameSpaceRegistrar {
      */
     function NameSpaceRegistrar() public
     {
-      admin = msg.sender;
+      admins[msg.sender] = true;
     }
 
     /**
      * @dev allows the admin address to set a new admin
-     * @param _admin New admin address
+     * @param _admin admin address
+     * @param _valid bool to indicate whether admin address is allowed
      */
-    function changeAdmin(address _admin) public {
-      require(msg.sender == admin);
-      AdminChange(admin, _admin);
-      admin = _admin;
+    function changeAdmin(address _admin, bool _valid) onlyAdmin public {
+      admins[_admin] = _valid;
+      AdminChange(_admin, _valid);
     }
 
     /**
@@ -54,21 +57,33 @@ contract NameSpaceRegistrar {
      * @param _symbol symbol
      * @param _owner owner
      */
-    function registerToken(string _nameSpace, string _symbol, string _description, string _contact, address _owner) public {
-      require(msg.sender == admin);
-      require(symbolToOwner[_nameSpace][_symbol] == address(0));
-      symbolToOwner[_nameSpace][_symbol] = _owner;
-      symbolDescription[_symbol] = _description;
-      symbolContact[_symbol] = _contact;
-      RegisteredToken(_nameSpace, _symbol, _description, _contact, _owner);
+    function registerToken(string _nameSpace, string _symbol, string _description, string _contact, address _owner) onlyAdmin public {
+      require(!hasRegistered[_owner]);
+      require(symbolOwner[_nameSpace][_symbol] == address(0));
+      hasRegistered[_owner] = true;
+      symbolOwner[_nameSpace][_symbol] = _owner;
+      symbolDescription[_nameSpace][_symbol] = _description;
+      symbolContact[_nameSpace][_symbol] = _contact;
+      symbolTimestamp[_nameSpace][_symbol] = now;
+      RegisteredToken(_nameSpace, _symbol, _description, _contact, _owner, msg.sender, now);
     }
 
     /**
-     * @dev Returns the owner for a given symbol, under a given namespace
+     * @dev Returns the owner and timestamp for a given symbol, under a given namespace - can be called by other contracts
      * @param _nameSpace namespace
      * @param _symbol symbol
      */
-    function getOwner(string _nameSpace, string _symbol) view public returns (address) {
-      return symbolToOwner[_nameSpace][_symbol];
+    function getDetails(string _nameSpace, string _symbol) view public returns (address, uint256) {
+      return (symbolOwner[_nameSpace][_symbol], symbolTimestamp[_nameSpace][_symbol]);
     }
+
+    /**
+     * @dev Returns the description and contact details for a given symbol, under a given namespace - cannot be called by other contracts
+     * @param _nameSpace namespace
+     * @param _symbol symbol
+     */
+    function getDescription(string _nameSpace, string _symbol) view public returns (string, string) {
+      return (symbolDescription[_nameSpace][_symbol], symbolDescription[_nameSpace][_symbol]);
+    }
+
 }
