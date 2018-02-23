@@ -512,7 +512,7 @@
   "sourcePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/Template.sol",
   "ast": {
     "attributes": {
-      "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/Template.sol",
+      "absolutePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/Template.sol",
       "exportedSymbols": {
         "Template": [
           4450
@@ -535,8 +535,8 @@
       },
       {
         "attributes": {
-          "SourceUnit": 5168,
-          "absolutePath": "/Users/satyamagrawal/Repositories/polymath-core/contracts/interfaces/ITemplate.sol",
+          "SourceUnit": 5157,
+          "absolutePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/ITemplate.sol",
           "file": "./interfaces/ITemplate.sol",
           "scope": 4451,
           "symbolAliases": [
