@@ -76,10 +76,10 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.4.18;\r\n\r\ninterface ISecurityTokenRegistrar {\r\n\r\n   /**\r\n    * @dev Creates a new Security Token and saves it to the registry\r\n    * @param _nameSpace Name space for this security token\r\n    * @param _name Name of the security token\r\n    * @param _ticker Ticker name of the security\r\n    * @param _totalSupply Total amount of tokens being created\r\n    * @param _owner Ethereum public key address of the security token owner\r\n    * @param _type Type of security being tokenized\r\n    */\r\n    function createSecurityToken (\r\n        string _nameSpace,\r\n        string _name,\r\n        string _ticker,\r\n        uint256 _totalSupply,\r\n        uint8 _decimals,\r\n        address _owner,\r\n        uint8 _type\r\n    ) external;\r\n\r\n    /**\r\n     * @dev Get Security token details by its ethereum address\r\n     * @param _STAddress Security token address\r\n     */\r\n    function getSecurityTokenData(address _STAddress) public view returns (\r\n      string,\r\n      string,\r\n      address,\r\n      uint8\r\n    );\r\n\r\n}\r\n",
-  "sourcePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/ISecurityTokenRegistrar.sol",
+  "sourcePath": "/Users/everhusk/Ethereum/Polymath/Core/contracts/interfaces/ISecurityTokenRegistrar.sol",
   "ast": {
     "attributes": {
-      "absolutePath": "/Users/adamdossa/Development/Ethereum/polymath-core/contracts/interfaces/ISecurityTokenRegistrar.sol",
+      "absolutePath": "/Users/everhusk/Ethereum/Polymath/Core/contracts/interfaces/ISecurityTokenRegistrar.sol",
       "exportedSymbols": {
         "ISecurityTokenRegistrar": [
           5312
@@ -522,5 +522,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-23T21:40:39.399Z"
+  "updatedAt": "2018-02-25T06:59:38.748Z"
 }
