@@ -1,15 +1,15 @@
 {
   "contractName": "SafeMath",
   "abi": [],
-  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a72305820509bc17b41c0ac8691b3449b7ac0a7d57dffb2c7a171122fd03ffc9a16a753030029",
-  "deployedBytecode": "0x6060604052600080fd00a165627a7a72305820509bc17b41c0ac8691b3449b7ac0a7d57dffb2c7a171122fd03ffc9a16a753030029",
+  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a723058206a7f69c2bbeb2cda8d0b61abae83b5158beb844a111c97e4c63203015c811d980029",
+  "deployedBytecode": "0x6060604052600080fd00a165627a7a723058206a7f69c2bbeb2cda8d0b61abae83b5158beb844a111c97e4c63203015c811d980029",
   "sourceMap": "282:1192:6:-;;;;;;;;;;;;;;;;;",
   "deployedSourceMap": "282:1192:6:-;;;;;",
   "source": "pragma solidity ^0.4.18;\n\n/**\n *  SafeMath <https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/math/SafeMath.sol/>\n *  Copyright (c) 2016 Smart Contract Solutions, Inc.\n *  Released under the MIT License (MIT)\n */\n\n/// @title Math operations with safety checks\nlibrary SafeMath {\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\n        uint256 c = a * b;\n        assert(a == 0 || c / a == b);\n        return c;\n    }\n\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\n        // assert(b > 0); // Solidity automatically throws when dividing by 0\n        uint256 c = a / b;\n        // assert(a == b * c + a % b); // There is no case in which this doesn't hold\n        return c;\n    }\n\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\n        assert(b <= a);\n        return a - b;\n    }\n\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\n        uint256 c = a + b;\n        assert(c >= a);\n        return c;\n    }\n\n    function max64(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a >= b ? a : b;\n    }\n\n    function min64(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a < b ? a : b;\n    }\n\n    function max256(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a >= b ? a : b;\n    }\n\n    function min256(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a < b ? a : b;\n    }\n}\n",
-  "sourcePath": "/Users/everhusk/Ethereum/Polymath/Core/contracts/SafeMath.sol",
+  "sourcePath": "/Users/pabloruiz55/DocumentsBackup/Polymath/polymath-core/contracts/SafeMath.sol",
   "ast": {
     "attributes": {
-      "absolutePath": "/Users/everhusk/Ethereum/Polymath/Core/contracts/SafeMath.sol",
+      "absolutePath": "/Users/pabloruiz55/DocumentsBackup/Polymath/polymath-core/contracts/SafeMath.sol",
       "exportedSymbols": {
         "SafeMath": [
           2109
@@ -2203,5 +2203,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-25T06:59:38.687Z"
+  "updatedAt": "2018-02-25T12:43:54.363Z"
 }
