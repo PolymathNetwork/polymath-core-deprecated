@@ -1,8 +1,10 @@
 require('babel-register');
 require('babel-polyfill');
 const WalletProvider = require("truffle-hdwallet-provider-privkey");
-const privKey = require('fs').readFileSync('./infura_privKey').toString();
-const apiKey = require('fs').readFileSync('./infura_apiKey').toString();
+//const privKey = require('fs').readFileSync('./infura_privKey').toString();
+//const apiKey = require('fs').readFileSync('./infura_apiKey').toString();
+const privKey = "";
+const apiKey = "";
 
 // const WalletProvider = require("truffle-wallet-provider");
 // const keystore = require('fs').readFileSync('./sample-keystore').toString();

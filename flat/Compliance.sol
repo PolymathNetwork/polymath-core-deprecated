@@ -515,6 +515,24 @@ interface ITemplate {
    * @return uint256 fee, uint8 quorum, uint256 vestingPeriod, address owner, address KYC
    */
   function getUsageDetails() view public returns (uint256, uint8, uint256, address, address);
+
+  /**
+   * @dev Get the list of allowed jurisdictions
+   * @return bytes32[]
+   */
+  function getAllowedJurisdictionsList() view public returns (bytes32[]);
+
+  /**
+   * @dev Get the list of allowed roles
+   * @return uin8[]
+   */
+  function getAllowedRolesList() view public returns (uint8[]);
+    
+  /**
+   * @dev Get the list of allowed roles
+   * @return bytes32[]
+   */
+  function getblockedDivisionJurisdictionsList() view public returns (bytes32[]);
 }
 
 /*
@@ -541,6 +559,9 @@ contract Template is ITemplate {
     mapping(bytes32 => bool) public allowedJurisdictions;           // Mapping that contains the allowed staus of Jurisdictions
     mapping(bytes32 => bool) public blockedDivisionJurisdictions;   // Mapping that contains the allowed staus of Jurisdictions
     mapping(uint8 => bool) public allowedRoles;                     // Mapping that contains the allowed status of Roles
+    bytes32[] public allowedJurisdictionsList;                      // List of allowed jurisdiction in the template
+    bytes32[] public blockedDivisionJurisdictionsList;              // List of blocked divison jurisdiction in the template
+    uint8[] public allowedRolesList;                                // List of allowed roles list
     bool public accredited;                                         // Variable that define the required level of accrediation for the investor
     address public KYC;                                             // Address of the KYC provider
     bytes32 details;                                                // Details of the offering requirements
@@ -550,10 +571,10 @@ contract Template is ITemplate {
     uint8 quorum;                                                   // Minimum percent of shareholders which need to vote to freeze
     uint256 vestingPeriod;                                          // Length of time to vest funds
 
-    uint allowedJurisdictionsCount;                                 // Keeps track of how many jurisdictions have been allowed for this template
-    uint allowedRolesCount;                                         // Keeps track of how many roles have been allowed for this template
+    uint removedJurisdictionsCount;                                 // Keeps track of how many jurisdictions have been removed from allowed list for this template
     // Notification
     event DetailsUpdated(bytes32 _prevDetails, bytes32 _newDetails, uint _updateDate);
+    event LogFinalizedTemplate(bool _finalized, uint256 _timestamp);
 
     function Template (
         address _owner,
@@ -595,11 +616,13 @@ contract Template is ITemplate {
         require(_allowedJurisdictions.length == _allowed.length);
         require(!finalized);
         for (uint i = 0; i < _allowedJurisdictions.length; ++i) {
-            if(!allowedJurisdictions[_allowedJurisdictions[i]] && _allowed[i])
-              allowedJurisdictionsCount++;
-            else if(allowedJurisdictions[_allowedJurisdictions[i]] && !_allowed[i])
-              allowedJurisdictionsCount--;
-
+            if (!allowedJurisdictions[_allowedJurisdictions[i]] && _allowed[i])
+              allowedJurisdictionsList.push(_allowedJurisdictions[i]);
+            else if (allowedJurisdictions[_allowedJurisdictions[i]] && !_allowed[i]) {
+                removeFromJurisdictionList(_allowedJurisdictions[i]);
+                removedJurisdictionsCount++;
+            }
+              
             allowedJurisdictions[_allowedJurisdictions[i]] = _allowed[i];
         }
     }
@@ -614,7 +637,36 @@ contract Template is ITemplate {
         require(_blockedDivisionJurisdictions.length == _blocked.length);
         require(!finalized);
         for (uint i = 0; i < _blockedDivisionJurisdictions.length; ++i) {
+             if (!blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] && _blocked[i])
+                blockedDivisionJurisdictionsList.push(_blockedDivisionJurisdictions[i]);
+            else if (blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] && !_blocked[i]) {
+                removeFromDivisionJurisdictionList(_blockedDivisionJurisdictions[i]);
+            }
+              
             blockedDivisionJurisdictions[_blockedDivisionJurisdictions[i]] = _blocked[i];
+        }
+    }
+
+     /**
+     * @dev remove the jurisdiction from the allowed list of jurisdictions
+     * @param _jurisdiction Jurisdiction which need to be removed
+     */
+    function removeFromJurisdictionList(bytes32 _jurisdiction) internal {
+        for (uint i = 0; i < allowedJurisdictionsList.length; i++) {
+            if (allowedJurisdictionsList[i] == _jurisdiction)
+                allowedJurisdictionsList[i] = 0x0;
+        }
+    }
+
+
+    /**
+     * @dev remove the divisionJurisdiction from the blocked list of divisionJurisdiction
+     * @param _blockedDivisionJurisdiction divisionJurisdiction which need to be removed
+     */
+    function removeFromDivisionJurisdictionList(bytes32 _blockedDivisionJurisdiction) internal {
+         for (uint i = 0; i < blockedDivisionJurisdictionsList.length; i++) {
+            if (blockedDivisionJurisdictionsList[i] == _blockedDivisionJurisdiction)
+                blockedDivisionJurisdictionsList[i] = 0x0;
         }
     }
 
@@ -627,7 +679,7 @@ contract Template is ITemplate {
         require(!finalized);
         for (uint i = 0; i < _allowedRoles.length; ++i) {
             if(!allowedRoles[_allowedRoles[i]])
-              allowedRolesCount++;
+                allowedRolesList.push(_allowedRoles[i]);
 
             allowedRoles[_allowedRoles[i]] = true;
         }
@@ -653,9 +705,10 @@ contract Template is ITemplate {
      */
     function finalizeTemplate() public returns (bool success) {
         require(owner == msg.sender);
-        require(allowedJurisdictionsCount > 0);
-        require(allowedRolesCount > 0);
+        require(removedJurisdictionsCount != allowedJurisdictionsList.length);
+        require(allowedRolesList.length > 0);
         finalized = true;
+        LogFinalizedTemplate(finalized, now);
         return true;
     }
 
@@ -698,6 +751,30 @@ contract Template is ITemplate {
      */
     function getUsageDetails() view public returns (uint256, uint8, uint256, address, address) {
         return (fee, quorum, vestingPeriod, owner, KYC);
+    }
+
+    /**
+     * @dev Get the list of allowed jurisdictions
+     * @return bytes32[]
+     */
+    function getAllowedJurisdictionsList() view public returns (bytes32[]) {
+        return allowedJurisdictionsList;
+    }
+
+    /**
+     * @dev Get the list of allowed roles
+     * @return uin8[]
+     */
+    function getAllowedRolesList() view public returns (uint8[]) {
+        return allowedRolesList;
+    }
+
+    /**
+     * @dev Get the list of allowed roles
+     * @return bytes32[]
+     */
+    function getblockedDivisionJurisdictionsList() view public returns (bytes32[]) {
+        return blockedDivisionJurisdictionsList;
     }
 }
 
