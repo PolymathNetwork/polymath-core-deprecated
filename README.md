@@ -27,9 +27,10 @@ compliant securities tokens on a decentralized blockchain.
 | Contract                                                         | Address                                                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | [PolyToken](./contracts/PolyToken.sol)                           | [0x96a62428509002a7ae5f6ad29e4750d852a3f3d7](https://ropsten.etherscan.io/address/0x96a62428509002a7ae5f6ad29e4750d852a3f3d7) |
-| [Compliance](./contracts/Compliance.sol)                         | [0x8660635c9439ca63a640d6ea32cc526e7f2b97f5](https://ropsten.etherscan.io/address/0x8660635c9439ca63a640d6ea32cc526e7f2b97f5) |
-| [Customers](./contracts/Customers.sol)                           | [0x76577366fcd897aedff56846ad0b1369f597826d](https://ropsten.etherscan.io/address/0x76577366fcd897aedff56846ad0b1369f597826d) |
-| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0x30f0d61f6abf0cdc9e1a1afad8af5e49e6b20234](https://ropsten.etherscan.io/address/0x30f0d61f6abf0cdc9e1a1afad8af5e49e6b20234) |
+| [Compliance](./contracts/Compliance.sol)                         | [0x7a3a0acde71718c0224e677f9586a18701e11815](https://ropsten.etherscan.io/address/0x7a3a0acde71718c0224e677f9586a18701e11815) |
+| [Customers](./contracts/Customers.sol)                           | [0x9e892f4e7ac1e13778599a1506cf68ff2e3cb938](https://ropsten.etherscan.io/address/0x9e892f4e7ac1e13778599a1506cf68ff2e3cb938) |
+| [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0xe93d40736a9537308d822bf15edae634a24be179](https://ropsten.etherscan.io/address/0xe93d40736a9537308d822bf15edae634a24be179) |
+| [NameSpaceRegistrar](./contracts/NameSpaceRegistrar.sol) | [0xda0a0a759c2072f4a725e9fb3d5c3f301dd5f91b](https://ropsten.etherscan.io/address/0xda0a0a759c2072f4a725e9fb3d5c3f301dd5f91b) |
 
 ## Setup
 
