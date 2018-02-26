@@ -30,7 +30,7 @@ compliant securities tokens on a decentralized blockchain.
 | [Compliance](./contracts/Compliance.sol)                         | [0x7a3a0acde71718c0224e677f9586a18701e11815](https://ropsten.etherscan.io/address/0x7a3a0acde71718c0224e677f9586a18701e11815) |
 | [Customers](./contracts/Customers.sol)                           | [0x9e892f4e7ac1e13778599a1506cf68ff2e3cb938](https://ropsten.etherscan.io/address/0x9e892f4e7ac1e13778599a1506cf68ff2e3cb938) |
 | [SecurityTokenRegistrar](./contracts/SecurityTokenRegistrar.sol) | [0xe93d40736a9537308d822bf15edae634a24be179](https://ropsten.etherscan.io/address/0xe93d40736a9537308d822bf15edae634a24be179) |
-| [NameSpaceRegistrar](./contracts/NameSpaceRegistrar.sol) | [0xda0a0a759c2072f4a725e9fb3d5c3f301dd5f91b](https://ropsten.etherscan.io/address/0xda0a0a759c2072f4a725e9fb3d5c3f301dd5f91b) |
+| [NameSpaceRegistrar](./contracts/NameSpaceRegistrar.sol) | [0x4e875a08616565b9063ab240bc2dd72788a656e0](https://ropsten.etherscan.io/address/0x4e875a08616565b9063ab240bc2dd72788a656e0) |
 
 ## Setup
 
