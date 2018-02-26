@@ -14,8 +14,6 @@ import './NameSpaceRegistrar.sol';
  * @title SecurityTokenRegistrar
  * @dev Contract use to register the security token on Polymath platform
  */
-
-
 contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
 
     string public VERSION = "2";
