@@ -8,11 +8,13 @@ pragma solidity ^0.4.18;
 import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
+import './NameSpaceRegistrar.sol';
 
 /**
  * @title SecurityTokenRegistrar
  * @dev Contract use to register the security token on Polymath platform
  */
+
 
 contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
 
@@ -20,6 +22,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     IERC20 public PolyToken;                                        // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
+    NameSpaceRegistrar public polyNameSpaceRegistrar;               // NameSpaceRegistrar contract pointer
 
     struct NameSpaceData {
       address owner;
@@ -49,15 +52,18 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     function SecurityTokenRegistrar(
       address _polyTokenAddress,
       address _polyCustomersAddress,
-      address _polyComplianceAddress
+      address _polyComplianceAddress,
+      address _polyNameSpaceRegistrarAddress
     ) public
     {
       require(_polyTokenAddress != address(0));
       require(_polyCustomersAddress != address(0));
       require(_polyComplianceAddress != address(0));
+      require(_polyNameSpaceRegistrarAddress != address(0));      
       PolyToken = IERC20(_polyTokenAddress);
       polyCustomersAddress = _polyCustomersAddress;
       polyComplianceAddress = _polyComplianceAddress;
+      polyNameSpaceRegistrar = NameSpaceRegistrar(_polyNameSpaceRegistrarAddress);
     }
 
     /**
@@ -128,7 +134,12 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       require(nameSpace.owner != address(0));
       require(_owner != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
+
+      var(, _tickerTimeStamp) = polyNameSpaceRegistrar.getDetails(_nameSpaceName, _ticker);     
+      require(_tickerTimeStamp + 90 days <= now);
+
       require(PolyToken.transferFrom(msg.sender, nameSpace.owner, nameSpace.fee));
+
       address newSecurityTokenAddress = new SecurityToken(
         _name,
         _ticker,
