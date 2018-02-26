@@ -48,6 +48,8 @@ contract NameSpaceRegistrar {
      * @param _valid bool to indicate whether admin address is allowed
      */
     function changeAdmin(address _admin, bool _valid) onlyAdmin public {
+      //You can't remove yourself as an admin
+      require(msg.sender != _admin);
       admins[_admin] = _valid;
       AdminChange(_admin, _valid);
     }
