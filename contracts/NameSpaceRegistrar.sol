@@ -25,6 +25,7 @@ contract NameSpaceRegistrar {
 
     event AdminChange(address indexed _admin, bool _valid);
     event RegisteredToken(string _nameSpace, string _symbol, string _description, string _contact, address indexed _owner, address indexed _admin, uint256 _timestamp);
+    event TokenOwnerChange(string _nameSpace, string _symbol, address indexed _oldOwner, address indexed _newOwner);
 
     // Check that msg.sender is an admin
     modifier onlyAdmin {
@@ -47,14 +48,30 @@ contract NameSpaceRegistrar {
      * @param _valid bool to indicate whether admin address is allowed
      */
     function changeAdmin(address _admin, bool _valid) onlyAdmin public {
+      //You can't remove yourself as an admin
+      require(msg.sender != _admin);
       admins[_admin] = _valid;
       AdminChange(_admin, _valid);
     }
 
     /**
+     * @dev allows the owner of a token registration to change the owner
+     * @param _nameSpace namespace
+     * @param _symbol token symbol
+     * @param _newOwner new owner
+     */
+    function changeTokenOwner(string _nameSpace, string _symbol, address _newOwner) public {
+      require(symbolOwner[_nameSpace][_symbol] == msg.sender);
+      symbolOwner[_nameSpace][_symbol] = _newOwner;
+      TokenOwnerChange(_nameSpace, _symbol, msg.sender, _newOwner);
+    }
+
+    /**
      * @dev Registers a new token symbol and owner against a specific namespace
      * @param _nameSpace namespace
-     * @param _symbol symbol
+     * @param _symbol token symbol
+     * @param _description token description
+     * @param _contact token contract details e.g. email
      * @param _owner owner
      */
     function registerToken(string _nameSpace, string _symbol, string _description, string _contact, address _owner) onlyAdmin public {
