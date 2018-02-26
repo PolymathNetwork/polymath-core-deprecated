@@ -39,7 +39,7 @@ module.exports = async (deployer, network) => {
 //   try{
 //     await deployer.deploy(SimpleCappedOfferingFactory);
 //     console.log(`\nPolymath Network Smart Contracts Deployed:\n
-//       Offering Factory: ${PolyToken}\n
+//       Offering Factory: ${SimpleCappedOfferingFactory.address}\n
 //     `);
 //   } catch(err) {
 //     console.log('Deploy error', err);
