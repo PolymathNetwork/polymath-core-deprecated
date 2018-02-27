@@ -8,7 +8,7 @@ pragma solidity ^0.4.18;
 import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
-
+import './interfaces/INameSpaceRegistrar.sol';
 /**
  * @title SecurityTokenRegistrar
  * @dev Contract use to register the security token on Polymath platform
@@ -20,6 +20,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     IERC20 public PolyToken;                                        // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
+    INameSpaceRegistrar public nameSpaceRegistrar;
 
     struct NameSpaceData {
       address owner;
@@ -49,12 +50,15 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     function SecurityTokenRegistrar(
       address _polyTokenAddress,
       address _polyCustomersAddress,
-      address _polyComplianceAddress
+      address _polyComplianceAddress, 
+      address _nameSpaceRegistrar
     ) public
     {
       require(_polyTokenAddress != address(0));
       require(_polyCustomersAddress != address(0));
       require(_polyComplianceAddress != address(0));
+      require(_nameSpaceRegistrar != address(0));
+      nameSpaceRegistrar = INameSpaceRegistrar(_nameSpaceRegistrar);
       PolyToken = IERC20(_polyTokenAddress);
       polyCustomersAddress = _polyCustomersAddress;
       polyComplianceAddress = _polyComplianceAddress;
@@ -124,6 +128,9 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     {
       require(_totalSupply > 0);
       NameSpaceData storage nameSpace = nameSpaceData[_nameSpaceName];
+      var (owner,) = nameSpaceRegistrar.getDetails(_nameSpaceName, _ticker);
+      require(owner != address(0));
+      require(owner == nameSpace.owner);
       require(tickers[_nameSpaceName][_ticker] == address(0));
       require(nameSpace.owner != address(0));
       require(_owner != address(0));
