@@ -13,6 +13,7 @@ const Compliance = artifacts.require('Compliance.sol');
 const Registrar = artifacts.require('SecurityTokenRegistrar.sol');
 const SimpleCappedOfferingFactory = artifacts.require('SimpleCappedOfferingFactory.sol');
 const SimpleCappedOffering = artifacts.require('SimpleCappedOffering.sol');
+const NameSpaceRegistrar = artifacts.require('./NameSpaceRegistrar.sol');
 const BigNumber = web3.BigNumber;
 
 const ethers = require('ethers');
@@ -111,16 +112,19 @@ contract('SecurityToken', accounts => {
   let polyTokenRate = 100;
   let investedAmount;
   let POLY, customers, compliance, STRegistrar, securityToken;
-  let STAddress, templateAddress, offeringFactory, offeringFactory_2, offeringContract;
+  let STAddress, templateAddress, offeringFactory, offeringFactory_2, offeringContract, polyNameSpaceRegistrar;
 
     before(async()=>{
       POLY = await PolyToken.new();
       customers = await Customers.new(POLY.address);
       compliance = await Compliance.new(customers.address);
+      polyNameSpaceRegistrar = await NameSpaceRegistrar.new();
+      console.log("polyNameSpaceRegistrar " +  polyNameSpaceRegistrar.address);
       STRegistrar = await Registrar.new(
         POLY.address,
         customers.address,
-        compliance.address
+        compliance.address,
+        polyNameSpaceRegistrar.address
       );
       await compliance.setRegistrarAddress(STRegistrar.address);
       // Adding the new KYC provider in to the Polymath Platform chain data

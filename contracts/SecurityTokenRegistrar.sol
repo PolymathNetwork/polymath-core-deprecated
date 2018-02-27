@@ -8,7 +8,7 @@ pragma solidity ^0.4.18;
 import './interfaces/ISecurityTokenRegistrar.sol';
 import './interfaces/IERC20.sol';
 import './SecurityToken.sol';
-import './NameSpaceRegistrar.sol';
+import './interfaces/INameSpaceRegistrar.sol';
 
 /**
  * @title SecurityTokenRegistrar
@@ -20,7 +20,8 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
     IERC20 public PolyToken;                                        // Address of POLY token
     address public polyCustomersAddress;                            // Address of the polymath-core Customers contract address
     address public polyComplianceAddress;                           // Address of the polymath-core Compliance contract address
-    NameSpaceRegistrar public polyNameSpaceRegistrar;               // NameSpaceRegistrar contract pointer
+   // INameSpaceRegistrar public polyNameSpaceRegistrar;              // NameSpaceRegistrar contract pointer
+   //IERC20 public test;
 
     struct NameSpaceData {
       address owner;
@@ -61,7 +62,7 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       PolyToken = IERC20(_polyTokenAddress);
       polyCustomersAddress = _polyCustomersAddress;
       polyComplianceAddress = _polyComplianceAddress;
-      polyNameSpaceRegistrar = NameSpaceRegistrar(_polyNameSpaceRegistrarAddress);
+    //  polyNameSpaceRegistrar = INameSpaceRegistrar(_polyNameSpaceRegistrarAddress);
     }
 
     /**
@@ -133,8 +134,8 @@ contract SecurityTokenRegistrar is ISecurityTokenRegistrar {
       require(_owner != address(0));
       require(bytes(_name).length > 0 && bytes(_ticker).length > 0);
 
-      var(, _tickerTimeStamp) = polyNameSpaceRegistrar.getDetails(_nameSpaceName, _ticker);     
-      require(_tickerTimeStamp + 90 days <= now);
+     // var(, _tickerTimeStamp) = polyNameSpaceRegistrar.getDetails(_nameSpaceName, _ticker);     
+     // require(_tickerTimeStamp + 90 days <= now);
 
       require(PolyToken.transferFrom(msg.sender, nameSpace.owner, nameSpace.fee));
 
