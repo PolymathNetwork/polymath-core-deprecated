@@ -78,7 +78,8 @@ contract NameSpaceRegistrar {
      * @param _owner owner
      */
     function registerToken(string _nameSpace, string _symbol, string _description, string _contact, address _owner) onlyAdmin public {
-      require(!hasRegistered[_owner]);
+      if(msg.sender != _owner)
+        require(!hasRegistered[_owner]);
       require(_owner != address(0));
       require(symbolDetails[_nameSpace][_symbol].owner == address(0));
       hasRegistered[_owner] = true;
