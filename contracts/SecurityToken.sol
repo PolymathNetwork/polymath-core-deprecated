@@ -42,7 +42,7 @@ contract SecurityToken is ISecurityToken, IERC20 {
 
     // Template
     address public delegate;                                          // Address who create the template
-    address public KYC;                                               // Address of the KYC provider which aloowed the roles and jurisdictions in the template
+    address public KYC;                                               // Address of the KYC provider which allowed the roles and jurisdictions in the template
     bytes32 public merkleRoot;
 
     // Security token shareholders
