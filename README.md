@@ -5,6 +5,10 @@
 
 ![Polymath](Polymath.png)
 
+# ATTENTION!
+This repository for Polymath Core has been deprecated and will not be maintained moving forward. 
+Please refer to https://github.com/PolymathNetwork/polymath-core.
+
 # Polymath core
 
 The polymath core smart contracts provide a system for launching regulatory
