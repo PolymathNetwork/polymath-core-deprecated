@@ -6,6 +6,7 @@ const SecurityToken = artifacts.require('./SecurityToken.sol');
 const POLY = artifacts.require('./helpers/mockContracts/PolyTokenMock.sol');
 const Compliance = artifacts.require('./Compliance.sol');
 const Customers = artifacts.require('./Customers.sol');
+const NameSpaceRegistrar = artifacts.require('./NameSpaceRegistrar.sol');
 
 
 contract('SecurityTokenRegistrar', accounts => {
@@ -32,18 +33,22 @@ contract('SecurityTokenRegistrar', accounts => {
   let acct2 = accounts[2];
   let issuer2 = accounts[3];
   let issuer1 = accounts[4];
-  let polyToken, polyCustomers, polyCompliance, STRegistrar;
+  let polyToken, polyCustomers, polyCompliance, STRegistrar, polyNameSpaceRegistrar;
 
   beforeEach(async () => {
        polyToken = await POLY.new();
        polyCustomers = await Customers.new(polyToken.address);
        polyCompliance = await Compliance.new(polyCustomers.address);
+       polyNameSpaceRegistrar = await NameSpaceRegistrar.new();
+       console.log("polyNameSpaceRegistrar " +  polyNameSpaceRegistrar.address);
       // Creation of the new SecurityTokenRegistrar contract
        STRegistrar = await SecurityTokenRegistrar.new(
         polyToken.address,
         polyCustomers.address,
-        polyCompliance.address
+        polyCompliance.address,
+        polyNameSpaceRegistrar.address
       );
+      
   })
 
   describe('Constructor', async () => {
